@@ -5,6 +5,7 @@ import 'package:myapp/main.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/utils.dart';
 
 class GameScreen extends StatelessWidget
 {
@@ -117,7 +118,7 @@ class GameLayout extends AbstractLayout
     Story? story = server.next();
     if(story != null)
     {
-        storyAnimation = StoryAnimation(this, story);
+      storyAnimation = StoryAnimation(this, story);
     }
   }
 
@@ -185,6 +186,7 @@ class EventAnimation
 
   void start()
   {
+    Utils.log(event.log);
     EntityComponent? callerComponent = getEntityComponent("caller");
     EntityComponent? targetComponent = getEntityComponent("target");
     
