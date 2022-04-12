@@ -50,7 +50,6 @@ class _BuilderTriFunctionWidget extends State<BuilderTriFunctionWidget> {
           width: 10,
         ),
         getValueButton(context, widget.builderTotal, (v) {
-          print("onChosen from getChild ligne 53 $v");
           widget.builderTriFunction.value = v;
           widget.builderTotal.onChanged();
           setState(() {});
@@ -116,7 +115,6 @@ class _BuilderTriFunctionWidget extends State<BuilderTriFunctionWidget> {
       selected,
       MaterialButton(
           onPressed: () {
-            print("onPressed value button $selected");
             if (builderTotal.onTap(context, selected)) return;
             Popup.Show(context, valuesWidget(context, onChosen, selected));
           },
@@ -161,7 +159,6 @@ class _BuilderTriFunctionWidget extends State<BuilderTriFunctionWidget> {
       padding: const EdgeInsets.all(3.0),
       child: MaterialButton(
         onPressed: () {
-          print("onPressed values button $v");
           onChosen(v);
           Navigator.pop(context);
         },

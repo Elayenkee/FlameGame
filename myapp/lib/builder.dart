@@ -7,6 +7,7 @@ import 'package:myapp/engine/targerselector.dart';
 import 'package:myapp/engine/trifunction.dart';
 import 'package:myapp/engine/work.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/utils.dart';
 import 'bdd.dart';
 
 abstract class Builder<T> 
@@ -44,7 +45,7 @@ class Validator
   void Log(String message)
   {
     if(log)
-        print(space() + message);
+        Utils.log(space() + message);
   }
 
   String space()
@@ -99,18 +100,17 @@ class BuilderServer extends Builder<Server>
   @override
   Server build() 
   {
-    print("BuilderServer.build.start");
+    Utils.log("BuilderServer.build.start");
     server.entities = [];
     for(BuilderEntity builderEntity in builderEntities)
       server.addEntity(builderEntity.build());
-    print("BuilderServer.build.end");
+    Utils.log("BuilderServer.build.end");
     return server;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderServer::isValid");
     for(BuilderEntity builderEntity in builderEntities)
     {
       if(!validator.isValid(builderEntity))
@@ -144,19 +144,18 @@ class BuilderEntity extends Builder<Entity>
   @override
   Entity build() 
   {
-    print("BuilderEntity.build.start");
+    Utils.log("BuilderEntity.build.start");
     entity.behaviours = builderTotal.build();
-    print("BuilderEntity.build.end");
+    Utils.log("BuilderEntity.build.end");
     return entity;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderEntity::isValid");
     if(entity.getHPMax() <= 0)
     {
-        print("HP of ${entity.getName()} is 0");
+        Utils.log("HP of ${entity.getName()} is 0");
         return false;
     }
     return validator.isValid(builderTotal);
@@ -198,12 +197,12 @@ class BuilderTotal extends Builder<List<Behaviour>>
   @override
   List<Behaviour> build() 
   {
-    print("BuilderTotal.build.start");
+    Utils.log("BuilderTotal.build.start");
     List<Behaviour> liste = [];
     builderBehaviours.forEach((element) {
       liste.add(element.build());
     });
-    print("BuilderTotal.build.end");
+    Utils.log("BuilderTotal.build.end");
     return liste;
   }
 
@@ -230,12 +229,12 @@ class BuilderBehaviour extends Builder<Behaviour>
   @override
   Behaviour build() 
   {
-    print("BuilderBehaviour.build.start : " + name + " [$builderConditions] [$builderTargetSelector] [$builderWork]");
+    Utils.log("BuilderBehaviour.build.start : " + name + " [$builderConditions] [$builderTargetSelector] [$builderWork]");
     Behaviour behaviour = Behaviour.withName(name);
     behaviour.condition = builderConditions.build();
     behaviour.selector = builderTargetSelector.build();
     behaviour.work = builderWork.build();
-    print("BuilderBehaviour.build.end");
+    Utils.log("BuilderBehaviour.build.end");
     return behaviour;
   }
 
@@ -269,7 +268,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
 
   BuilderCondition addCondition() 
   {
-    print("BuilderConditionGroup::addCondition ($builderTargetSelector)");
+    Utils.log("BuilderConditionGroup::addCondition ($builderTargetSelector)");
     BuilderCondition builderCondition = BuilderCondition();
     conditions.add(builderCondition);
     if(builderTargetSelector != null)
@@ -280,7 +279,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
   @override
   build() 
   {
-    print("BuilderConditionGroup.build.start");
+    Utils.log("BuilderConditionGroup.build.start");
     ConditionGroup group = ConditionGroup([TRUE(), TRUE(), ConditionLink.ET]);
     List<BuilderCondition> listeConditions = List.from(conditions);
     //List<ConditionLink> listeLinks = List.from(links);
@@ -291,7 +290,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
       group = ConditionGroup([group, condition, ConditionLink.ET]);
       //if (listeLinks.length > 0) link = listeLinks.removeAt(0);
     }
-    print("BuilderConditionGroup.build.end");
+    Utils.log("BuilderConditionGroup.build.end");
     return group;
   }
 
@@ -312,7 +311,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
   @override
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector) 
   {
-    print("$this added to TargetSelector ($builderTargetSelector)");
+    Utils.log("$this added to TargetSelector ($builderTargetSelector)");
     this.builderTargetSelector = builderTargetSelector;
     for(BuilderCondition condition in conditions)
       condition.onAddedToTargetSelector(builderTargetSelector);
@@ -334,7 +333,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     if(this.cond == cond)
       return;
 
-    print("$this::setCondition : $cond");
+    Utils.log("$this::setCondition : $cond");
     this.cond = cond;
     this.params = [];
     for (int i = 0; i < cond.getParams().length; i++) 
@@ -347,14 +346,14 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector)
   {
     this.builderTargetSelector = builderTargetSelector;
-    print("$this added to TargetSelector");
+    Utils.log("$this added to TargetSelector");
     if (cond != null && cond!.isBinary())
       setParam(0, builderTargetSelector);    
   }
 
   void setParam(int index, Object param) 
   {
-    print("setParam $index - $param");
+    Utils.log("setParam $index - $param");
     params[index] = param;
     if(index == 2 && param is BuilderCount)
     {
@@ -380,10 +379,10 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   @override
   Condition build() 
   {
-    print("BuilderCondition::build $cond $params");
+    Utils.log("BuilderCondition::build $cond $params");
     for (int i = 0; i < params.length; i++) 
     {
-      print("BuilderCondition::build - param $i : ${params[i]}");
+      Utils.log("BuilderCondition::build - param $i : ${params[i]}");
       if (params[i] is Builder) 
       {
         Builder builder = params[i] as Builder;
@@ -391,7 +390,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
         if (p != null)
           params[i] = p;
         else
-          print("Getter of $builder is null");
+          Utils.log("Getter of $builder is null");
       }
     }
     return cond!.instanciate(params);
@@ -437,10 +436,10 @@ class BuilderTargetSelector extends Builder<TargetSelector>
   @override
   TargetSelector build() 
   {
-    print("BuilderTargetSelector.build.start $result [$builderTriFunction] [$builderConditionGroup]");
+    Utils.log("BuilderTargetSelector.build.start $result [$builderTriFunction] [$builderConditionGroup]");
     (result as TargetSelector).tri = builderTriFunction.build();
     (result as TargetSelector).condition = builderConditionGroup.build();
-    print("BuilderTargetSelector.build.end");
+    Utils.log("BuilderTargetSelector.build.end");
     return (result as TargetSelector);
   }
 
@@ -463,9 +462,9 @@ class BuilderTriFunction extends Builder<TriFunction?>
   @override
   TriFunction? build() 
   {
-    print("BuilderTriFunction.build.start $tri [$value]");
+    Utils.log("BuilderTriFunction.build.start $tri [$value]");
     TriFunction? result = tri?.instanciate(value!);
-    print("BuilderTriFunction.build.end $result");
+    Utils.log("BuilderTriFunction.build.end $result");
     return result;
   }
 
@@ -494,16 +493,15 @@ class BuilderWork extends Builder<Work>
   @override
   Work build() 
   {
-    print("BuilderWork.build.start $work");
+    Utils.log("BuilderWork.build.start $work");
     Work result = work!.instanciate();
-    print("BuilderWork.build.end $result");
+    Utils.log("BuilderWork.build.end $result");
     return result;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderWork::isValid");
     bool result = work != null;
     return result;
   }
@@ -536,7 +534,7 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
 
   void setValue(VALUE value)
   {
-    print("BuilderCount::setValue : $value");
+    Utils.log("BuilderCount::setValue : $value");
     this.value = value;
     if(target != null)
       result = Count(getTarget(), this.value!);
@@ -549,9 +547,9 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
       Builder builder = target as Builder;
       Object? p = builder.get();
       if(p == null)
-        print("Getter of $builder is null");
+        Utils.log("Getter of $builder is null");
       else if(!(p is ValueReader))
-        print("Value of $builder is not a ValueReader : $p");
+        Utils.log("Value of $builder is not a ValueReader : $p");
       else
         target = p;
     }
@@ -561,8 +559,8 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
   @override
   Count build() 
   {
-    print("BuilderCount.build.start $result [$target]");
-    print("BuilderCount.build.end");
+    Utils.log("BuilderCount.build.start $result [$target]");
+    Utils.log("BuilderCount.build.end");
     return result as Count;
   }
 
@@ -576,7 +574,7 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
   @override
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector) 
   {
-    print("$this onAddedToTargetSelector");
+    Utils.log("$this onAddedToTargetSelector");
     setTarget(builderTargetSelector);
   }
 

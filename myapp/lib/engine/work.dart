@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:myapp/engine/dot.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/utils.dart';
 
 import 'entity.dart';
 import 'dart:math';
@@ -23,7 +24,7 @@ class HEAL extends Work
   {
     if (caller.getMP() < mp) 
     {
-      print("$caller pas assez de MP pour use HEAL");
+      Utils.log("$caller pas assez de MP pour use HEAL");
       return false;
     }
 

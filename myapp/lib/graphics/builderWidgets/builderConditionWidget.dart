@@ -72,7 +72,6 @@ class _BuilderCondition extends State<BuilderConditionWidget>
     {
       Function onChosen = (v)
       {
-        print("triFunction onChosen from popup");
         widget.builderCondition.setParam(index, v);
         widget.builderTotal.onChanged();
         setState(() {});
@@ -86,14 +85,11 @@ class _BuilderCondition extends State<BuilderConditionWidget>
 
     VoidCallback? onPressed = () 
     {
-      print("click on param at index $index");
       if (widget.builderTotal.onTap(context, type)) 
       {
-        print("=> builderTotal executed 'onTap'");
         return;
       }
 
-      print("Add onNextTap to builderTotal");
       widget.builderTotal.onNextTap = (o) 
       {
         if (widget.builderCondition.canSetParam(index, o)) 

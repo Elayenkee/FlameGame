@@ -48,7 +48,6 @@ class DotList implements Countable
   @override
   int count()
   {
-    //print("DotList::count : ${dots.length}");
     return dots.length;
   }
 }

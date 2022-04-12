@@ -101,10 +101,6 @@ class Entity implements ValueReader
         if(behaviour.execute(this, story))
           return;
       }
-      else
-      {
-        //print("${behaviour.name} not checked");
-      }
     }
 
     NOTHING().execute(this, this, story);
@@ -113,7 +109,6 @@ class Entity implements ValueReader
   void ellapse(int time)
   {
     timer -= time;
-    //print("$this ellapse $time : $timer");
   }
 
   bool isAlive() 

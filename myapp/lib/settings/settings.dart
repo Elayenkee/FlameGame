@@ -1,10 +1,10 @@
-import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/components.dart' as draggable;
 import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/bdd.dart';
+import 'package:myapp/utils.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
@@ -67,7 +67,6 @@ class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDragg
   Future<void> onLoad() async
   {
     viewport = FixedResolutionViewport(Vector2(840, 500));
-    print("onLoad $size");
 
     await images.load('button_plus.png');
     await images.load('button_play.png');
@@ -403,7 +402,6 @@ class BuilderTotalComponent extends PositionComponent
 
   void init()
   {
-    print("BuilderTotalComponent::<init>");
     size = Vector2(layout.entityBuilder!.size.x - 20, layout.entityBuilder!.size.y - 30 - ValueModifier._height);
     bgRect = Rect.fromLTWH(x, y, size.x, size.y);
     bgPaint = Paint()..color = Colors.grey.shade100;
@@ -545,9 +543,7 @@ class BuilderBehaviourComponent extends PositionComponent with draggable.Draggab
 
   void updateComponentValid()
   {
-    print("========== " + builderBehaviour.name + " ==============");
     componentValid.sprite = builderBehaviour.isValid(Validator(true)) ? spriteChecked : spriteCancel;
-    print("===================================\n\n");
   }
 
   @override

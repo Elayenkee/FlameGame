@@ -2,6 +2,7 @@ import 'package:myapp/engine/condition.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/engine/trifunction.dart';
 import 'package:myapp/engine/work.dart';
+import 'package:myapp/utils.dart';
 
 enum Works { ATTACK, HEAL, POISON, BLEED }
 
@@ -58,7 +59,7 @@ extension ConditionsExtension on Conditions {
 
   Condition instanciate(List params) 
   {
-    print("Condition::instanciate $this $params");
+    Utils.log("Condition::instanciate $this $params");
     switch (this) {
       //case Conditions.EXIST:
       //  return EXIST(params);
