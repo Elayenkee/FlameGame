@@ -117,7 +117,6 @@ class GameLayout extends AbstractLayout
     Story? story = server.next();
     if(story != null)
     {
-        //print("Story : ${story.events.length}");
         storyAnimation = StoryAnimation(this, story);
     }
   }
@@ -186,7 +185,6 @@ class EventAnimation
 
   void start()
   {
-    print(event.log);
     EntityComponent? callerComponent = getEntityComponent("caller");
     EntityComponent? targetComponent = getEntityComponent("target");
     
@@ -357,7 +355,6 @@ class EntityComponent extends SpriteComponent
 
   void setStatus(Map status)
   {
-    //print("setStatus :: $status");
     this.status = status;
   }
 
@@ -392,7 +389,6 @@ class EntityComponent extends SpriteComponent
 
   void setHP()
   {
-    //print("setHP :: $status");
     int hp = status![VALUE.HP] as int;
     healthBar.setHP(hp);
     if(hp <= 0)

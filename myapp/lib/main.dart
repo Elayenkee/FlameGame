@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
@@ -7,21 +5,14 @@ import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/builder.dart';
-import 'package:myapp/engine/entity.dart';
 import 'package:myapp/graphics/themes/firstTheme.dart';
-import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/settings/settings.dart';
 import 'package:flame/components.dart' as draggable;
+import 'package:myapp/utils.dart';
 
 import 'bdd.dart';
 import 'game.dart';
-
-class Utils
-{
-  static String pathImages = "soft_";
-  //static String pathImages = "";
-}
 
 Future<void> main() async
 {
@@ -156,7 +147,7 @@ Future<void> main() async
     '/settings' : (BuildContext context){return SettingsScreen(builderServer);}
   };
 
-  print("BuilderServer : " + builderServer.toString());
+  Utils.log("BuilderServer : " + builderServer.toString());
   runApp(MaterialApp(home: HomeScreen(builderServer), routes: routes));
 }
 
@@ -179,7 +170,7 @@ class HomeScreen extends StatelessWidget
 
       if(!builderServer.isValid(Validator(true)))
       {
-        print("LE BUILDER N'EST PAS VALIDE");
+        Utils.log("LE BUILDER N'EST PAS VALIDE");
         return;
       }
 
@@ -381,7 +372,6 @@ class KeyboardComponent extends PositionComponent with Tappable
   @override
   bool onTapCancel() 
   {
-    //print("KeyboardComponent::onTapCancel");
     return false;
   }
 
@@ -480,7 +470,6 @@ class SoftKeyboard extends PositionComponent with Tappable
   @override
   bool onTapCancel() 
   {
-    //print("SoftKeyboard::onTapCancel");
     return false;
   }
 
@@ -493,7 +482,6 @@ class SoftKeyboard extends PositionComponent with Tappable
   @override
   bool onTapUp(TapUpInfo info) 
   {
-    //print("SoftKeyboard::onTapUp");
     return false;
   }
 }
@@ -526,14 +514,12 @@ class KeyComponent extends PositionComponent with Tappable, draggable.Draggable
   @override
   bool onTapCancel() 
   {
-    //print("KeyComponent::onTapCancel");
     return false;
   }
 
   @override
   bool onTapDown(TapDownInfo info) 
   {
-    //print("KeyComponent::onTapDown");
     pressed = true;
     return false;
   }
@@ -541,7 +527,6 @@ class KeyComponent extends PositionComponent with Tappable, draggable.Draggable
   @override
   bool onTapUp(TapUpInfo info) 
   {
-    //print("KeyComponent::onTapUp");
     onKey?.call(key);
     pressed = false;
     return false;
@@ -564,7 +549,6 @@ class KeyComponent extends PositionComponent with Tappable, draggable.Draggable
   @override
   bool onDragEnd(int pointerId, DragEndInfo info) 
   {
-    //print("KeyComponent::onDragEnd");
     if(pressed)
     {
       onKey?.call(key);
@@ -574,8 +558,8 @@ class KeyComponent extends PositionComponent with Tappable, draggable.Draggable
   }
 
   @override
-  bool onDragCancel(int pointerId) {
-    print("KeyComponent::onDragCancel");
+  bool onDragCancel(int pointerId) 
+  {
     return false;
   }
 
@@ -615,7 +599,6 @@ class AdvancedTextComponent extends TextComponent with Tappable
   @override
   bool onTapCancel() 
   {
-    print("AdvancedTextComponent::onTapCancel");
     return false;
   }
 
@@ -628,7 +611,6 @@ class AdvancedTextComponent extends TextComponent with Tappable
   @override
   bool onTapUp(TapUpInfo info) 
   {
-    print("AdvancedTextComponent::onTapUp");
     return false;
   }
 }

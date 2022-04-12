@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:myapp/utils.dart';
+
 import 'entity.dart';
 
 class Server 
@@ -26,7 +28,10 @@ class Server
   Story? next()
   {
     if(finished)
+    {
+      Utils.log("END");
       return null;
+    }
 
     Story story = Story();
     run(story);
@@ -44,9 +49,7 @@ class Server
       }
     }
     
-    if(finished)
-      print("END");
-    else
+    if(!finished)
       tour++;
 
     return story;  
@@ -75,7 +78,6 @@ class Server
         
         else 
         {
-          //print("${e.timer} ${entity.timer}");
           if(e.timer < entity.timer)
             entity = e;
         }
@@ -114,7 +116,6 @@ class StoryEvent
 
   void set(Object key, Object value)
   {
-    //print("StoryEvent::set > $key = $value");
     values[key] = value;
   }
 

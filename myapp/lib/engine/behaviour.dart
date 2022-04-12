@@ -26,10 +26,6 @@ class Behaviour implements ValueReader {
       target = selector.get(server.entities);
       result = target != null;
     }
-    else
-    {
-      //print("condition not checked $condition");
-    }
     return result;
   }
 

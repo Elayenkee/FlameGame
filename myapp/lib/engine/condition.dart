@@ -16,7 +16,6 @@ abstract class ConditionBinary extends Condition {
 
   ConditionBinary(List params) : super(params) 
   {
-    //print("ConditionBinary::<init> : [0] = ${params[0]} - [1] = ${params[1]} - [2] = ${params[2]}");
     this.targetA = params[0];
     this.targetB = params[1];
     if(params[2] is VALUE)
@@ -81,7 +80,7 @@ class TRUE extends ConditionAtom {
           }
         }
       } catch (e) {
-        print(e);
+        
       }
     }
     return false;
@@ -97,9 +96,6 @@ class EQUALS extends ConditionBinary
   {
     Object? valueA = targetA.getValue(value);
     Object? valueB = targetB.getValue(value);
-
-    //print("EQUALS :: valueA = $valueA - $targetA - valueB = $valueB - $targetB");
-
     return valueA == valueB;
   }
 }

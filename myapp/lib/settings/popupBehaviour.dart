@@ -43,15 +43,6 @@ class PopupBehaviour extends PositionComponent with Tappable
     //resetOnNextTap();
   }
 
-  /*void resetOnNextTap()
-  {
-    layout.onNextTap = (Object o)
-    {
-      print(o.toString());
-      return false;
-    };
-  }*/
-
   @mustCallSuper
   @override
   void onMount() 
@@ -193,7 +184,6 @@ class PopupBehaviour extends PositionComponent with Tappable
   @override
   bool onTapUp(TapUpInfo info) 
   {
-    print("PopupBehaviour::onTapUp");
     return false;
   }
 
@@ -278,7 +268,6 @@ class BuilderConditionComponent extends PositionComponent
           Vector2 positionPopup = getGlobalPosition(btnValue) + Vector2(btnValue.size.x, 0);
           PopupChoose(layout, positionPopup, values, (value){
             Function onChoose = (value){
-              print("onChosen $value");
               builderCondition.setParam(2, value);
               builderComponent.updateComponentValid();
               popup.updateComponentValid();
@@ -337,7 +326,6 @@ class BuilderConditionComponent extends PositionComponent
 
   void onChooseCount(BuilderCount builderCount, Vector2 positionPopup, Function onChoose)
   {
-    print("onChooseCount");
     PopupChoose(layout, positionPopup, VALUE.values, (value){
       builderCount.setValue(value);
       onChoose(builderCount);

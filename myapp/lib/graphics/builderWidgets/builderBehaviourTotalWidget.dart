@@ -69,7 +69,6 @@ class BuilderBehaviourTotalWidget extends StatelessWidget {
                           e,
                           MaterialButton(
                               onPressed: () {
-                                print("onPressed $e");
                                 if (onTap(context, e)) return;
                               },
                               color: FirstTheme.buttonColor,

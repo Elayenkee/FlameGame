@@ -28,7 +28,6 @@ class TargetSelector implements ValueReader {
       currentTargetChecked = entity;
       if (!condition.check(entity)) 
       {
-        //print("condition not checked $condition");
         currentTargetChecked = null;
         continue;
       }
