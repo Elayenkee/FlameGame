@@ -58,7 +58,7 @@ extension ConditionsExtension on Conditions {
 
   Condition instanciate(List params) 
   {
-    print("Condition::instanciate $this");
+    print("Condition::instanciate $this $params");
     switch (this) {
       //case Conditions.EXIST:
       //  return EXIST(params);

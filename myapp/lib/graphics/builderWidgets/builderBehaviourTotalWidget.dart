@@ -134,7 +134,7 @@ class _BuilderValidWidget extends State<BuilderValidWidget> {
     return Container(
       width: 50,
       height: 50,
-      color: builderTotal.isValid(Validator()) ? Colors.green : Colors.red,
+      color: builderTotal.isValid(Validator(false)) ? Colors.green : Colors.red,
     );
   }
 }

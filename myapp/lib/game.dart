@@ -96,7 +96,7 @@ class GameLayout extends AbstractLayout
   @override
   void render(Canvas canvas) 
   {
-    super.render(canvas);
+    //super.render(canvas);
   }
 
   @override

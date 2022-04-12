@@ -17,6 +17,12 @@ import 'package:flame/components.dart' as draggable;
 import 'bdd.dart';
 import 'game.dart';
 
+class Utils
+{
+  static String pathImages = "soft_";
+  //static String pathImages = "";
+}
+
 Future<void> main() async
 {
   WidgetsFlutterBinding.ensureInitialized();
@@ -150,6 +156,7 @@ Future<void> main() async
     '/settings' : (BuildContext context){return SettingsScreen(builderServer);}
   };
 
+  print("BuilderServer : " + builderServer.toString());
   runApp(MaterialApp(home: HomeScreen(builderServer), routes: routes));
 }
 
@@ -170,7 +177,7 @@ class HomeScreen extends StatelessWidget
     var onPress = ()
     {
 
-      if(!builderServer.isValid(Validator()))
+      if(!builderServer.isValid(Validator(true)))
       {
         print("LE BUILDER N'EST PAS VALIDE");
         return;

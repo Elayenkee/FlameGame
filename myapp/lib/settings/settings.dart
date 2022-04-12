@@ -1,3 +1,4 @@
+import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/components.dart' as draggable;
 import 'package:flame/game.dart';
@@ -12,6 +13,12 @@ import 'dart:math' as math;
 
 import 'package:myapp/graphics/themes/firstTheme.dart';
 import 'package:myapp/settings/popupBehaviour.dart';
+
+class Images
+{
+  static String warrior = '${Utils.pathImages}entity_warrior.png';
+  static String orc = '${Utils.pathImages}entity_orc.png';
+}
 
 class SettingsScreen extends StatelessWidget
 {
@@ -67,9 +74,8 @@ class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDragg
     await images.load('button_delete.png');
     await images.load('button_checked.png');
     await images.load('button_cancel.png');
-    await images.load('entity_warrior.png');
-    await images.load('entity_orc.png');
-
+    await images.load(Images.warrior);
+    await images.load(Images.orc);
 
     btnAddEntity = BoutonSprite(this, (){
       BuilderEntity entity = builderServer.addEntity();
@@ -199,7 +205,7 @@ class EntityComponent extends SpriteComponent with Tappable
   void updateClan()
   {
     int clan = builder.entity.getClan();
-    sprite = Sprite(layout.images.fromCache(clan == 1 ? 'entity_warrior.png' : 'entity_orc.png'));
+    sprite = Sprite(layout.images.fromCache(clan == 1 ? Images.warrior : Images.orc));
   }
 
   @override
@@ -349,8 +355,8 @@ class EntityClanComponent extends SpriteComponent with Tappable
   @override
   Future<void> onLoad() async
   {
-    spriteOrc = Sprite(layout.images.fromCache('entity_orc.png'));
-    spriteWarrior = Sprite(layout.images.fromCache('entity_warrior.png'));
+    spriteOrc = Sprite(layout.images.fromCache(Images.orc));
+    spriteWarrior = Sprite(layout.images.fromCache(Images.warrior));
     updateClan();
     return super.onLoad();
   }
@@ -406,8 +412,6 @@ class BuilderTotalComponent extends PositionComponent
   @override
   Future<void> onLoad() async
   {
-    print("BuilderTotalComponent::onLoad");
-    
     for(BuilderBehaviour behaviour in layout.selectedEntity!.builder.builderTotal.builderBehaviours)
       addBuilderBehaviour(behaviour);
     
@@ -427,7 +431,6 @@ class BuilderTotalComponent extends PositionComponent
 
   void addBuilderBehaviour(BuilderBehaviour behaviour)
   {
-    print("addBuilderBehaviour ${behaviour.name} in ${behaviours.length}");
     BuilderBehaviourComponent behaviourComponent = BuilderBehaviourComponent(layout, size.x - 20, behaviour);
     behaviourComponent.position = Vector2(10, 5 + ((10 + behaviourComponent.size.y) * behaviours.length));
     behaviourComponent.init();
@@ -498,7 +501,6 @@ class BuilderBehaviourComponent extends PositionComponent with draggable.Draggab
 
   void init()
   {
-    print("BuilderBehaviourComponent::<init> $x - $y");
     bgRect = Rect.fromLTWH(x, y, size.x, size.y);
     bgPaint = Paint()..color = Colors.grey.shade500;
     initialPosition = Vector2.copy(position);
@@ -543,7 +545,9 @@ class BuilderBehaviourComponent extends PositionComponent with draggable.Draggab
 
   void updateComponentValid()
   {
-    componentValid.sprite = builderBehaviour.isValid(Validator()) ? spriteChecked : spriteCancel;
+    print("========== " + builderBehaviour.name + " ==============");
+    componentValid.sprite = builderBehaviour.isValid(Validator(true)) ? spriteChecked : spriteCancel;
+    print("===================================\n\n");
   }
 
   @override

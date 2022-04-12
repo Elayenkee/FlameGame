@@ -11,6 +11,7 @@ import 'bdd.dart';
 
 abstract class Builder<T> 
 {
+  String getName();
   bool isValid(Validator validator);
   T build();
 
@@ -20,36 +21,52 @@ abstract class Builder<T>
   {
     return result;
   }
+
+  @override
+  String toString()
+  {
+    return getName();
+  }
 }
 
 class Validator
 {
-  Builder? start;
   Map<Builder, bool> done = Map();
+
+  bool log = true;
+  int deep = 0;
+
+  Validator(bool log)
+  {
+      this.log = log;
+  }
+
+  void Log(String message)
+  {
+    if(log)
+        print(space() + message);
+  }
+
+  String space()
+  {
+    String s = "";
+    for(int i = 0; i < deep; i++)
+      s+= "  ";
+    return s;
+  }
 
   bool isValid(Builder builder)
   {
-    if(start == null)
-    {
-      print("{");
-      start = builder;
-    }
-
     if(done.containsKey(builder))
       return done[builder]!;
     
-    print("Validator::isValid : $builder");
+    Log(">>> " + builder.getName());
+    deep++;
     done[builder] = true;
     bool result = builder.isValid(this);
     done[builder] = result;
-    
-    if(!result)
-      print("Validator::isValid : $builder IS NOT VALID");
-    else if(builder == start)
-    
-      print("Validator::isValid : SUCCESS");
-    if(builder == start)
-      print("}");
+    deep--;
+    Log("<<< " + builder.getName() + " : " + result.toString());
     
     return result;
   }
@@ -68,6 +85,12 @@ class BuilderServer extends Builder<Server>
     return builderEntity;
   }
 
+  @override
+  String getName()
+  {
+    return "Server";
+  }
+
   void removeEntity(BuilderEntity builderEntity)
   {
     builderEntities.remove(builderEntity);
@@ -76,9 +99,11 @@ class BuilderServer extends Builder<Server>
   @override
   Server build() 
   {
+    print("BuilderServer.build.start");
     server.entities = [];
     for(BuilderEntity builderEntity in builderEntities)
       server.addEntity(builderEntity.build());
+    print("BuilderServer.build.end");
     return server;
   }
 
@@ -105,6 +130,12 @@ class BuilderEntity extends Builder<Entity>
     result = entity;
   }
 
+  @override
+  String getName()
+  {
+    return entity.getName();
+  }
+
   void setValues(Map map)
   {
     entity.setValues(map);
@@ -113,7 +144,9 @@ class BuilderEntity extends Builder<Entity>
   @override
   Entity build() 
   {
+    print("BuilderEntity.build.start");
     entity.behaviours = builderTotal.build();
+    print("BuilderEntity.build.end");
     return entity;
   }
 
@@ -143,6 +176,12 @@ class BuilderTotal extends Builder<List<Behaviour>>
     return builder;
   }
 
+  @override
+  String getName()
+  {
+    return "Total";
+  }
+
   void removeBehaviour(BuilderBehaviour builderBehaviour)
   {
     builderBehaviours.remove(builderBehaviour);
@@ -159,17 +198,18 @@ class BuilderTotal extends Builder<List<Behaviour>>
   @override
   List<Behaviour> build() 
   {
+    print("BuilderTotal.build.start");
     List<Behaviour> liste = [];
     builderBehaviours.forEach((element) {
       liste.add(element.build());
     });
+    print("BuilderTotal.build.end");
     return liste;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderTotal::isValid");
     bool result = true;
     builderBehaviours.forEach((element) {
       if (!validator.isValid(element)) 
@@ -190,23 +230,30 @@ class BuilderBehaviour extends Builder<Behaviour>
   @override
   Behaviour build() 
   {
+    print("BuilderBehaviour.build.start : " + name + " [$builderConditions] [$builderTargetSelector] [$builderWork]");
     Behaviour behaviour = Behaviour.withName(name);
     behaviour.condition = builderConditions.build();
     behaviour.selector = builderTargetSelector.build();
     behaviour.work = builderWork.build();
+    print("BuilderBehaviour.build.end");
     return behaviour;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderBehaviour::isValid");
-    bool result = validator.isValid(builderConditions) && validator.isValid(builderTargetSelector) && validator.isValid(builderWork);
+    bool resultConditionGroup = validator.isValid(builderConditions);
+    bool resultTargetSelector = validator.isValid(builderTargetSelector);
+    bool resultWork = validator.isValid(builderWork);
+    bool result = resultConditionGroup && resultTargetSelector && resultWork;
     return result;
   }
 
   @override
   String toString() => name;
+
+  @override
+  String getName() => name;
 }
 
 class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSelectorChild
@@ -233,6 +280,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
   @override
   build() 
   {
+    print("BuilderConditionGroup.build.start");
     ConditionGroup group = ConditionGroup([TRUE(), TRUE(), ConditionLink.ET]);
     List<BuilderCondition> listeConditions = List.from(conditions);
     //List<ConditionLink> listeLinks = List.from(links);
@@ -243,13 +291,13 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
       group = ConditionGroup([group, condition, ConditionLink.ET]);
       //if (listeLinks.length > 0) link = listeLinks.removeAt(0);
     }
+    print("BuilderConditionGroup.build.end");
     return group;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderConditionGroup::isValid");
     bool result = true;
     conditions.forEach((condition) 
     {
@@ -258,8 +306,6 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
         result = false;
       }
     });
-    /*result = result &&
-        (conditions.length == 0 /* || links.length == conditions.length - 1*/);*/
     return result;
   }
 
@@ -271,6 +317,9 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
     for(BuilderCondition condition in conditions)
       condition.onAddedToTargetSelector(builderTargetSelector);
   }
+
+  @override
+  String getName() => "BuilderConditionGroup";
 }
 
 class BuilderCondition extends Builder<Condition> implements TargetSelectorChild 
@@ -331,7 +380,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   @override
   Condition build() 
   {
-    print("BuilderCondition::build");
+    print("BuilderCondition::build $cond $params");
     for (int i = 0; i < params.length; i++) 
     {
       print("BuilderCondition::build - param $i : ${params[i]}");
@@ -351,7 +400,6 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderCondition::isValid");
     bool result = cond != null;
     if (result) 
     {
@@ -361,7 +409,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
         {
           result = false;
         }
-        else if(element is Builder)
+        else if(element is Builder && !(element is BuilderEntity))
         {
           if(!validator.isValid(element))
             result = false;
@@ -370,6 +418,9 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     }
     return result;
   }
+
+  @override
+  String getName() => "BuilderCondition";
 }
 
 class BuilderTargetSelector extends Builder<TargetSelector> 
@@ -386,18 +437,22 @@ class BuilderTargetSelector extends Builder<TargetSelector>
   @override
   TargetSelector build() 
   {
+    print("BuilderTargetSelector.build.start $result [$builderTriFunction] [$builderConditionGroup]");
     (result as TargetSelector).tri = builderTriFunction.build();
     (result as TargetSelector).condition = builderConditionGroup.build();
+    print("BuilderTargetSelector.build.end");
     return (result as TargetSelector);
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderTargetSelector::isValid");
     bool result = validator.isValid(builderTriFunction) && validator.isValid(builderConditionGroup);
     return result;
   }
+
+  @override
+  String getName() => "BuilderTargetSelector";
 }
 
 class BuilderTriFunction extends Builder<TriFunction?> 
@@ -408,16 +463,27 @@ class BuilderTriFunction extends Builder<TriFunction?>
   @override
   TriFunction? build() 
   {
-    return tri!.instanciate(value!);
+    print("BuilderTriFunction.build.start $tri [$value]");
+    TriFunction? result = tri?.instanciate(value!);
+    print("BuilderTriFunction.build.end $result");
+    return result;
   }
 
   @override
   bool isValid(Validator validator) 
   {
-    //print("BuilderTriFunction::isValid");
     bool result = true;
-    if (tri != null) result = value != null;
+    if (tri != null) 
+      result = value != null;
     return result;
+  }
+
+  @override
+  String getName()
+  {
+    if(tri != null)
+      return tri!.getName();
+    return "BuilderTriFunction";
   }
 }
 
@@ -428,7 +494,10 @@ class BuilderWork extends Builder<Work>
   @override
   Work build() 
   {
-    return work!.instanciate();
+    print("BuilderWork.build.start $work");
+    Work result = work!.instanciate();
+    print("BuilderWork.build.end $result");
+    return result;
   }
 
   @override
@@ -437,6 +506,14 @@ class BuilderWork extends Builder<Work>
     //print("BuilderWork::isValid");
     bool result = work != null;
     return result;
+  }
+
+  @override
+  String getName()
+  {
+    if(work != null)
+      return work!.getName();
+    return "BuilderWork";
   }
 }
 
@@ -452,7 +529,6 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
 
   void setTarget(Object target)
   {
-    print("BuilderCount::setTarget : $target");
     this.target = target;
     if(value != null)
       result = Count(getTarget(), this.value!);
@@ -485,7 +561,8 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
   @override
   Count build() 
   {
-    print("BuilderCount::build $target");
+    print("BuilderCount.build.start $result [$target]");
+    print("BuilderCount.build.end");
     return result as Count;
   }
 
@@ -503,6 +580,7 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
     setTarget(builderTargetSelector);
   }
 
+  @override
   String getName()
   {
     return "Count" + (value != null ? "(${value!.getName()})" : "");

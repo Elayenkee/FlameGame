@@ -140,6 +140,7 @@ class PopupBehaviour extends PositionComponent with Tappable
       PopupChoose(layout, btnWork.position + position + Vector2(btnWork.size.x, 0), Works.values, (Works chosen){
         builderComponent.builderBehaviour.builderWork.work = chosen;
         builderComponent.updateComponentValid();
+        updateComponentValid();
         btnWork.txt.text = getNameForButton(chosen);
       }).show();
     }, txtWork, Vector2(130, 40), Vector2(15, size.y - 55));
@@ -150,7 +151,8 @@ class PopupBehaviour extends PositionComponent with Tappable
 
   void updateComponentValid()
   {
-    componentValid.sprite = builderComponent.builderBehaviour.isValid(Validator()) ? spriteChecked : spriteCancel;
+    bool resultValid = builderComponent.builderBehaviour.isValid(Validator(true));
+    componentValid.sprite = resultValid ? spriteChecked : spriteCancel;
   }
 
   void updateConditionsPositions()
