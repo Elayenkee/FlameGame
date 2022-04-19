@@ -84,9 +84,19 @@ class PopupBehaviour extends PositionComponent with Tappable
 
     // TRI FUNCTION
     String txtTri = builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.tri != null ? getNameForButton(builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.tri!) : "Aucun";
+    List itemsTri = ["Aucun"];
+    itemsTri.addAll(TriFunctions.values);
+    
     btnTri = Bouton(layout, (){
-      PopupChoose(layout, btnTri.position + position + Vector2(btnTri.size.x, 0), TriFunctions.values, (TriFunctions chosen){
-        builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.tri = chosen;
+      PopupChoose(layout, btnTri.position + position + Vector2(btnTri.size.x, 0), itemsTri, (Object chosen){
+        if(chosen is TriFunctions)
+        {
+          builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.tri = chosen;
+        }
+        else
+        {
+          builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.tri = null;
+        }
         builderComponent.updateComponentValid();
         btnTri.txt.text = getNameForButton(chosen);
       }).show();
@@ -95,9 +105,14 @@ class PopupBehaviour extends PositionComponent with Tappable
 
     // TRI VALUE
     String txtTriValue = builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.value != null ? getNameForButton(builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.value!) : "Aucun";
+    List itemsValue = ["Aucun"];
+    itemsValue.addAll(VALUE.values);
     btnTriValue = Bouton(layout, (){
-      PopupChoose(layout, btnTriValue.position + position + Vector2(btnTriValue.size.x, 0), VALUE.values, (VALUE chosen){
-        builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.value = chosen;
+      PopupChoose(layout, btnTriValue.position + position + Vector2(btnTriValue.size.x, 0), itemsValue, (Object chosen){
+        if(chosen is VALUE)
+          builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.value = chosen;
+        else
+          builderComponent.builderBehaviour.builderTargetSelector.builderTriFunction.value = null;
         builderComponent.updateComponentValid();
         btnTriValue.txt.text = getNameForButton(chosen);
       }).show();
@@ -288,6 +303,7 @@ class BuilderConditionComponent extends PositionComponent
         String txtParam1 = builderCondition.params[1] == null ? "Choisir" : getNameForButton(builderCondition.params[1]);
         Bouton boutonParam1 = Bouton(layout, (){}, txtParam1, Vector2(130, 40), Vector2(290, btnY));
         boutonParam1.onTap = (){
+          print("boutonParam.onTap");
           int defaultValue = builderCondition.params[1] is ValueAtom ? builderCondition.params[1].getIntValue() : 0;
           PopupValueInt popupValue = PopupValueInt(layout, getGlobalPosition(boutonParam1) + Vector2(boutonParam1.width, 0), defaultValue)..show();
           popupValue.onChoose = (value){
@@ -310,7 +326,11 @@ class BuilderConditionComponent extends PositionComponent
           Bouton boutonParam = Bouton(layout, (){}, txtParam, Vector2(130, 40), Vector2(10 + (i * 140), btnY));
           boutonParam.onTap = (){
             //TODO
-            
+            print("ICI");
+            print("ICI");
+            print("ICI");
+            print("ICI");
+            print("ICI");
           };
           boutons.add(boutonParam); 
           addChild(boutonParam, gameRef: layout);
@@ -424,7 +444,7 @@ class PopupValueInt extends Popup
     valueModifier.init();
     addChild(valueModifier);
 
-    Grid grid = Grid(layout, layout.builderServer.builderEntities, onClick: (item){
+    Grid grid = Grid(layout, layout.builderServer.myTeamEntities(), onClick: (item){
       onClickOK(item);
     });
     grid.position = _position + Vector2(valueModifier.width + 15, 5);
@@ -451,6 +471,7 @@ class PopupChoose extends Popup
 {
   PopupChoose(SettingsLayout layout, Vector2 position, List items, Function onChoose):super(layout, position)  
   {
+    print(items);
     Grid grid = Grid(layout, items, onClick: (item){
         onChoose(item);
         close();

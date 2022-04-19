@@ -118,6 +118,17 @@ class BuilderServer extends Builder<Server>
     }
     return true;
   }
+
+  List<BuilderEntity> myTeamEntities()
+  {
+    List<BuilderEntity> entities = [];
+    for(BuilderEntity builderEntity in builderEntities)
+    {
+      if(builderEntity.entity.getClan() == 1)
+        entities.add(builderEntity);
+    }
+    return entities;
+  }
 }
 
 class BuilderEntity extends Builder<Entity>

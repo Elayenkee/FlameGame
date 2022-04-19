@@ -66,8 +66,6 @@ class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDragg
   @override
   Future<void> onLoad() async
   {
-    viewport = FixedResolutionViewport(Vector2(840, 500));
-
     await images.load('button_plus.png');
     await images.load('button_play.png');
     await images.load('button_delete.png');
@@ -166,9 +164,6 @@ class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDragg
       entities[i].position.moveToTarget(Vector2(75.0 * (i + 1), entities[i].position.y), 20);
     btnAddEntity.position.moveToTarget(Vector2(75.0 * (entities.length + 1), btnAddEntity.position.y), 20);*/
   }
-
-  @override
-  Color backgroundColor() => const Color(0xFFFFFFFF);
 }
 
 class EntityComponent extends SpriteComponent with Tappable
@@ -291,7 +286,7 @@ class EntityBuilderComponent extends PositionComponent with Tappable
       layout.openKeyboard((newName){
         layout.selectedEntity!.builder.entity.setValue(VALUE.NAME, newName);
         txtName.text = newName;
-      });
+      }, layout.selectedEntity!.builder.entity.getName());
     };
     addChild(txtName);
 
@@ -521,7 +516,7 @@ class BuilderBehaviourComponent extends PositionComponent with draggable.Draggab
       layout.openKeyboard((newName){
         builderBehaviour.name = newName;
         textName.text = newName;
-      });
+      }, builderBehaviour.name);
     };
     addChild(Bouton(layout, onTapRename, "Renommer", Vector2(100, 30), Vector2(300, 10)));
 

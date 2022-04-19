@@ -97,7 +97,7 @@ class GameLayout extends AbstractLayout
   @override
   void render(Canvas canvas) 
   {
-    //super.render(canvas);
+    super.render(canvas);
   }
 
   @override
@@ -126,9 +126,6 @@ class GameLayout extends AbstractLayout
   {
     return mapComponents[uuid];
   }
-
-  @override
-  Color backgroundColor() => const Color(0xFFFFFFFF);
 }
 
 class StoryAnimation
