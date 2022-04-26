@@ -33,8 +33,20 @@ class Server
       return null;
     }
 
+
     Story story = Story();
-    run(story);
+    
+    try
+    {
+      run(story);
+    }
+    catch(e)
+    {
+      print(e.toString());
+      finished = true;
+      return null;
+    }
+    
 
     finished = true;
     int clan = 0;
@@ -57,11 +69,13 @@ class Server
 
   void run(Story story) 
   {
+    Utils.logRun("Server.run.start");
     Entity nextEntity = getNextEntity();
     int ellapse = nextEntity.timer;
     for(Entity entity in entities)
       entity.ellapse(ellapse);
     nextEntity.run(this, story);
+    Utils.logRun("Server.run.end");
   }
 
   Entity getNextEntity()
@@ -121,12 +135,12 @@ class StoryEvent
 
   void setCaller(Entity entity)
   {
-    set("caller", entity.toMap());
+    set("caller", entity.toStoryMap());
   }
 
   void setTarget(Entity entity)
   {
-    set("target", entity.toMap());
+    set("target", entity.toStoryMap());
   }
 
   Object? get(Object key)

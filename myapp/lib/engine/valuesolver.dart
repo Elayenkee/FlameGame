@@ -22,6 +22,14 @@ enum VALUE {
 
 extension ValueExtension on VALUE 
 {
+  Object asParam()
+  {
+    final map = Map<String, dynamic>();
+    map["type"] = "VALUE";
+    map["name"] = name;
+    return map;
+  }
+
   Object get defaultValue 
   {
     switch (this) 
@@ -74,14 +82,24 @@ extension ValueExtension on VALUE
         return "BLEED";
     }
   }
+
+  static VALUE? get(String name)
+  {
+    for(VALUE v in VALUE.values)
+    {
+      if(name == v.name)
+        return v;
+    }
+    return null;
+  }
 }
 
-abstract class ValueReader 
+abstract class ValueReader
 {
   Object? getValue(VALUE? value);
 }
 
-class ValueAtom implements ValueReader 
+class ValueAtom implements ValueReader
 {
   final Object value;
 
@@ -102,6 +120,15 @@ class ValueAtom implements ValueReader
   {
     return value as int;
   }
+
+  /*@override
+  Map<String, dynamic> toParam()
+  {
+    final map = Map<String, dynamic>();
+    map["type"] = "ValueAtom";
+    map["value"] = value.toString();
+    return map;
+  }*/
 }
 
 class Count implements ValueReader
@@ -119,7 +146,6 @@ class Count implements ValueReader
       return toCount.count();
     return toCount;
   }
-  
 }
 
 abstract class Countable

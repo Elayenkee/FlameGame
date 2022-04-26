@@ -1,3 +1,5 @@
+import 'package:myapp/utils.dart';
+
 import 'valuesolver.dart';
 
 abstract class Condition {
@@ -9,7 +11,8 @@ abstract class ConditionAtom extends Condition {
   ConditionAtom(List params) : super(params);
 }
 
-abstract class ConditionBinary extends Condition {
+abstract class ConditionBinary extends Condition 
+{
   late ValueReader targetA;
   late ValueReader targetB;
   VALUE? value;
@@ -36,10 +39,16 @@ class ConditionGroup extends Condition
   }
 
   @override
-  bool check(Object target) {
+  bool check(Object target) 
+  {
+    //Utils.logRun("ConditionGroup.run.check $target $conditionA $conditionB");
+    bool result = false;
     if (conditionA.check(target))
-      return link == ConditionLink.OU || conditionB.check(target);
-    return link == ConditionLink.OU && conditionB.check(target);
+      result = link == ConditionLink.OU || conditionB.check(target);
+    else
+      result = link == ConditionLink.OU && conditionB.check(target);
+    //Utils.logRun("ConditionGroup.run.check $result");
+    return result;
   }
 }
 
@@ -94,9 +103,14 @@ class EQUALS extends ConditionBinary
   @override
   bool check(Object target) 
   {
+    Utils.logRun("EQUALS.run.check.start $targetA, $targetB, $value");
     Object? valueA = targetA.getValue(value);
+    Utils.logRun("EQUALS.run.check valueA $valueA");
     Object? valueB = targetB.getValue(value);
-    return valueA == valueB;
+    Utils.logRun("EQUALS.run.check valueB $valueB");
+    bool result = valueA == valueB;
+    Utils.logRun("EQUALS.run.check.end $result");
+    return result;
   }
 }
 
@@ -113,18 +127,24 @@ class LOWER extends ConditionBinary {
   LOWER(List params) : super(params);
 
   @override
-  bool check(Object target) {
+  bool check(Object target) 
+  {
+    Utils.logRun("LOWER.run.check.start $targetA $targetB");
     Object? valueA = targetA.getValue(value);
     Object? valueB = targetB.getValue(value);
+    Utils.logRun("LOWER.run.check $valueA $valueB");
 
     bool aComparable = valueA is Comparable;
     bool bComparable = valueB is Comparable;
 
-    if (aComparable && bComparable) {
-      int result = valueA.compareTo(valueB);
-      return result < 0;
+    bool result = false;
+    if (aComparable && bComparable) 
+    {
+      int r = valueA.compareTo(valueB);
+      result = r < 0;
     }
-    return false;
+    Utils.logRun("LOWER.run.check.end $result");
+    return result;
   }
 }
 

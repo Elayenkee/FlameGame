@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
@@ -5,10 +7,12 @@ import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/builder.dart';
+import 'package:myapp/engine/entity.dart';
 import 'package:myapp/graphics/themes/firstTheme.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/settings/settings.dart';
 import 'package:flame/components.dart' as draggable;
+import 'package:myapp/storage/storage.dart';
 import 'package:myapp/utils.dart';
 
 import 'bdd.dart';
@@ -22,15 +26,18 @@ Future<void> main() async {
   BuilderServer builderServer = BuilderServer();
 
   Map values = Map();
+  values[VALUE.NAME] = "Entity 1";
   values[VALUE.HP_MAX] = 46;
   values[VALUE.ATK] = 23;
-  values[VALUE.NAME] = "Client 1";
   values[VALUE.CLAN] = 1;
 
-  BuilderEntity entity = builderServer.addEntity();
-  entity.setValues(values);
+  Entity entity = Entity(values);
+  BuilderEntity builderEntity = entity.builder;
+  
+  builderServer.addEntity(e: entity);
+  builderEntity.entity.setValues(values);
 
-  BuilderTotal builder = entity.builderTotal;
+  BuilderTotal builder = builderEntity.builderTotal;
 
   BuilderBehaviour builderBehaviour =
       builder.addBehaviour(name: "Poison if no poison");
@@ -43,7 +50,7 @@ Future<void> main() async {
   builderTriFunction.value = VALUE.HP;
   BuilderCondition builderCondition = builderConditionGroup.addCondition();
   builderCondition.setCondition(Conditions.NOT_EQUALS);
-  builderCondition.setParam(1, entity);
+  builderCondition.setParam(1, builderEntity);
   builderCondition.setParam(2, VALUE.CLAN);
   BuilderCondition builderCondition2 = builderConditionGroup.addCondition();
   builderCondition2.setCondition(Conditions.EQUALS);
@@ -64,7 +71,7 @@ Future<void> main() async {
   BuilderCondition builderConditionBleed =
       builderConditionGroupBleed.addCondition();
   builderConditionBleed.setCondition(Conditions.NOT_EQUALS);
-  builderConditionBleed.setParam(1, entity);
+  builderConditionBleed.setParam(1, builderEntity);
   builderConditionBleed.setParam(2, VALUE.CLAN);
   BuilderCondition builderCondition2Bleed =
       builderConditionGroupBleed.addCondition();
@@ -85,70 +92,49 @@ Future<void> main() async {
   builderTriFunction2.value = VALUE.HP;
   BuilderCondition builderCondition3 = builderConditionGroup2.addCondition();
   builderCondition3.setCondition(Conditions.NOT_EQUALS);
-  builderCondition3.setParam(1, entity);
+  builderCondition3.setParam(1, builderEntity);
   builderCondition3.setParam(2, VALUE.CLAN);
 
-  //================= Entity 2 ==========================
-  /*values[VALUE.HP_MAX] = 200;
-  values[VALUE.MP_MAX] = 20;
-  values[VALUE.POW] = 10;
-  values[VALUE.ATK] = 15;
-  values[VALUE.NAME] = "Client 2";
-  values[VALUE.CLAN] = 1;
-  BuilderEntity entity2 = builderServer.addEntity();
-  entity2.setValues(values);
-  BuilderTotal builder2 = entity2.builderTotal;
-  //--
-  BuilderBehaviour builderBehaviour3 = builder2.addBehaviour();
-  builderBehaviour3.name = "TEST HEAL";
-  builderBehaviour3.builderWork.work = Works.HEAL;
-  BuilderConditionGroup builderConditionGroup3 = builderBehaviour3.builderTargetSelector.builderConditionGroup;
-  BuilderCondition builderCondition3 = builderConditionGroup3.addCondition();
-  builderCondition3.setCondition(Conditions.EQUALS);
-  builderCondition3.setParam(1, entity2);
-  builderCondition3.setParam(2, VALUE.CLAN);
-  BuilderTriFunction builderTriFunction3 = builderBehaviour3.builderTargetSelector.builderTriFunction;
-  builderTriFunction3.tri = TriFunctions.LOWEST;
-  builderTriFunction3.value = VALUE.HP;
-  BuilderCondition builderCondition4 = builderConditionGroup3.addCondition();
-  builderCondition4.setCondition(Conditions.LOWER);
-  builderCondition4.setParam(1, ValueAtom(100));
-  builderCondition4.setParam(2, VALUE.HP_PERCENT);
-  //--
-  BuilderBehaviour builderBehaviour2 = builder2.addBehaviour();
-  builderBehaviour2.builderWork.work = Works.ATTACK;
-  BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;
-  BuilderCondition builderCondition2 = builderConditionGroup2.addCondition();
-  builderCondition2.setCondition(Conditions.NOT_EQUALS);
-  builderCondition2.setParam(1, entity2);
-  builderCondition2.setParam(2, VALUE.CLAN);
-  BuilderTriFunction builderTriFunction2 = builderBehaviour2.builderTargetSelector.builderTriFunction;
-  builderTriFunction2.tri = TriFunctions.HIGHEST;
-  builderTriFunction2.value = VALUE.HP;*/
+  await Storage.init();
+  Storage.storeEntity(entity);
+  //builderServer.build();
+  builderServer.builderEntities = [];
+  Utils.countBuild = 1;
+
+  final e = Storage.getEntity();
+  builderServer.addEntity(e : e);
+  print("=====================================");
+  print("=====================================");
+  //builderServer.build();
 
   //================ ENTITY 3 ===========================
-  values[VALUE.HP_MAX] = 100;
-  values[VALUE.MP_MAX] = 0;
-  values[VALUE.ATK] = 5;
-  values[VALUE.NAME] = "Client 3";
-  values[VALUE.CLAN] = 0;
-  BuilderEntity entity3 = builderServer.addEntity();
-  entity3.setValues(values);
-  BuilderTotal builder3 = entity3.builderTotal;
-  BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
-  builderBehaviour4.builderWork.work = Works.ATTACK;
+  final add = true;
+  if(add)
+  {
+    values[VALUE.HP_MAX] = 100;
+    values[VALUE.MP_MAX] = 0;
+    values[VALUE.ATK] = 5;
+    values[VALUE.NAME] = "Client 3";
+    values[VALUE.CLAN] = 0;
+    BuilderEntity entity3 = builderServer.addEntity();
+    entity3.setValues(values);
+    BuilderTotal builder3 = entity3.builderTotal;
+    BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
+    builderBehaviour4.builderWork.work = Works.ATTACK;
 
-  BuilderConditionGroup builderConditionGroup4 =
-      builderBehaviour4.builderTargetSelector.builderConditionGroup;
-  BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
-  builderCondition5.setCondition(Conditions.NOT_EQUALS);
-  builderCondition5.setParam(1, entity3);
-  builderCondition5.setParam(2, VALUE.CLAN);
+    BuilderConditionGroup builderConditionGroup4 =
+        builderBehaviour4.builderTargetSelector.builderConditionGroup;
+    BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
+    builderCondition5.setCondition(Conditions.NOT_EQUALS);
+    builderCondition5.setParam(1, entity3);
+    builderCondition5.setParam(2, VALUE.CLAN);
 
-  BuilderTriFunction builderTriFunction4 =
-      builderBehaviour4.builderTargetSelector.builderTriFunction;
-  builderTriFunction4.tri = TriFunctions.LOWEST;
-  builderTriFunction4.value = VALUE.HP;
+    BuilderTriFunction builderTriFunction4 =
+        builderBehaviour4.builderTargetSelector.builderTriFunction;
+    builderTriFunction4.tri = TriFunctions.LOWEST;
+    builderTriFunction4.value = VALUE.HP;
+  }
+  
   //===========================================
 
   Map<String, WidgetBuilder> routes = {
@@ -156,6 +142,7 @@ Future<void> main() async {
       return HomeScreen(builderServer);
     },
     '/start': (BuildContext context) {
+
       return GameScreen(builderServer.build());
     },
     '/settings': (BuildContext context) {
@@ -163,7 +150,6 @@ Future<void> main() async {
     }
   };
 
-  Utils.log("BuilderServer : " + builderServer.toString());
   runApp(MaterialApp(home: HomeScreen(builderServer), routes: routes));
 }
 
@@ -177,8 +163,17 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GameWidget(game: mainLayout);
-    //return Column(children: [Container(height: 120,), BtnPlay(context), Container(height: 10,), BtnSettings(context)]);
+    //return GameWidget(game: mainLayout);
+    return Column(children: [
+      Container(
+        height: 120,
+      ),
+      BtnPlay(context),
+      Container(
+        height: 10,
+      ),
+      BtnSettings(context)
+    ]);
   }
 
   Widget BtnPlay(BuildContext context) {

@@ -10,8 +10,29 @@ import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
 import 'bdd.dart';
 
-abstract class Builder<T> 
+abstract class UUIDHolder
 {
+  String getUUID();
+
+  Map<String, dynamic> toMap()
+  {
+    final map = Map<String, dynamic>();
+    map["uuid"] = getUUID();
+    addToMap(map);
+    return map;
+  }
+
+  void addToMap(Map<String, dynamic> map);
+}
+
+/*abstract class Param
+{
+  Map<String, dynamic> toParam();
+}*/
+
+abstract class Builder<T> extends UUIDHolder//, Param
+{
+  String uuid = Utils.generateUUID();
   String getName();
   bool isValid(Validator validator);
   T build();
@@ -27,6 +48,17 @@ abstract class Builder<T>
   String toString()
   {
     return getName();
+  }
+
+  @override
+  String getUUID()
+  {
+    return uuid;
+  }
+
+  Object asParam()
+  {
+    return {"type":"uuid", "value":getUUID()};
   }
 }
 
@@ -76,14 +108,22 @@ class Validator
 class BuilderServer extends Builder<Server>
 {
   final Server server = Server();
-  final List<BuilderEntity> builderEntities = [];
+  List<BuilderEntity> builderEntities = [];
 
-  BuilderEntity addEntity()
+  BuilderEntity addEntity({Entity? e = null})
   {
-    BuilderEntity builderEntity = BuilderEntity();
-    builderEntity.entity.setValue(VALUE.NAME, "Entity ${builderEntities.length + 1}");
-    builderEntities.add(builderEntity);
-    return builderEntity;
+    if(e == null)
+    {
+      BuilderEntity builderEntity = Entity(Map()).builder;
+      builderEntity.entity.setValue(VALUE.NAME, "Entity ${builderEntities.length + 1}");
+      builderEntities.add(builderEntity);
+      return builderEntity;
+    }
+    else
+    {
+        builderEntities.add(e.builder);
+        return e.builder;
+    }
   }
 
   @override
@@ -100,11 +140,11 @@ class BuilderServer extends Builder<Server>
   @override
   Server build() 
   {
-    Utils.log("BuilderServer.build.start");
+    Utils.logBuild("BuilderServer.build.start");
     server.entities = [];
     for(BuilderEntity builderEntity in builderEntities)
       server.addEntity(builderEntity.build());
-    Utils.log("BuilderServer.build.end");
+    Utils.logBuild("BuilderServer.build.end");
     return server;
   }
 
@@ -129,16 +169,23 @@ class BuilderServer extends Builder<Server>
     }
     return entities;
   }
+
+  @override
+  addToMap(Map<String, dynamic> map)
+  {
+    
+  }
 }
 
 class BuilderEntity extends Builder<Entity>
 {
-  final Entity entity = Entity(Map());
-  final BuilderTotal builderTotal = BuilderTotal();
+  late Entity entity;
+  late BuilderTotal builderTotal;
 
-  BuilderEntity()
+  BuilderEntity(this.entity)
   {
     result = entity;
+    builderTotal = BuilderTotal();
   }
 
   @override
@@ -155,9 +202,9 @@ class BuilderEntity extends Builder<Entity>
   @override
   Entity build() 
   {
-    Utils.log("BuilderEntity.build.start");
+    Utils.logBuild("BuilderEntity.build.start $builderTotal");
     entity.behaviours = builderTotal.build();
-    Utils.log("BuilderEntity.build.end");
+    Utils.logBuild("BuilderEntity.build.end");
     return entity;
   }
 
@@ -172,13 +219,32 @@ class BuilderEntity extends Builder<Entity>
     return validator.isValid(builderTotal);
   }
   
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderEntity.toMap.start");
+    map["builderTotal"] = builderTotal.toMap();
+    Utils.logToMap("BuilderEntity.toMap.end");
+  }
+
+  BuilderEntity.fromJson(Entity e, Map<String, dynamic> map, Map<String, dynamic> uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderEntity.fromJson $uuid");
+    entity = e;
+    result = entity;
+    builderTotal = BuilderTotal.fromJson(map["builderTotal"], uuids);
+    Utils.logFromJson("BuilderEntity.fromJson.end");
+  }
 }
 
 class BuilderTotal extends Builder<List<Behaviour>> 
 {
   List<BuilderBehaviour> builderBehaviours = [];
 
-  BuilderBehaviour addBehaviour({Key? key, String name = ""}) 
+  BuilderTotal(){}
+
+  BuilderBehaviour addBehaviour({String name = ""}) 
   {
     BuilderBehaviour builder = BuilderBehaviour();
     builderBehaviours.add(builder);
@@ -208,12 +274,12 @@ class BuilderTotal extends Builder<List<Behaviour>>
   @override
   List<Behaviour> build() 
   {
-    Utils.log("BuilderTotal.build.start");
+    Utils.logBuild("BuilderTotal.build.start $builderBehaviours");
     List<Behaviour> liste = [];
     builderBehaviours.forEach((element) {
       liste.add(element.build());
     });
-    Utils.log("BuilderTotal.build.end");
+    Utils.logBuild("BuilderTotal.build.end $liste");
     return liste;
   }
 
@@ -227,6 +293,29 @@ class BuilderTotal extends Builder<List<Behaviour>>
     });
     return result;
   }
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderTotal.toMap.start");
+    final liste = [];
+    builderBehaviours.forEach((element) {
+      liste.add(element.toMap());
+    });
+    map["builderBehaviours"] = liste;
+    Utils.logToMap("BuilderTotal.toMap.end");
+  }
+
+  BuilderTotal.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderTotal.fromJson $uuid");
+    List liste = map["builderBehaviours"];
+    liste.forEach((element) { 
+      builderBehaviours.add(BuilderBehaviour.fromJson(element, uuids));
+    });
+    Utils.logFromJson("BuilderTotal.fromJson.end");
+  }
 }
 
 class BuilderBehaviour extends Builder<Behaviour> 
@@ -237,15 +326,17 @@ class BuilderBehaviour extends Builder<Behaviour>
   BuilderTargetSelector builderTargetSelector = BuilderTargetSelector();
   BuilderWork builderWork = BuilderWork();
 
+  BuilderBehaviour(){}
+
   @override
   Behaviour build() 
   {
-    Utils.log("BuilderBehaviour.build.start : " + name + " [$builderConditions] [$builderTargetSelector] [$builderWork]");
+    Utils.logBuild("BuilderBehaviour.build.start : " + name + " [$builderConditions] [$builderTargetSelector] [$builderWork]");
     Behaviour behaviour = Behaviour.withName(name);
     behaviour.condition = builderConditions.build();
     behaviour.selector = builderTargetSelector.build();
     behaviour.work = builderWork.build();
-    Utils.log("BuilderBehaviour.build.end");
+    Utils.logBuild("BuilderBehaviour.build.end");
     return behaviour;
   }
 
@@ -264,6 +355,28 @@ class BuilderBehaviour extends Builder<Behaviour>
 
   @override
   String getName() => name;
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderBehaviour.toMap.start $name");
+    //map["builderConditions"] = builderConditions.toMap();
+    map["builderTargetSelector"] = builderTargetSelector.toMap();
+    map["builderWork"] = builderWork.toMap();
+    map["name"] = name;
+    Utils.logToMap("BuilderBehaviour.toMap.end");
+  }
+
+  BuilderBehaviour.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderBehaviour.fromJson $uuid");
+    builderConditions = BuilderConditionGroup();
+    builderTargetSelector = BuilderTargetSelector.fromJson(map["builderTargetSelector"], uuids);
+    builderWork = BuilderWork.fromJson(map["builderWork"], uuids);
+    name = map["name"];
+    Utils.logFromJson("BuilderBehaviour.fromJson.end");
+  }
 }
 
 class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSelectorChild
@@ -277,12 +390,14 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
     links.add(link);
   }*/
 
-  BuilderCondition addCondition() 
+  BuilderConditionGroup(){}
+
+  BuilderCondition addCondition({BuilderCondition? b = null}) 
   {
-    Utils.log("BuilderConditionGroup::addCondition ($builderTargetSelector)");
-    BuilderCondition builderCondition = BuilderCondition();
+    //Utils.log("BuilderConditionGroup::addCondition ($builderTargetSelector)");
+    BuilderCondition builderCondition = b??BuilderCondition();
     conditions.add(builderCondition);
-    if(builderTargetSelector != null)
+    if(b == null && builderTargetSelector != null)
       builderCondition.onAddedToTargetSelector(builderTargetSelector!);
     return builderCondition;
   }
@@ -290,7 +405,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
   @override
   build() 
   {
-    Utils.log("BuilderConditionGroup.build.start");
+    Utils.logBuild("BuilderConditionGroup.build.start $conditions");
     ConditionGroup group = ConditionGroup([TRUE(), TRUE(), ConditionLink.ET]);
     List<BuilderCondition> listeConditions = List.from(conditions);
     //List<ConditionLink> listeLinks = List.from(links);
@@ -301,7 +416,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
       group = ConditionGroup([group, condition, ConditionLink.ET]);
       //if (listeLinks.length > 0) link = listeLinks.removeAt(0);
     }
-    Utils.log("BuilderConditionGroup.build.end");
+    Utils.logBuild("BuilderConditionGroup.build.end $group");
     return group;
   }
 
@@ -330,6 +445,32 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
 
   @override
   String getName() => "BuilderConditionGroup";
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderConditionGroup.toMap.start");
+    map["builderTargetSelectorUUID"] = builderTargetSelector?.uuid;
+    final liste = [];
+    conditions.forEach((element) {
+      liste.add(element.toMap());
+    });
+    map["conditions"] = liste;
+    Utils.logToMap("BuilderConditionGroup.toMap.end");
+  }
+
+  BuilderConditionGroup.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderConditionGroup.fromJson $uuid");
+    String builderTargetSelectorUUID = map["builderTargetSelectorUUID"];
+    builderTargetSelector = uuids[builderTargetSelectorUUID];
+    List liste = map["conditions"];
+    liste.forEach((element) { 
+      addCondition(b: BuilderCondition.fromJson(element, uuids));
+    });
+    Utils.logFromJson("BuilderConditionGroup.fromJson.end");
+  }
 }
 
 class BuilderCondition extends Builder<Condition> implements TargetSelectorChild 
@@ -339,8 +480,13 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   Conditions? cond;
   List params = [];
 
-  void setCondition(Conditions cond) 
+  BuilderCondition(){}
+
+  void setCondition(Conditions? cond) 
   {
+    if(cond == null)
+      return;
+
     if(this.cond == cond)
       return;
 
@@ -357,12 +503,11 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector)
   {
     this.builderTargetSelector = builderTargetSelector;
-    Utils.log("$this added to TargetSelector");
     if (cond != null && cond!.isBinary())
       setParam(0, builderTargetSelector);    
   }
 
-  void setParam(int index, Object param) 
+  void setParam(int index, Object? param) 
   {
     Utils.log("setParam $index - $param");
     params[index] = param;
@@ -378,7 +523,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
       param.onAddedToTargetSelector(builderTargetSelector!);
   }
 
-  bool canSetParam(int index, Object? param) 
+  bool canSetParam(int index, UUIDHolder? param) 
   {
     if(param == null || index != 1) 
       return false;
@@ -390,21 +535,22 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   @override
   Condition build() 
   {
-    Utils.log("BuilderCondition::build $cond $params");
+    Utils.logBuild("BuilderCondition.build.start $params $cond");
     for (int i = 0; i < params.length; i++) 
     {
-      Utils.log("BuilderCondition::build - param $i : ${params[i]}");
       if (params[i] is Builder) 
       {
         Builder builder = params[i] as Builder;
         Object? p = builder.get();
         if (p != null)
+        {
           params[i] = p;
-        else
-          Utils.log("Getter of $builder is null");
+        }
       }
     }
-    return cond!.instanciate(params);
+    result = cond!.instanciate(params);
+    Utils.logBuild("BuilderCondition.build.end $result");
+    return result as Condition;
   }
 
   @override
@@ -431,6 +577,86 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
 
   @override
   String getName() => "BuilderCondition";
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderCondition.toMap.start");
+    map["builderTargetSelectorUUID"] = builderTargetSelector?.uuid;
+    map["conditions"] = cond != null ? cond!.name : "";
+    final liste = [];
+
+    for(var i = 0; i <= 2; i++)
+    {
+      var element = params[i];
+      if(element == null)
+      {
+        liste.add({"type":null});
+      }
+      else if(element is Builder)
+      {
+        if(i == 0)
+        {
+          liste.add({"type":"uuid", "value":element.getUUID()});
+        }
+        else
+        {
+          liste.add(element.asParam());
+        }
+      }
+      else
+      {
+        liste.add(toParam(element));
+      }
+    }
+    map["params"] = liste;
+    Utils.logToMap("BuilderCondition.toMap.end $cond $liste");
+  }
+
+  Object toParam(Object param)
+  {
+    if(param is VALUE)
+      return param.asParam();
+    
+    if(param is ValueAtom)
+      return {"type":"ValueAtom", "value":param.value};
+
+    print("LA >> " + param.toString());
+    return param;
+  }
+
+  BuilderCondition.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    map[uuid] = this;
+    Utils.logFromJson("BuilderCondition.fromJson.start params ${map["params"]}");
+    String builderTargetSelectorUUID = map["builderTargetSelectorUUID"];
+    builderTargetSelector = uuids[builderTargetSelectorUUID];
+    
+    setCondition(ConditionsExtension.get(map["conditions"]));
+
+    Object? param1 = paramFromMap(map["params"][1], uuids);
+    Object? param2 = paramFromMap(map["params"][2], uuids);
+    Object? param0 = paramFromMap(map["params"][0], uuids);
+    setParam(0, param0);
+    setParam(1, param1);
+    setParam(2, param2);
+
+    Utils.logFromJson("BuilderCondition.fromJson.end");
+  }
+
+  Object? paramFromMap(Map<String, dynamic> p, Map uuids)
+  {
+    final String type = p["type"];
+    switch(type)
+    {
+      case "uuid":return uuids[p["value"]];
+      case "ValueAtom":return ValueAtom(p["value"]);
+      case "BuilderCount":return BuilderCount.fromJson(p, uuids);
+      case "VALUE": return ValueExtension.get(p["name"]);
+    }
+    print("ICIIIII");
+    return null;
+  }
 }
 
 class BuilderTargetSelector extends Builder<TargetSelector> 
@@ -447,10 +673,10 @@ class BuilderTargetSelector extends Builder<TargetSelector>
   @override
   TargetSelector build() 
   {
-    Utils.log("BuilderTargetSelector.build.start $result [$builderTriFunction] [$builderConditionGroup]");
+    Utils.logBuild("BuilderTargetSelector.build.start $result [$builderTriFunction] [$builderConditionGroup]");
     (result as TargetSelector).tri = builderTriFunction.build();
     (result as TargetSelector).condition = builderConditionGroup.build();
-    Utils.log("BuilderTargetSelector.build.end");
+    Utils.logBuild("BuilderTargetSelector.build.end");
     return (result as TargetSelector);
   }
 
@@ -463,6 +689,25 @@ class BuilderTargetSelector extends Builder<TargetSelector>
 
   @override
   String getName() => "BuilderTargetSelector";
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderTargetSelector.toMap.start");
+    map["builderTriFunction"] = builderTriFunction.toMap();
+    map["builderConditionGroup"] = builderConditionGroup.toMap();
+    Utils.logToMap("BuilderTargetSelector.toMap.end");
+  }
+
+  BuilderTargetSelector.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderTargetSelector.fromJson $uuid");
+    result = TargetSelector();
+    builderTriFunction = BuilderTriFunction.fromJson(map["builderTriFunction"], uuids);
+    builderConditionGroup = BuilderConditionGroup.fromJson(map["builderConditionGroup"], uuids);
+    Utils.logFromJson("BuilderTargetSelector.fromJson.end");
+  }
 }
 
 class BuilderTriFunction extends Builder<TriFunction?> 
@@ -470,12 +715,14 @@ class BuilderTriFunction extends Builder<TriFunction?>
   TriFunctions? tri;
   VALUE? value;
 
+  BuilderTriFunction(){}
+
   @override
   TriFunction? build() 
   {
-    Utils.log("BuilderTriFunction.build.start $tri [$value]");
+    Utils.logBuild("BuilderTriFunction.build.start $tri $value");
     TriFunction? result = tri?.instanciate(value!);
-    Utils.log("BuilderTriFunction.build.end $result");
+    Utils.logBuild("BuilderTriFunction.build.end $result");
     return result;
   }
 
@@ -495,18 +742,38 @@ class BuilderTriFunction extends Builder<TriFunction?>
       return tri!.getName();
     return "BuilderTriFunction";
   }
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderTriFunction.toMap.start $tri $value");
+    map["tri"] = tri != null ? tri!.name : "";
+    map["value"] = value != null ? value!.name : "";
+    Utils.logToMap("BuilderTriFunction.toMap.end");
+  }
+
+  BuilderTriFunction.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderTriFunction.fromJson $uuid");
+    tri = TriFunctionsExtension.get(map["tri"]);
+    value = ValueExtension.get(map["value"]);
+    Utils.logFromJson("BuilderTriFunction.fromJson.end");
+  }
 }
 
 class BuilderWork extends Builder<Work> 
 {
   Works? work;
 
+  BuilderWork(){}
+
   @override
   Work build() 
   {
-    Utils.log("BuilderWork.build.start $work");
+    Utils.logBuild("BuilderWork.build.start $work");
     Work result = work!.instanciate();
-    Utils.log("BuilderWork.build.end $result");
+    Utils.logBuild("BuilderWork.build.end $result");
     return result;
   }
 
@@ -523,6 +790,22 @@ class BuilderWork extends Builder<Work>
     if(work != null)
       return work!.getName();
     return "BuilderWork";
+  }
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderWork.toMap.start $work");
+    map["work"] = work != null ? work!.name : "";
+    Utils.logToMap("BuilderCount.toMap.end");
+  }
+
+  BuilderWork.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderWork.fromJson $uuid");
+    work = WorksExtension.get(map["work"]);
+    Utils.logFromJson("BuilderWork.fromJson.end");
   }
 }
 
@@ -543,9 +826,11 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
       result = Count(getTarget(), this.value!);
   }
 
-  void setValue(VALUE value)
+  void setValue(VALUE? value)
   {
-    Utils.log("BuilderCount::setValue : $value");
+    if(value == null)
+      return;
+    //Utils.log("BuilderCount::setValue : $value");
     this.value = value;
     if(target != null)
       result = Count(getTarget(), this.value!);
@@ -553,6 +838,7 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
 
   ValueReader getTarget()
   {
+    var t = target;
     if (target is Builder) 
     {
       Builder builder = target as Builder;
@@ -562,16 +848,16 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
       else if(!(p is ValueReader))
         Utils.log("Value of $builder is not a ValueReader : $p");
       else
-        target = p;
+        t = p;
     }
-    return target as ValueReader;
+    return t as ValueReader;
   }
 
   @override
   Count build() 
   {
-    Utils.log("BuilderCount.build.start $result [$target]");
-    Utils.log("BuilderCount.build.end");
+    Utils.logBuild("BuilderCount.build.start $result [$target]");
+    Utils.logBuild("BuilderCount.build.end");
     return result as Count;
   }
 
@@ -585,7 +871,7 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
   @override
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector) 
   {
-    Utils.log("$this onAddedToTargetSelector");
+    Utils.log("BuilderCount $this onAddedToTargetSelector");
     setTarget(builderTargetSelector);
   }
 
@@ -594,9 +880,45 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
   {
     return "Count" + (value != null ? "(${value!.getName()})" : "");
   }
+
+  @override
+  Object asParam()
+  {
+    return toMap();
+  }
+
+  addToMap(Map<String, dynamic> map)
+  {
+    Utils.logToMap("BuilderCount.toMap.start $target $value $uuid");
+    map["type"] = "BuilderCount";
+
+    if(target is Builder)
+    {
+      map["target"] = (target! as Builder).getUUID();
+    }
+    else
+    {
+      map["target"] = target?.toString();
+      print("ICI >> " + map["target"]);
+    }
+    
+    map["value"] = value != null ? value!.name : "";
+    Utils.logToMap("BuilderCount.toMap.end");
+  }
+
+  BuilderCount.fromJson(Map<String, dynamic> map, Map uuids)
+  {
+    uuid = map["uuid"];
+    uuids[uuid] = this;
+    Utils.logFromJson("BuilderCount.fromJson $uuid");
+    result = this;
+    setTarget(uuids[map["target"]]);
+    setValue(ValueExtension.get(map["value"]));
+    Utils.logFromJson("BuilderCount.fromJson.end");
+  }
 }
 
-abstract class TargetSelectorChild
+abstract class TargetSelectorChild implements UUIDHolder
 {
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector);
 }

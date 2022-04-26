@@ -1,25 +1,28 @@
+import 'package:myapp/builder.dart';
 import 'package:myapp/engine/dot.dart';
 import 'package:myapp/engine/work.dart';
-import 'package:uuid/uuid.dart';
+import 'package:myapp/utils.dart';
 
 import 'server.dart';
 import 'behaviour.dart';
 import 'valuesolver.dart';
 
-class Entity implements ValueReader 
+class Entity extends UUIDHolder implements ValueReader//, Param
 {
   late String uuid;
 
-  Map values = Map();
+  Map<VALUE, dynamic> values = Map();
 
   int maxTimer = 45;
   late int timer = maxTimer;
 
   List<Behaviour> behaviours = [];
+  late BuilderEntity builder;
 
   Entity(Map map) 
   {
     setValues(map);
+    builder = BuilderEntity(this);
   }
 
   void setValues(Map map)
@@ -35,7 +38,7 @@ class Entity implements ValueReader
 
   void init()
   {
-    uuid = Uuid().v1();
+    uuid = Utils.generateUUID();//Uuid().v4();
     setValue(VALUE.HP, getValue(VALUE.HP_MAX));
     setValue(VALUE.MP, getValue(VALUE.MP_MAX));
   }
@@ -85,24 +88,35 @@ class Entity implements ValueReader
 
   void run(Server server, Story story) 
   {
+    Utils.logRun("Entity.run.start");
     List<DOT> dots = getDots().dots;
+    Utils.logRun("Entity.run dots : $dots");
     for(DOT dot in dots)
     {
       dot.execute(this, this, story);
       if(!isAlive())
+      {
+        Utils.logRun("Entity.run.end DEAD");
         return;
+      }
     }
 
     timer = maxTimer;
+    Utils.logRun("Entity.run behaviours : $behaviours");
     for(Behaviour behaviour in behaviours)
     {
       if (behaviour.check(server)) 
       {
+        Utils.logRun("Entity.run execute Behaviour " + behaviour.name);
         if(behaviour.execute(this, story))
+        {
+          Utils.logRun("Entity.run.end executed Behaviour " + behaviour.name);
           return;
+        }
       }
     }
 
+    Utils.logRun("Entity.run.end Nothing to execute");
     NOTHING().execute(this, this, story);
   }
 
@@ -176,7 +190,43 @@ class Entity implements ValueReader
     return "${getName()} [${getHP()}/ ${getHPMax()}]";
   }
 
-  Map toMap()
+  Entity.fromJson(Map<String, dynamic> map)
+  {
+    uuid = map["uuid"];
+    final uuids = Map<String, dynamic>();
+    uuids[uuid] = this;
+    Utils.logFromJson("Entity.fromJson $uuid");
+    final Map k = map["values"];
+    k.keys.forEach((key) {
+      VALUE? value = ValueExtension.get(key);
+      if(value != null)
+      {
+        values[value] = k[key];
+      }
+    });
+    setValue(VALUE.DOT, VALUE.DOT.defaultValue);
+    setValue(VALUE.POISON, VALUE.POISON.defaultValue);
+    setValue(VALUE.BLEED, VALUE.BLEED.defaultValue);
+    builder = BuilderEntity.fromJson(this, map["builder"], uuids);
+    Utils.logFromJson("Entity.fromJson.end");
+  }
+
+  addToMap(Map<String, dynamic> map)
+  {
+    map["values"] = Map();
+    values.forEach((key, value) {
+      map["values"][key.name] = value is int ? value : value.toString();
+    });
+    map["builder"] = builder.toMap();
+  }
+
+  @override
+  String getUUID()
+  {
+    return uuid;
+  }
+
+  Map toStoryMap()
   {
     Map map = Map();
     map["uuid"] = uuid;

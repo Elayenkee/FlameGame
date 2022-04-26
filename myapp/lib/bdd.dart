@@ -6,7 +6,8 @@ import 'package:myapp/utils.dart';
 
 enum Works { ATTACK, HEAL, POISON, BLEED }
 
-extension WorksExtension on Works {
+extension WorksExtension on Works 
+{
   Work instanciate() {
     switch (this) {
       case Works.ATTACK:
@@ -31,6 +32,18 @@ extension WorksExtension on Works {
       case Works.BLEED:
         return "BLEED";
     }
+  }
+
+  static Works? get(String name)
+  {
+    logRun("Works.get $name");
+    for(Works w in Works.values)
+    {
+      if(name == w.name)
+        return w;
+    }
+    logRun("Works.get NULL");
+    return null;
   }
 }
 
@@ -59,7 +72,7 @@ extension ConditionsExtension on Conditions {
 
   Condition instanciate(List params) 
   {
-    Utils.log("Condition::instanciate $this $params");
+    logRun("Condition.instanciate $params");
     switch (this) {
       //case Conditions.EXIST:
       //  return EXIST(params);
@@ -74,7 +87,8 @@ extension ConditionsExtension on Conditions {
     }
   }
 
-  bool isBinary() {
+  bool isBinary() 
+  {
     switch (this) {
       case Conditions.EQUALS:
       case Conditions.NOT_EQUALS:
@@ -100,12 +114,27 @@ extension ConditionsExtension on Conditions {
         return ">";
     }
   }
+
+  static Conditions? get(String name)
+  {
+    logRun("Conditions.get $name");
+    for(Conditions w in Conditions.values)
+    {
+      if(name == w.name)
+        return w;
+    }
+    logRun("Conditions.get NULL");
+    return null;
+  }
 }
 
 enum TriFunctions { LOWEST, HIGHEST }
 
-extension TriFunctionsExtension on TriFunctions {
-  TriFunction instanciate(VALUE value) {
+extension TriFunctionsExtension on TriFunctions 
+{
+  TriFunction instanciate(VALUE value) 
+  {
+    logRun("TriFunction.instanciate $value");
     switch (this) {
       case TriFunctions.LOWEST:
         return LOWEST(value);
@@ -114,12 +143,31 @@ extension TriFunctionsExtension on TriFunctions {
     }
   }
 
-  String getName() {
-    switch (this) {
+  String getName() 
+  {
+    switch (this) 
+    {
       case TriFunctions.HIGHEST:
         return "HIGHEST";
       case TriFunctions.LOWEST:
         return "LOWEST";
     }
   }
+
+  static TriFunctions? get(String name)
+  {
+    logRun("TriFunction.get $name");
+    for(TriFunctions w in TriFunctions.values)
+    {
+      if(name == w.name)
+        return w;
+    }
+    logRun("TriFunction.get NULL");
+    return null;
+  }
+}
+
+void logRun(String message)
+{
+  print(message);
 }

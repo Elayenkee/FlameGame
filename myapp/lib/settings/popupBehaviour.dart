@@ -303,7 +303,6 @@ class BuilderConditionComponent extends PositionComponent
         String txtParam1 = builderCondition.params[1] == null ? "Choisir" : getNameForButton(builderCondition.params[1]);
         Bouton boutonParam1 = Bouton(layout, (){}, txtParam1, Vector2(130, 40), Vector2(290, btnY));
         boutonParam1.onTap = (){
-          print("boutonParam.onTap");
           int defaultValue = builderCondition.params[1] is ValueAtom ? builderCondition.params[1].getIntValue() : 0;
           PopupValueInt popupValue = PopupValueInt(layout, getGlobalPosition(boutonParam1) + Vector2(boutonParam1.width, 0), defaultValue)..show();
           popupValue.onChoose = (value){
@@ -471,7 +470,6 @@ class PopupChoose extends Popup
 {
   PopupChoose(SettingsLayout layout, Vector2 position, List items, Function onChoose):super(layout, position)  
   {
-    print(items);
     Grid grid = Grid(layout, items, onClick: (item){
         onChoose(item);
         close();
