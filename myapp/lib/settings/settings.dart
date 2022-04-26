@@ -61,7 +61,7 @@ class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDragg
 
   PopupBehaviour? popupBehaviour;
 
-  SettingsLayout(this.builderServer);
+  SettingsLayout(this.builderServer):super("Settings");
 
   @override
   Future<void> onLoad() async

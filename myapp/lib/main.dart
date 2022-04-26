@@ -14,15 +14,37 @@ import 'package:myapp/settings/settings.dart';
 import 'package:flame/components.dart' as draggable;
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/utils.dart';
+import 'package:myapp/worldScreen.dart';
 
 import 'bdd.dart';
-import 'game.dart';
 
-Future<void> main() async {
+Future<void> main() async
+{
   WidgetsFlutterBinding.ensureInitialized();
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
 
+  BuilderServer builderServer = await buildServer();
+  
+  Map<String, WidgetBuilder> routes = {
+    '/menu': (BuildContext context) {
+      return HomeScreen(builderServer);
+    },
+    /*'/start': (BuildContext context) {
+      return GameScreen(builderServer.build());
+    },*/
+    '/start': (BuildContext context) {
+      return WorldScreen();
+    },
+    '/settings': (BuildContext context) {
+      return SettingsScreen(builderServer);
+    }
+  };
+  runApp(MaterialApp(home: HomeScreen(builderServer), routes: routes));
+}
+
+Future<BuilderServer> buildServer() async
+{
   BuilderServer builderServer = BuilderServer();
 
   Map values = Map();
@@ -134,26 +156,12 @@ Future<void> main() async {
     builderTriFunction4.tri = TriFunctions.LOWEST;
     builderTriFunction4.value = VALUE.HP;
   }
-  
-  //===========================================
 
-  Map<String, WidgetBuilder> routes = {
-    '/menu': (BuildContext context) {
-      return HomeScreen(builderServer);
-    },
-    '/start': (BuildContext context) {
-
-      return GameScreen(builderServer.build());
-    },
-    '/settings': (BuildContext context) {
-      return SettingsScreen(builderServer);
-    }
-  };
-
-  runApp(MaterialApp(home: HomeScreen(builderServer), routes: routes));
+  return builderServer;
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatelessWidget 
+{
   final BuilderServer builderServer;
   late final MainLayout mainLayout;
 
@@ -208,20 +216,27 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class MainLayout extends AbstractLayout {
+class MainLayout extends AbstractLayout 
+{
+  MainLayout():super("Main");
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
   }
 }
 
-class AbstractLayout extends BaseGame {
+class AbstractLayout extends BaseGame 
+{
+  String title;
+
   late final Vector2 size;
   late final Background background;
   final FocusNode focusNode = FocusNode();
   Keyboard? keyboard;
 
-  AbstractLayout() {
+  AbstractLayout(this.title) 
+  {
     size = Vector2(840, 500);
     background = Background(size);
   }
@@ -239,6 +254,9 @@ class AbstractLayout extends BaseGame {
     super.onLoad();
     viewport = FixedResolutionViewport(size);
     add(background);
+
+    final titleComponent = TextComponent(title);
+    add(titleComponent);
   }
 
   @override
