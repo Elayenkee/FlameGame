@@ -47,10 +47,7 @@ class GameLayout extends AbstractLayout with HasTappableComponents
     _worldScreen = WorldScreen(size);
     
     super.onLoad();
-    //add(_worldScreen);
-
-    //TODO remove
-    startFight();
+    add(_worldScreen);
   }
 
   void startFight()

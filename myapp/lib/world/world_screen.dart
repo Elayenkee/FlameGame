@@ -16,9 +16,8 @@ class WorldScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
   {
     print("WorldScreen.onLoad");
     super.onLoad();
-    Entity entity = Storage.getEntity();
-    WorldEntity worldEntity = WorldEntity(entity);
-    _world = World(this, worldEntity);
+    _world = Storage.getWorld();
+    _world.setWorldScreen(this);
   }
 
   void startFight()

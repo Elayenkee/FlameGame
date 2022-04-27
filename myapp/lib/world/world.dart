@@ -2,23 +2,21 @@ import 'dart:math';
 import 'dart:core';
 import 'package:flame/game.dart';
 import 'package:myapp/engine/entity.dart';
+import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world_screen.dart';
 
 class World
 {
   static final Rand = new Random(0);
 
-  final WorldScreen _worldScreen;
-
-  final WorldEntity _worldEntity;
+  late final WorldScreen _worldScreen;
+  late final WorldEntity _worldEntity;
 
   double _time = 0;
 
-  World(this._worldScreen, this._worldEntity)
+  void setWorldScreen(WorldScreen worldScreen)
   {
-    print("World start");
-    _worldEntity._world = this;
-    _worldEntity._resetNext();
+    _worldScreen = worldScreen;
   }
 
   void update(double dt)
@@ -40,6 +38,28 @@ class World
     print("World.startFight");
     _worldScreen.startFight();
   }
+
+  Map<String, dynamic> toMap()
+  {
+    final map = Map<String, dynamic>();
+    map["entity"] = _worldEntity.toMap();
+    return map;
+  }
+
+  World.fromMap(Map<String, dynamic>? map)
+  {
+    print("World start");
+    if(map != null)
+    {
+      _worldEntity = WorldEntity.fromMap(Storage.getEntity(), map["entity"]);
+    }
+    else
+    {
+      _worldEntity = WorldEntity(Storage.getEntity());
+    }
+    _worldEntity._world = this;
+    _worldEntity._resetNext();
+  }
 }
 
 class WorldEntity
@@ -53,18 +73,9 @@ class WorldEntity
 
   double timeDeplacement = 0;
 
-  WorldEntity(this._entity);
-
-  Map<String, dynamic> toMap()
+  WorldEntity(this._entity)
   {
-    final map = Map<String, dynamic>();
-    map["position"] = _position.toMap();
-    return map;
-  }
-
-  WorldEntity.fromMap(this._entity, Map<String, dynamic> map)
-  {
-    _position = Position.fromMap(map["position"]);
+    print("WorldEntity.<init> : $_position");
   }
 
   void _resetNext()
@@ -91,6 +102,7 @@ class WorldEntity
       print("WorldEntity arrived at target $_target in ${_world._time - timeDeplacement}");
       _position = _target!;
       _target = null;
+      Storage.storeWorld(_world);
       return;
     }
     
@@ -101,10 +113,24 @@ class WorldEntity
     _next -= dt;
     if(_next <= 0)
     {
+      Storage.storeWorld(_world);
       _resetNext();
       _target = null;
       _world._startFight();
     }
+  }
+
+  Map<String, dynamic> toMap()
+  {
+    final map = Map<String, dynamic>();
+    map["position"] = _position.toMap();
+    return map;
+  }
+
+  WorldEntity.fromMap(this._entity, Map<String, dynamic> map)
+  {
+    _position = Position.fromMap(map["position"]);
+    print("WorldEntity.fromMap : $_position");
   }
 }
 

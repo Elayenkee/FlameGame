@@ -5,6 +5,7 @@ import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
+import 'package:myapp/world/world.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Storage 
@@ -14,6 +15,31 @@ class Storage
   static Future<void> init() async
   {
     prefs = await SharedPreferences.getInstance();
+  }
+
+  static void storeWorld(World world)
+  {
+    final map = world.toMap();
+    try
+    {
+      final json = jsonEncode(map);
+      prefs.setString('world', json);
+    }
+    catch(e)
+    {
+      print(e);
+    }
+  }
+
+  static World getWorld()
+  {
+    String? json = prefs.getString('world');
+    if(json != null)
+    {
+      Map<String, dynamic> map = jsonDecode(json);
+      return World.fromMap(map);
+    }
+    return World.fromMap(null);
   }
 
   static void storeEntity(Entity entity)
