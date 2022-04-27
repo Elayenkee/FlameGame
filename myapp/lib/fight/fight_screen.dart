@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/gestures.dart';
 import 'package:myapp/bdd.dart';
 import 'package:myapp/builder.dart';
+import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/engine/server.dart';
@@ -20,16 +21,26 @@ class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
     print("FightScreen.onLoad");
     super.onLoad();
 
+    Entity entity = Storage.getEntity();
+
+    //TODO REMOVE
+    //entity.addHP(1000);
+
     BuilderServer builder = BuilderServer();
-    builder.addEntity(e:Storage.getEntity());
+    builder.addEntity(e:entity);
     addRandomEnemmy(builder);
+
+    print("FightScreen.onLoad.build");
     Server server = builder.build();
+    print("FightScreen.onLoad.builded");
+
     Story? story;
     do{
       story = server.next();
       if(story != null)
         stories.add(story);  
     } while (story != null && stories.length < 100);
+    Storage.storeEntity(entity);
     print("FightScreen.onLoaded : ${stories.length} stories");
   }
 
@@ -44,6 +55,10 @@ class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
       story.events.forEach((event) {
         Utils.log(event.log);
       });
+    }
+    else
+    {
+      waitAndFinish(dt);
     }
   }
 
@@ -88,5 +103,18 @@ class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
     BuilderTriFunction builderTriFunction4 = builderBehaviour4.builderTargetSelector.builderTriFunction;
     builderTriFunction4.tri = TriFunctions.LOWEST;
     builderTriFunction4.value = VALUE.HP;
+  }
+
+  double _waitAndFinish = 1;
+  void waitAndFinish(double dt)
+  {
+    if(_waitAndFinish == 1)
+      print("FightScreen.waitAndFinish");
+    _waitAndFinish -= dt;
+    if(_waitAndFinish <= 0 && _waitAndFinish > -1)
+    {
+      _waitAndFinish = -1;
+      gameRef.startWorld();
+    }
   }
 }

@@ -26,10 +26,11 @@ class Server
   {
     if(finished)
     {
+      //print("Server.onEnd");
       return null;
     }
 
-
+    //print("Server.next $tour");
     Story story = Story();
     
     try
@@ -38,7 +39,7 @@ class Server
     }
     catch(e)
     {
-      print(e.toString());
+      print(e);
       finished = true;
       return null;
     }
@@ -60,6 +61,7 @@ class Server
     if(!finished)
       tour++;
 
+    //print("Server.next.end");
     return story;  
   }
 

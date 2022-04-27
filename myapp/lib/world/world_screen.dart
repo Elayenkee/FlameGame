@@ -1,6 +1,5 @@
 import 'package:flame/components.dart';
 import 'package:flame/gestures.dart';
-import 'package:myapp/engine/entity.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world.dart';

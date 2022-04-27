@@ -7,7 +7,7 @@ import 'package:myapp/world/world_screen.dart';
 
 class World
 {
-  static final Rand = new Random(0);
+  static final Rand = new Random();
 
   late final WorldScreen _worldScreen;
   late final WorldEntity _worldEntity;

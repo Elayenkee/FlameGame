@@ -37,24 +37,43 @@ class GameScreen extends StatelessWidget
 
 class GameLayout extends AbstractLayout with HasTappableComponents
 {
-  late final WorldScreen _worldScreen;
+  WorldScreen? _worldScreen;
+  FightScreen? _fightScreen;
 
   GameLayout():super();
 
   @override
   Future<void> onLoad() async 
   {
-    _worldScreen = WorldScreen(size);
-    
     super.onLoad();
-    add(_worldScreen);
+    startWorld();
+    //startFight();
+  }
+
+  void startWorld()
+  {
+    print("GameLayout.startWorld");
+    if(_fightScreen != null)
+    {
+      print("GameLayout.startWorld.removeFightScreen");
+      components.remove(_fightScreen!);
+      _fightScreen = null;
+    }
+    _worldScreen = WorldScreen(size);
+    add(_worldScreen!);
   }
 
   void startFight()
   {
     print("GameLayout.startFight");
-    components.remove(_worldScreen);
-    add(FightScreen(size));
+    if(_worldScreen != null)
+    {
+      print("GameLayout.startWorld.removeWorldScreen");
+      components.remove(_worldScreen!);
+      _worldScreen = null;
+    }
+    _fightScreen = FightScreen(size);
+    add(_fightScreen!);
   }
 }
 

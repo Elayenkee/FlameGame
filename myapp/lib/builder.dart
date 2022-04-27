@@ -139,11 +139,18 @@ class BuilderServer extends Builder<Server>
   @override
   Server build() 
   {
-    Utils.logBuild("BuilderServer.build.start");
-    server.entities = [];
-    for(BuilderEntity builderEntity in builderEntities)
-      server.addEntity(builderEntity.build());
-    Utils.logBuild("BuilderServer.build.end");
+    try
+    {
+      Utils.logBuild("BuilderServer.build.start");
+      server.entities = [];
+      for(BuilderEntity builderEntity in builderEntities)
+        server.addEntity(builderEntity.build());
+      Utils.logBuild("BuilderServer.build.end");
+    }
+    catch(e)
+    {
+      print(e);
+    }
     return server;
   }
 
@@ -542,19 +549,19 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   Condition build() 
   {
     Utils.logBuild("BuilderCondition.build.start $params $cond");
+    List liste = [];
     for (int i = 0; i < params.length; i++) 
     {
+      liste.add(params[i]);
       if (params[i] is Builder) 
       {
         Builder builder = params[i] as Builder;
         Object? p = builder.get();
         if (p != null)
-        {
-          params[i] = p;
-        }
+          liste[i] = p;
       }
     }
-    result = cond!.instanciate(params);
+    result = cond!.instanciate(liste);
     Utils.logBuild("BuilderCondition.build.end $result");
     return result as Condition;
   }
@@ -625,6 +632,9 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     
     if(param is ValueAtom)
       return {"type":"ValueAtom", "value":param.value};
+
+    if(param is Entity)
+      return {"type":"uuid", "value":param.getUUID()};
 
     print("LA >> " + param.toString());
     return param;
