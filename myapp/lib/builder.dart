@@ -151,6 +151,13 @@ class BuilderServer extends Builder<Server>
   @override
   bool isValid(Validator validator) 
   {
+    if(myTeamEntities().length == builderEntities.length)
+    {
+      if(validator.log)
+        print("No ennemies");
+      return false;
+    }
+
     for(BuilderEntity builderEntity in builderEntities)
     {
       if(!validator.isValid(builderEntity))
@@ -437,7 +444,7 @@ class BuilderConditionGroup extends Builder<ConditionGroup> implements TargetSel
   @override
   void onAddedToTargetSelector(BuilderTargetSelector builderTargetSelector) 
   {
-    Utils.log("$this added to TargetSelector ($builderTargetSelector)");
+    //Utils.log("$this added to TargetSelector ($builderTargetSelector)");
     this.builderTargetSelector = builderTargetSelector;
     for(BuilderCondition condition in conditions)
       condition.onAddedToTargetSelector(builderTargetSelector);
@@ -490,7 +497,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     if(this.cond == cond)
       return;
 
-    Utils.log("$this::setCondition : $cond");
+    //Utils.log("$this::setCondition : $cond");
     this.cond = cond;
     this.params = [];
     for (int i = 0; i < cond.getParams().length; i++) 
@@ -509,7 +516,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
 
   void setParam(int index, Object? param) 
   {
-    Utils.log("setParam $index - $param");
+    //Utils.log("setParam $index - $param");
     params[index] = param;
     if(index == 2 && param is BuilderCount)
     {

@@ -1,279 +1,155 @@
-import 'dart:convert';
-
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:myapp/builder.dart';
-import 'package:myapp/engine/entity.dart';
-import 'package:myapp/graphics/themes/firstTheme.dart';
-import 'package:myapp/engine/valuesolver.dart';
-import 'package:myapp/settings/settings.dart';
 import 'package:flame/components.dart' as draggable;
+import 'package:myapp/fight/fight_screen.dart';
 import 'package:myapp/storage/storage.dart';
-import 'package:myapp/utils.dart';
-import 'package:myapp/worldScreen.dart';
-
-import 'bdd.dart';
+import 'package:myapp/world/world_screen.dart';
 
 Future<void> main() async
 {
+  print("============ RESTART APPLICATION ===========");
   WidgetsFlutterBinding.ensureInitialized();
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
-
-  BuilderServer builderServer = await buildServer();
-  
-  Map<String, WidgetBuilder> routes = {
-    '/menu': (BuildContext context) {
-      return HomeScreen(builderServer);
-    },
-    /*'/start': (BuildContext context) {
-      return GameScreen(builderServer.build());
-    },*/
-    '/start': (BuildContext context) {
-      return WorldScreen();
-    },
-    '/settings': (BuildContext context) {
-      return SettingsScreen(builderServer);
-    }
-  };
-  runApp(MaterialApp(home: HomeScreen(builderServer), routes: routes));
-}
-
-Future<BuilderServer> buildServer() async
-{
-  BuilderServer builderServer = BuilderServer();
-
-  Map values = Map();
-  values[VALUE.NAME] = "Entity 1";
-  values[VALUE.HP_MAX] = 46;
-  values[VALUE.ATK] = 23;
-  values[VALUE.CLAN] = 1;
-
-  Entity entity = Entity(values);
-  BuilderEntity builderEntity = entity.builder;
-  
-  builderServer.addEntity(e: entity);
-  builderEntity.entity.setValues(values);
-
-  BuilderTotal builder = builderEntity.builderTotal;
-
-  BuilderBehaviour builderBehaviour =
-      builder.addBehaviour(name: "Poison if no poison");
-  builderBehaviour.builderWork.work = Works.POISON;
-  BuilderConditionGroup builderConditionGroup =
-      builderBehaviour.builderTargetSelector.builderConditionGroup;
-  BuilderTriFunction builderTriFunction =
-      builderBehaviour.builderTargetSelector.builderTriFunction;
-  builderTriFunction.tri = TriFunctions.LOWEST;
-  builderTriFunction.value = VALUE.HP;
-  BuilderCondition builderCondition = builderConditionGroup.addCondition();
-  builderCondition.setCondition(Conditions.NOT_EQUALS);
-  builderCondition.setParam(1, builderEntity);
-  builderCondition.setParam(2, VALUE.CLAN);
-  BuilderCondition builderCondition2 = builderConditionGroup.addCondition();
-  builderCondition2.setCondition(Conditions.EQUALS);
-  builderCondition2.setParam(1, ValueAtom(0));
-  BuilderCount builderCount = BuilderCount();
-  builderCount.setValue(VALUE.POISON);
-  builderCondition2.setParam(2, builderCount);
-
-  BuilderBehaviour builderBehaviourBleed =
-      builder.addBehaviour(name: "Bleed if no bleed");
-  builderBehaviourBleed.builderWork.work = Works.BLEED;
-  BuilderConditionGroup builderConditionGroupBleed =
-      builderBehaviourBleed.builderTargetSelector.builderConditionGroup;
-  BuilderTriFunction builderTriFunctionBleed =
-      builderBehaviourBleed.builderTargetSelector.builderTriFunction;
-  builderTriFunctionBleed.tri = TriFunctions.LOWEST;
-  builderTriFunctionBleed.value = VALUE.HP;
-  BuilderCondition builderConditionBleed =
-      builderConditionGroupBleed.addCondition();
-  builderConditionBleed.setCondition(Conditions.NOT_EQUALS);
-  builderConditionBleed.setParam(1, builderEntity);
-  builderConditionBleed.setParam(2, VALUE.CLAN);
-  BuilderCondition builderCondition2Bleed =
-      builderConditionGroupBleed.addCondition();
-  builderCondition2Bleed.setCondition(Conditions.EQUALS);
-  builderCondition2Bleed.setParam(1, ValueAtom(0));
-  BuilderCount builderCountBleed = BuilderCount();
-  builderCountBleed.setValue(VALUE.BLEED);
-  builderCondition2Bleed.setParam(2, builderCountBleed);
-
-  BuilderBehaviour builderBehaviour2 =
-      builder.addBehaviour(name: "Attack lowest HP");
-  builderBehaviour2.builderWork.work = Works.ATTACK;
-  BuilderConditionGroup builderConditionGroup2 =
-      builderBehaviour2.builderTargetSelector.builderConditionGroup;
-  BuilderTriFunction builderTriFunction2 =
-      builderBehaviour2.builderTargetSelector.builderTriFunction;
-  builderTriFunction2.tri = TriFunctions.LOWEST;
-  builderTriFunction2.value = VALUE.HP;
-  BuilderCondition builderCondition3 = builderConditionGroup2.addCondition();
-  builderCondition3.setCondition(Conditions.NOT_EQUALS);
-  builderCondition3.setParam(1, builderEntity);
-  builderCondition3.setParam(2, VALUE.CLAN);
-
   await Storage.init();
-  Storage.storeEntity(entity);
-  //builderServer.build();
-  builderServer.builderEntities = [];
-  Utils.countBuild = 1;
+  runApp(MaterialApp(home: GameScreen()));
+}
 
-  final e = Storage.getEntity();
-  builderServer.addEntity(e : e);
-  print("=====================================");
-  print("=====================================");
-  //builderServer.build();
+class GameScreen extends StatelessWidget
+{
+  late final GameLayout gameLayout;
 
-  //================ ENTITY 3 ===========================
-  final add = true;
-  if(add)
+  GameScreen()
   {
-    values[VALUE.HP_MAX] = 100;
-    values[VALUE.MP_MAX] = 0;
-    values[VALUE.ATK] = 5;
-    values[VALUE.NAME] = "Client 3";
-    values[VALUE.CLAN] = 0;
-    BuilderEntity entity3 = builderServer.addEntity();
-    entity3.setValues(values);
-    BuilderTotal builder3 = entity3.builderTotal;
-    BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
-    builderBehaviour4.builderWork.work = Works.ATTACK;
-
-    BuilderConditionGroup builderConditionGroup4 =
-        builderBehaviour4.builderTargetSelector.builderConditionGroup;
-    BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
-    builderCondition5.setCondition(Conditions.NOT_EQUALS);
-    builderCondition5.setParam(1, entity3);
-    builderCondition5.setParam(2, VALUE.CLAN);
-
-    BuilderTriFunction builderTriFunction4 =
-        builderBehaviour4.builderTargetSelector.builderTriFunction;
-    builderTriFunction4.tri = TriFunctions.LOWEST;
-    builderTriFunction4.value = VALUE.HP;
-  }
-
-  return builderServer;
-}
-
-class HomeScreen extends StatelessWidget 
-{
-  final BuilderServer builderServer;
-  late final MainLayout mainLayout;
-
-  HomeScreen(this.builderServer) {
-    mainLayout = MainLayout();
+    gameLayout = GameLayout();
   }
 
   @override
-  Widget build(BuildContext context) {
-    //return GameWidget(game: mainLayout);
-    return Column(children: [
-      Container(
-        height: 120,
-      ),
-      BtnPlay(context),
-      Container(
-        height: 10,
-      ),
-      BtnSettings(context)
-    ]);
-  }
-
-  Widget BtnPlay(BuildContext context) {
-    var onPress = () {
-      if (!builderServer.isValid(Validator(true))) {
-        Utils.log("LE BUILDER N'EST PAS VALIDE");
-        return;
-      }
-
-      Navigator.of(context).pushNamed('/start');
-    };
-    return Btn("Start", onPress);
-  }
-
-  Widget BtnSettings(BuildContext context) {
-    var onPress = () {
-      Navigator.of(context).pushNamed('/settings');
-    };
-    return Btn("Settings", onPress);
-  }
-
-  Widget Btn(String text, var onPress) {
-    Widget child = Text(text, style: TextStyle(color: Colors.white));
-    return Container(
-        width: 150,
-        height: 50,
-        child: MaterialButton(
-          onPressed: onPress,
-          child: child,
-          color: FirstTheme.buttonColor,
-        ));
+  Widget build(BuildContext context) 
+  {
+    return GameWidget(game: gameLayout);
   }
 }
 
-class MainLayout extends AbstractLayout 
+class GameLayout extends AbstractLayout with HasTappableComponents
 {
-  MainLayout():super("Main");
+  late final WorldScreen _worldScreen;
+
+  GameLayout():super();
 
   @override
-  Future<void> onLoad() async {
+  Future<void> onLoad() async 
+  {
+    _worldScreen = WorldScreen(size);
+    
     super.onLoad();
+    //add(_worldScreen);
+
+    //TODO remove
+    startFight();
+  }
+
+  void startFight()
+  {
+    print("GameLayout.startFight");
+    components.remove(_worldScreen);
+    add(FightScreen(size));
   }
 }
 
-class AbstractLayout extends BaseGame 
+class AbstractScreen extends PositionComponent
 {
-  String title;
+  late final String _title;
 
+  final PositionComponent layout = Layer();
+  final PositionComponent hud = Layer();
+  final PositionComponent debug = Layer();
+
+  AbstractScreen(this._title, Vector2 size):super(size: size);
+
+  @override
+  Future<void> onLoad() async 
+  {
+    super.onLoad();
+    addChild(layout);
+    addChild(hud);
+
+    final title = TextComponent(_title);
+    debug.addChild(title);
+    addChild(debug);
+  }
+
+  void add(Component c)
+  {
+    layout.addChild(c);
+  }
+}
+
+class Layer extends PositionComponent
+{
+
+}
+
+class AbstractLayout extends BaseGame
+{
   late final Vector2 size;
   late final Background background;
+  
   final FocusNode focusNode = FocusNode();
   Keyboard? keyboard;
 
-  AbstractLayout(this.title) 
+  AbstractLayout() 
   {
-    size = Vector2(840, 500);
+    size = Vector2(700, 500);
     background = Background(size);
   }
 
-  void openKeyboard(Function onPressedEnter, String defaultValue) {
+  void openKeyboard(Function onPressedEnter, String defaultValue) 
+  {
     keyboard = Keyboard(this, defaultValue, onPressedEnter);
   }
 
-  void handleKeyEvent(RawKeyEvent event) {
+  void handleKeyEvent(RawKeyEvent event) 
+  {
     keyboard?.handleKeyEvent(event);
   }
 
   @override
-  Future<void> onLoad() async {
+  Future<void> onLoad() async 
+  {
     super.onLoad();
     viewport = FixedResolutionViewport(size);
     add(background);
+  }
 
-    final titleComponent = TextComponent(title);
-    add(titleComponent);
+  @override
+  void render(Canvas canvas) 
+  {
+    super.render(canvas);
   }
 
   @override
   Color backgroundColor() => Color.fromARGB(255, 0, 0, 0);
 }
 
-class Background extends SpriteComponent {
-  late Rect rect;
+class Background extends SpriteComponent 
+{
+  late final Rect rect;
   late final Paint paint;
 
-  Background(Vector2 size) : super(size: size) {
+  Background(Vector2 size) : super(size: size) 
+  {
     paint = Paint()..color = Colors.white;
     rect = Rect.fromLTWH(x, y, size.x, size.y);
   }
 
   @override
-  void render(Canvas canvas) {
+  void render(Canvas canvas) 
+  {
     canvas.drawRect(rect, paint);
     super.render(canvas);
   }
@@ -524,8 +400,7 @@ class SoftKeyboard extends PositionComponent with Tappable {
   }
 }
 
-class KeyComponent extends PositionComponent
-    with Tappable, draggable.Draggable {
+class KeyComponent extends PositionComponent with Tappable, draggable.Draggable {
   static final double _width = 50;
   static final double _height = 50;
 

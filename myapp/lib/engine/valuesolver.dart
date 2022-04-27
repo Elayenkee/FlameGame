@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:myapp/engine/dot.dart';
 
 class ValueSolver {}
@@ -22,6 +23,8 @@ enum VALUE {
 
 extension ValueExtension on VALUE 
 {
+  String get name => describeEnum(this);
+
   Object asParam()
   {
     final map = Map<String, dynamic>();

@@ -38,7 +38,7 @@ class Utils
 
   static logRun(String message)
   {
-    print(message);
+    //print(message);
   }
 
   static int countBuild = 1;

@@ -47,7 +47,7 @@ class SettingsScreen extends StatelessWidget
   }
 }
 
-class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDraggableComponents
+class SettingsLayout extends AbstractLayout with HasDraggableComponents
 {
   final BuilderServer builderServer;
   final List<EntityComponent> entities = [];
@@ -61,7 +61,7 @@ class SettingsLayout extends AbstractLayout with HasTappableComponents, HasDragg
 
   PopupBehaviour? popupBehaviour;
 
-  SettingsLayout(this.builderServer):super("Settings");
+  SettingsLayout(this.builderServer):super();
 
   @override
   Future<void> onLoad() async

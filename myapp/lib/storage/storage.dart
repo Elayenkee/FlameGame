@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:myapp/bdd.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
@@ -53,12 +54,67 @@ class Storage
     }
     
     Utils.log("Storage.getEntity : null");
+    
     Map values = Map();
+    values[VALUE.NAME] = "Entity 1";
     values[VALUE.HP_MAX] = 46;
     values[VALUE.ATK] = 23;
-    values[VALUE.NAME] = "Warrior";
     values[VALUE.CLAN] = 1;
+
     Entity entity = Entity(values);
+    BuilderEntity builderEntity = entity.builder;
+    BuilderTotal builder = builderEntity.builderTotal;
+
+    // Poison if no poison
+    /*BuilderBehaviour builderBehaviour = builder.addBehaviour(name: "Poison if no poison");
+    builderBehaviour.builderWork.work = Works.POISON;
+    BuilderConditionGroup builderConditionGroup = builderBehaviour.builderTargetSelector.builderConditionGroup;
+    BuilderTriFunction builderTriFunction = builderBehaviour.builderTargetSelector.builderTriFunction;
+    builderTriFunction.tri = TriFunctions.LOWEST;
+    builderTriFunction.value = VALUE.HP;
+    BuilderCondition builderCondition = builderConditionGroup.addCondition();
+    builderCondition.setCondition(Conditions.NOT_EQUALS);
+    builderCondition.setParam(1, builderEntity);
+    builderCondition.setParam(2, VALUE.CLAN);
+    BuilderCondition builderCondition2 = builderConditionGroup.addCondition();
+    builderCondition2.setCondition(Conditions.EQUALS);
+    builderCondition2.setParam(1, ValueAtom(0));
+    BuilderCount builderCount = BuilderCount();
+    builderCount.setValue(VALUE.POISON);
+    builderCondition2.setParam(2, builderCount);*/
+
+    // Bleed if no bleed
+    /*BuilderBehaviour builderBehaviourBleed = builder.addBehaviour(name: "Bleed if no bleed");
+    builderBehaviourBleed.builderWork.work = Works.BLEED;
+    BuilderConditionGroup builderConditionGroupBleed = builderBehaviourBleed.builderTargetSelector.builderConditionGroup;
+    BuilderTriFunction builderTriFunctionBleed = builderBehaviourBleed.builderTargetSelector.builderTriFunction;
+    builderTriFunctionBleed.tri = TriFunctions.LOWEST;
+    builderTriFunctionBleed.value = VALUE.HP;
+    BuilderCondition builderConditionBleed = builderConditionGroupBleed.addCondition();
+    builderConditionBleed.setCondition(Conditions.NOT_EQUALS);
+    builderConditionBleed.setParam(1, builderEntity);
+    builderConditionBleed.setParam(2, VALUE.CLAN);
+    BuilderCondition builderCondition2Bleed = builderConditionGroupBleed.addCondition();
+    builderCondition2Bleed.setCondition(Conditions.EQUALS);
+    builderCondition2Bleed.setParam(1, ValueAtom(0));
+    BuilderCount builderCountBleed = BuilderCount();
+    builderCountBleed.setValue(VALUE.BLEED);
+    builderCondition2Bleed.setParam(2, builderCountBleed);*/
+
+    // Attack lowest HP
+    BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attack lowest HP");
+    builderBehaviour2.builderWork.work = Works.ATTACK;
+    BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;
+    BuilderTriFunction builderTriFunction2 = builderBehaviour2.builderTargetSelector.builderTriFunction;
+    builderTriFunction2.tri = TriFunctions.LOWEST;
+    builderTriFunction2.value = VALUE.HP;
+    BuilderCondition builderCondition3 = builderConditionGroup2.addCondition();
+    builderCondition3.setCondition(Conditions.NOT_EQUALS);
+    builderCondition3.setParam(1, builderEntity);
+    builderCondition3.setParam(2, VALUE.CLAN);
+
+    storeEntity(entity);
+
     return entity;
   }
 }

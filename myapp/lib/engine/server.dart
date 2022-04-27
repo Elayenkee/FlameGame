@@ -29,7 +29,6 @@ class Server
   {
     if(finished)
     {
-      Utils.log("END");
       return null;
     }
 

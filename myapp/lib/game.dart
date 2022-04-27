@@ -33,7 +33,7 @@ class GameLayout extends AbstractLayout
   Map mapComponents = Map();
   Map mapAnimations = Map();
 
-  GameLayout(this.server):super("Game")
+  GameLayout(this.server):super()
   {
     server.init();
   }

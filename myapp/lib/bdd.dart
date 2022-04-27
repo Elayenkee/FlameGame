@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:myapp/engine/condition.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/engine/trifunction.dart';
@@ -8,6 +9,8 @@ enum Works { ATTACK, HEAL, POISON, BLEED }
 
 extension WorksExtension on Works 
 {
+  String get name => describeEnum(this);
+
   Work instanciate() {
     switch (this) {
       case Works.ATTACK:
@@ -36,7 +39,6 @@ extension WorksExtension on Works
 
   static Works? get(String name)
   {
-    logRun("Works.get $name");
     for(Works w in Works.values)
     {
       if(name == w.name)
@@ -53,7 +55,10 @@ extension ParamTypesExtension on ParamTypes {}
 
 enum Conditions { /*EXIST, */ EQUALS, NOT_EQUALS, LOWER, HIGHER }
 
-extension ConditionsExtension on Conditions {
+extension ConditionsExtension on Conditions 
+{
+  String get name => describeEnum(this);
+
   List<ParamTypes> getParams() {
     switch (this) {
       //case Conditions.EXIST:
@@ -72,7 +77,7 @@ extension ConditionsExtension on Conditions {
 
   Condition instanciate(List params) 
   {
-    logRun("Condition.instanciate $params");
+    //logRun("Condition.instanciate $params");
     switch (this) {
       //case Conditions.EXIST:
       //  return EXIST(params);
@@ -117,7 +122,6 @@ extension ConditionsExtension on Conditions {
 
   static Conditions? get(String name)
   {
-    logRun("Conditions.get $name");
     for(Conditions w in Conditions.values)
     {
       if(name == w.name)
@@ -132,9 +136,11 @@ enum TriFunctions { LOWEST, HIGHEST }
 
 extension TriFunctionsExtension on TriFunctions 
 {
+  String get name => describeEnum(this);
+  
   TriFunction instanciate(VALUE value) 
   {
-    logRun("TriFunction.instanciate $value");
+    //logRun("TriFunction.instanciate $value");
     switch (this) {
       case TriFunctions.LOWEST:
         return LOWEST(value);
@@ -156,7 +162,6 @@ extension TriFunctionsExtension on TriFunctions
 
   static TriFunctions? get(String name)
   {
-    logRun("TriFunction.get $name");
     for(TriFunctions w in TriFunctions.values)
     {
       if(name == w.name)
