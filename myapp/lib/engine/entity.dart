@@ -2,10 +2,9 @@ import 'package:myapp/builder.dart';
 import 'package:myapp/engine/dot.dart';
 import 'package:myapp/engine/work.dart';
 import 'package:myapp/utils.dart';
-
-import 'server.dart';
-import 'behaviour.dart';
-import 'valuesolver.dart';
+import 'package:myapp/engine/server.dart';
+import 'package:myapp/engine/behaviour.dart';
+import 'package:myapp/engine/valuesolver.dart';
 
 class Entity extends UUIDHolder implements ValueReader//, Param
 {

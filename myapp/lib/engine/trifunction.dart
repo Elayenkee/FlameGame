@@ -1,5 +1,5 @@
-import 'entity.dart';
-import 'valuesolver.dart';
+import 'package:myapp/engine/entity.dart';
+import 'package:myapp/engine/valuesolver.dart';
 
 abstract class TriFunction {
   List<Entity> sort(List<Entity> liste) {

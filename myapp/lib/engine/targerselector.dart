@@ -1,10 +1,9 @@
 import 'package:myapp/builder.dart';
 import 'package:myapp/utils.dart';
-
-import 'condition.dart';
-import 'entity.dart';
-import 'valuesolver.dart';
-import 'trifunction.dart';
+import 'package:myapp/engine/condition.dart';
+import 'package:myapp/engine/entity.dart';
+import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/engine/trifunction.dart';
 
 class TargetSelector extends UUIDHolder implements ValueReader 
 {

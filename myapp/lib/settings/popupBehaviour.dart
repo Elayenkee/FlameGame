@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/bdd.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/valuesolver.dart';
-import 'package:myapp/engine/work.dart';
 import 'package:myapp/settings/settings.dart';
-
-import 'settings.dart';
 
 class PopupBehaviour extends PositionComponent with Tappable
 {

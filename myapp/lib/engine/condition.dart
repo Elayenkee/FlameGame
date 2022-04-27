@@ -1,6 +1,5 @@
 import 'package:myapp/utils.dart';
-
-import 'valuesolver.dart';
+import 'package:myapp/engine/valuesolver.dart';
 
 abstract class Condition {
   Condition(List params);

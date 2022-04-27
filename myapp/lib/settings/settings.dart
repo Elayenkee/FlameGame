@@ -9,10 +9,9 @@ import 'package:myapp/main.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
-import 'dart:math' as math;
-
 import 'package:myapp/graphics/themes/firstTheme.dart';
 import 'package:myapp/settings/popupBehaviour.dart';
+import 'dart:math' as math;
 
 class Images
 {

@@ -1,11 +1,10 @@
 import 'package:myapp/utils.dart';
-
-import 'condition.dart';
-import 'entity.dart';
-import 'server.dart';
-import 'targerselector.dart';
-import 'valuesolver.dart';
-import 'work.dart';
+import 'package:myapp/engine/condition.dart';
+import 'package:myapp/engine/entity.dart';
+import 'package:myapp/engine/server.dart';
+import 'package:myapp/engine/targerselector.dart';
+import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/engine/work.dart';
 
 class Behaviour implements ValueReader 
 {

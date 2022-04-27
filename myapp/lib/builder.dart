@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:myapp/engine/condition.dart';
 import 'package:myapp/engine/behaviour.dart';
 import 'package:myapp/engine/entity.dart';
@@ -8,7 +7,7 @@ import 'package:myapp/engine/trifunction.dart';
 import 'package:myapp/engine/work.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
-import 'bdd.dart';
+import 'package:myapp/bdd.dart';
 
 abstract class UUIDHolder
 {

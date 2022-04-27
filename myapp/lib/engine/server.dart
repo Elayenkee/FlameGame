@@ -1,8 +1,5 @@
-import 'dart:math';
-
 import 'package:myapp/utils.dart';
-
-import 'entity.dart';
+import 'package:myapp/engine/entity.dart';
 
 class Server 
 {
