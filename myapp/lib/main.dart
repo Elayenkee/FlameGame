@@ -35,7 +35,7 @@ class GameScreen extends StatelessWidget
   }
 }
 
-class GameLayout extends AbstractLayout with HasTappableComponents
+class GameLayout extends AbstractLayout with PanDetector
 {
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
@@ -56,7 +56,7 @@ class GameLayout extends AbstractLayout with HasTappableComponents
     if(_fightScreen != null)
     {
       print("GameLayout.startWorld.removeFightScreen");
-      components.remove(_fightScreen!);
+      _fightScreen!.remove();
       _fightScreen = null;
     }
     _worldScreen = WorldScreen(size);
@@ -69,28 +69,35 @@ class GameLayout extends AbstractLayout with HasTappableComponents
     if(_worldScreen != null)
     {
       print("GameLayout.startWorld.removeWorldScreen");
-      components.remove(_worldScreen!);
+      _worldScreen!.remove();
       _worldScreen = null;
     }
     _fightScreen = FightScreen(size);
     add(_fightScreen!);
   }
+
+  @override
+  void onPanDown(DragDownInfo info) 
+  {
+    super.onPanDown(info);
+    _worldScreen?.onClick(info.eventPosition.game);
+  }
 }
 
-class AbstractScreen extends PositionComponent
+class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
 {
   late final String _title;
 
-  final PositionComponent layout = Layer();
-  final PositionComponent hud = Layer();
-  final PositionComponent debug = Layer();
+  final BaseComponent layout = Layer();
+  final BaseComponent hud = Layer();
+  final BaseComponent debug = Layer();
 
-  AbstractScreen(this._title, Vector2 size):super(size: size);
+  AbstractScreen(this._title, Vector2 size):super();
 
   @override
   Future<void> onLoad() async 
   {
-    super.onLoad();
+    await super.onLoad();
     addChild(layout);
     addChild(hud);
 
@@ -120,7 +127,7 @@ class AbstractLayout extends BaseGame
 
   AbstractLayout() 
   {
-    size = Vector2(700, 500);
+    size = Vector2(850, 500);
     background = Background(size);
   }
 
@@ -137,7 +144,7 @@ class AbstractLayout extends BaseGame
   @override
   Future<void> onLoad() async 
   {
-    super.onLoad();
+    await super.onLoad();
     viewport = FixedResolutionViewport(size);
     add(background);
   }

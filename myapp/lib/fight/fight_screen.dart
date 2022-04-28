@@ -9,9 +9,10 @@ import 'package:myapp/engine/server.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/utils.dart';
 
-class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
+class FightScreen extends AbstractScreen
 {
   final List<Story> stories = [];
+  StoryAnimation? storyAnimation;
 
   FightScreen(Vector2 size):super("F", size);
 
@@ -19,12 +20,12 @@ class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
   Future<void> onLoad() async 
   {
     print("FightScreen.onLoad");
-    super.onLoad();
+    await super.onLoad();
 
     Entity entity = Storage.getEntity();
 
     //TODO REMOVE
-    //entity.addHP(1000);
+    entity.addHP(1000);
 
     BuilderServer builder = BuilderServer();
     builder.addEntity(e:entity);
@@ -49,35 +50,28 @@ class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
   {
     super.update(dt);
 
+    if(storyAnimation != null)
+    {
+      storyAnimation!.update(dt);
+      if(storyAnimation!.isFinished)
+        storyAnimation = null;
+    }
+
+    if(storyAnimation != null)
+    {
+      waitAndFinish(dt);
+      return;
+    }
+
     if(stories.length > 0)
     {
       Story story = stories.removeAt(0);
-      story.events.forEach((event) {
-        Utils.log(event.log);
-      });
+      storyAnimation = StoryAnimation(this, story);
     }
     else
     {
       waitAndFinish(dt);
     }
-  }
-
-  @override
-  bool onTapDown(TapDownInfo event) 
-  {
-    return true;
-  }
-
-  @override
-  bool onTapUp(TapUpInfo event) 
-  {
-    return true;
-  }
-
-  @override
-  bool onTapCancel() 
-  {
-    return true;
   }
 
   void addRandomEnemmy(BuilderServer builder)
@@ -116,5 +110,270 @@ class FightScreen extends AbstractScreen with Tappable, HasGameRef<GameLayout>
       _waitAndFinish = -1;
       gameRef.startWorld();
     }
+  }
+}
+
+class StoryAnimation
+{
+  final Story story;
+  bool isFinished = false;
+
+  int indexCurrentEvent = -1;
+  EventAnimation? eventAnimation;
+
+  StoryAnimation(this.game, this.story);
+
+  void update(double dt)
+  {
+    if(eventAnimation == null)
+    {
+      indexCurrentEvent++;
+      if(story.events.length <= indexCurrentEvent)
+      {
+        isFinished = true;
+      }
+      else
+      {
+        eventAnimation = EventAnimation(game, story.events[indexCurrentEvent]);
+        eventAnimation!.start();
+      }
+    }
+    else
+    {
+      if(eventAnimation!.isFinished)
+      {
+        eventAnimation = null;
+      }
+      else
+      {
+        eventAnimation!.update(dt);
+      }
+    }
+  }
+}
+
+class EventAnimation
+{
+  final StoryEvent event;
+  bool isFinished = false;
+
+  List<Step> steps = [];
+  Step? currentStep;
+
+  double waiter = 0;
+
+  EventAnimation(this.game, this.event);
+
+  void start()
+  {
+    Utils.log(event.log);
+    EntityComponent? callerComponent = getEntityComponent("caller");
+    EntityComponent? targetComponent = getEntityComponent("target");
+    
+    if(callerComponent != null)
+    {
+      steps.add(new Step((){callerComponent.stepForward();}, () => callerComponent.targetPosition == null));
+      wait(.2);
+    }
+    
+    List<PositionComponent> toReset = [];
+    if(event.values.containsKey("work"))
+    {
+      steps.add(new StepTrue(()
+      {
+        SpriteComponent sprite = game.mapAnimations[event.get("source") as String];
+        sprite.position = targetComponent!.position - Vector2(0, 30);
+        toReset.add(sprite);
+      }));
+    }
+
+    if(event.values.containsKey("type"))
+    {
+      steps.add(new StepTrue(()
+      {
+        SpriteComponent sprite = game.mapAnimations[event.get("source") as String];
+        sprite.position = targetComponent!.position - Vector2(0, 150);
+        toReset.add(sprite);
+      }));
+    }
+
+    if(targetComponent != null)
+    {
+      steps.add(new StepTrue(()
+      {
+        if(event.has("damage"))
+        {
+          int value = event.get("damage") as int;
+          game.damage.position = targetComponent.position - Vector2(0, 120);
+          game.damage.text = "$value";
+          game.damage.textRenderer = TextPaint(config: TextPaintConfig(color: value < 0 ? Colors.red : Colors.green));
+          toReset.add(game.damage);
+        }
+
+        targetComponent.setHP();
+      }));
+    }
+
+    // Reset positions
+    wait(.5);
+    steps.add(new StepTrue(()
+    {
+      for(PositionComponent c in toReset)
+        c.position = Vector2.all(-100);
+    }));
+
+    if(callerComponent != null)
+    {
+      wait(.2);
+      steps.add(new Step((){callerComponent.moveToInitialPosition();}, () => callerComponent.targetPosition == null));
+    }
+
+    wait(1);
+
+    next();
+  }
+
+  EntityComponent? getEntityComponent(String type)
+  {
+    try
+    {
+      Map caller = event.get(type) as Map;
+      if(caller.containsKey("uuid"))
+      {
+        String uuidCaller = caller["uuid"];
+        EntityComponent callerComponent = game.getComponentByUUID(uuidCaller);
+        callerComponent.setStatus(caller);
+        return callerComponent;
+      }
+    }
+    catch(e)
+    {
+      
+    }
+    return null;
+  }
+
+  void wait(double s)
+  {
+    steps.add(new Step((){waiter = s;}, () => waiter <= 0));
+  }
+
+  void update(double dt)
+  {
+    if(waiter > 0)
+    {
+      waiter -= dt;
+      if(waiter < 0)
+        waiter = 0;
+    }
+
+    if(currentStep?.stopCondition())
+      next();
+  }
+
+  void next()
+  {
+    if(!steps.isEmpty)
+    {
+      currentStep = steps.removeAt(0);
+      currentStep!.action();    
+    }
+    else
+    {
+      isFinished = true;
+    }
+  }
+}
+
+class EntityComponent extends SpriteComponent
+{
+  final GameLayout gameLayout;
+  final Entity entity;
+  final double initialX;
+  final double initialY;
+
+  late final spriteDead;
+  
+  late final Vector2 positionForward;
+  Vector2? targetPosition = null;
+
+  late final HealthBarComponent healthBar;
+  late final HealthBarComponent manaBar;
+
+  Map? status;
+
+  EntityComponent(this.gameLayout, this.entity, this.initialX, this.initialY)
+  {
+    this.x = initialX;
+    this.y = initialY;
+    positionForward = Vector2(entity.getClan() == 1 ? x + 200 : x - 200, y);
+  }
+
+  @override
+  Future<void>? onLoad() async 
+  {
+    int clan = entity.getClan();
+    spriteDead = Sprite(gameLayout.images.fromCache('entity_dead.png'));
+    sprite = Sprite(gameLayout.images.fromCache(clan == 1 ? 'entity_warrior.png' : 'entity_orc.png'));
+    size = Vector2(clan == 1 ? 94 : 120, clan == 1 ? 150 : 120);
+    anchor = Anchor.bottomCenter;
+
+    healthBar = HealthBarComponent(entity.getHPMax());
+    healthBar.position.x = 120;
+    healthBar.position.y = size.y - 120;
+    addChild(healthBar);
+
+    if(entity.getMPMax() > 0)
+    {
+      manaBar = HealthBarComponent(entity.getMPMax());
+      manaBar.position.x = 140;
+      manaBar.position.y = size.y - 120;
+      manaBar.setColor(Colors.blue);
+      addChild(manaBar);
+    }
+
+    return super.onLoad();
+  }
+
+  void setStatus(Map status)
+  {
+    this.status = status;
+  }
+
+  void moveToInitialPosition()
+  {
+    setTargetPosition(Vector2(initialX, initialY));
+  }
+
+  void stepForward()
+  {
+    setTargetPosition(positionForward);
+  }
+
+  void setTargetPosition(Vector2 targetPosition)
+  {
+    this.targetPosition = targetPosition;
+  }
+
+  @override
+  void update(double dt)
+  {
+    if(targetPosition != null)
+    {
+      position.moveToTarget(targetPosition!, 10);
+      double distance = position.distanceTo(targetPosition!);
+      if(distance < 10)
+        targetPosition = null;
+    }
+
+    super.update(dt);
+  }
+
+  void setHP()
+  {
+    int hp = status![VALUE.HP] as int;
+    healthBar.setHP(hp);
+    if(hp <= 0)
+      sprite = spriteDead;
   }
 }

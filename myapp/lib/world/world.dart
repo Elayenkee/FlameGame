@@ -39,6 +39,13 @@ class World
     _worldScreen.startFight();
   }
 
+  void setPlayerListener(EntityListener listener)
+  {
+    _worldEntity.listener = listener;
+  }
+
+  get entityPosition => _worldEntity._position;
+
   Map<String, dynamic> toMap()
   {
     final map = Map<String, dynamic>();
@@ -73,6 +80,8 @@ class WorldEntity
 
   double timeDeplacement = 0;
 
+  EntityListener? listener;
+
   WorldEntity(this._entity)
   {
     print("WorldEntity.<init> : $_position");
@@ -80,14 +89,16 @@ class WorldEntity
 
   void _resetNext()
   {
-    _next = 2 + World.Rand.nextDouble() * 2;
+    _next = 1 + World.Rand.nextDouble() * 2;
   }
 
   void _goTo(Position p)
   {
     timeDeplacement = _world._time;
-    print("WorldEntity.goTo $p from $_position");
     _target = p;
+    double diffX = _target!.x - _position.x;
+    print("WorldEntity.goTo $p from $_position $diffX");
+    listener?.onStartMove(diffX);
   }
 
   void _update(double dt)
@@ -102,6 +113,7 @@ class WorldEntity
       print("WorldEntity arrived at target $_target in ${_world._time - timeDeplacement}");
       _position = _target!;
       _target = null;
+      listener?.onStopMove();
       Storage.storeWorld(_world);
       return;
     }
@@ -109,10 +121,12 @@ class WorldEntity
     final v = Vector2(_target!.x - _position.x, _target!.y - _position.y)..normalize()..multiply(Vector2.all(max));
     _position.x += v.x;
     _position.y += v.y;
+    //listener?.onPlayerMove(_position);
     
     _next -= dt;
     if(_next <= 0)
     {
+      listener?.onStopMove();
       Storage.storeWorld(_world);
       _resetNext();
       _target = null;
@@ -132,6 +146,12 @@ class WorldEntity
     _position = Position.fromMap(map["position"]);
     print("WorldEntity.fromMap : $_position");
   }
+}
+
+abstract class EntityListener
+{
+  void onStartMove(double dir);
+  void onStopMove();
 }
 
 class Position
