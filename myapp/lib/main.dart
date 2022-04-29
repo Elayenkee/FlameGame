@@ -5,6 +5,8 @@ import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/components.dart' as draggable;
+import 'package:myapp/donjon/donjon.dart';
+import 'package:myapp/donjon/donjon_screen.dart';
 import 'package:myapp/fight/fight_screen.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world_screen.dart';
@@ -39,26 +41,33 @@ class GameLayout extends AbstractLayout with PanDetector
 {
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
+  DonjonScreen? _donjonScreen;
 
   GameLayout():super();
 
   @override
   Future<void> onLoad() async 
   {
-    super.onLoad();
-    startWorld();
-    //startFight();
+    await super.onLoad();
+
+    if(Storage.hasDonjon())
+      startDonjon();
+    else
+    {
+      //TODO REMOVE
+      Donjon.generate();
+      startDonjon();
+      //startWorld();
+    }
   }
 
   void startWorld()
   {
     print("GameLayout.startWorld");
-    if(_fightScreen != null)
-    {
-      print("GameLayout.startWorld.removeFightScreen");
-      _fightScreen!.remove();
-      _fightScreen = null;
-    }
+    _fightScreen?.remove();
+    _fightScreen = null;
+    _donjonScreen?.remove();
+    _donjonScreen = null;
     _worldScreen = WorldScreen(size);
     add(_worldScreen!);
   }
@@ -66,14 +75,23 @@ class GameLayout extends AbstractLayout with PanDetector
   void startFight()
   {
     print("GameLayout.startFight");
-    if(_worldScreen != null)
-    {
-      print("GameLayout.startWorld.removeWorldScreen");
-      _worldScreen!.remove();
-      _worldScreen = null;
-    }
+    _worldScreen?.remove();
+    _worldScreen = null;
+    _donjonScreen?.remove();
+    _donjonScreen = null;
     _fightScreen = FightScreen(size);
     add(_fightScreen!);
+  }
+
+  void startDonjon()
+  {
+    print("GameLayout.startDonjon");
+    _worldScreen?.remove();
+    _worldScreen = null;
+    _fightScreen?.remove();
+    _fightScreen = null;
+    _donjonScreen = DonjonScreen(size);
+    add(_donjonScreen!);
   }
 
   @override
@@ -81,6 +99,7 @@ class GameLayout extends AbstractLayout with PanDetector
   {
     super.onPanDown(info);
     _worldScreen?.onClick(info.eventPosition.game);
+    _donjonScreen?.onClick(info.eventPosition.game);
   }
 }
 
@@ -152,7 +171,7 @@ class AbstractLayout extends BaseGame
   @override
   void render(Canvas canvas) 
   {
-    super.render(canvas);
+    //super.render(canvas);
   }
 
   @override

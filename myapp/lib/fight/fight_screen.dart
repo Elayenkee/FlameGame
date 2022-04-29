@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flame/components.dart';
 import 'package:flame/gestures.dart';
 import 'package:myapp/bdd.dart';
@@ -11,6 +12,9 @@ import 'package:myapp/utils.dart';
 
 class FightScreen extends AbstractScreen
 {
+  final Map mapComponents = Map();
+  final Map mapAnimations = Map();
+
   final List<Story> stories = [];
   StoryAnimation? storyAnimation;
 
@@ -42,6 +46,28 @@ class FightScreen extends AbstractScreen
         stories.add(story);  
     } while (story != null && stories.length < 100);
     Storage.storeEntity(entity);
+
+    List<Entity> allies = server.getAllies();
+    double xAllies = 150;
+    double ecart = gameRef.size.y / (allies.length + 1);
+    for(int i = 0; i < allies.length; i++)
+    {
+      Entity entity = allies[i];
+      EntityComponent allie = EntityComponent(this, entity, xAllies, (i + 1) * ecart);
+      add(allie);
+      mapComponents[entity.uuid] = allie;
+    }
+
+    List<Entity> ennemies = server.getEnnemies();
+    double xEnnemies = gameRef.size.x - 150;
+    ecart = gameRef.size.y / (ennemies.length + 1);
+    for(int i = 0; i < ennemies.length; i++)
+    {
+      Entity entity = ennemies[i];
+      EntityComponent ennemy = EntityComponent(this, entity, xEnnemies, (i + 1) * ecart);
+      add(ennemy);
+      mapComponents[entity.uuid] = ennemy;
+    }
     print("FightScreen.onLoaded : ${stories.length} stories");
   }
 
@@ -57,12 +83,6 @@ class FightScreen extends AbstractScreen
         storyAnimation = null;
     }
 
-    if(storyAnimation != null)
-    {
-      waitAndFinish(dt);
-      return;
-    }
-
     if(stories.length > 0)
     {
       Story story = stories.removeAt(0);
@@ -72,6 +92,11 @@ class FightScreen extends AbstractScreen
     {
       waitAndFinish(dt);
     }
+  }
+
+  EntityComponent getComponentByUUID(String uuid)
+  {
+    return mapComponents[uuid];
   }
 
   void addRandomEnemmy(BuilderServer builder)
@@ -115,6 +140,7 @@ class FightScreen extends AbstractScreen
 
 class StoryAnimation
 {
+  final FightScreen game;
   final Story story;
   bool isFinished = false;
 
@@ -154,6 +180,7 @@ class StoryAnimation
 
 class EventAnimation
 {
+  final FightScreen game;
   final StoryEvent event;
   bool isFinished = false;
 
@@ -201,14 +228,14 @@ class EventAnimation
     {
       steps.add(new StepTrue(()
       {
-        if(event.has("damage"))
+        /*if(event.has("damage"))
         {
           int value = event.get("damage") as int;
           game.damage.position = targetComponent.position - Vector2(0, 120);
           game.damage.text = "$value";
           game.damage.textRenderer = TextPaint(config: TextPaintConfig(color: value < 0 ? Colors.red : Colors.green));
           toReset.add(game.damage);
-        }
+        }*/
 
         targetComponent.setHP();
       }));
@@ -287,7 +314,7 @@ class EventAnimation
 
 class EntityComponent extends SpriteComponent
 {
-  final GameLayout gameLayout;
+  final FightScreen game;
   final Entity entity;
   final double initialX;
   final double initialY;
@@ -297,12 +324,12 @@ class EntityComponent extends SpriteComponent
   late final Vector2 positionForward;
   Vector2? targetPosition = null;
 
-  late final HealthBarComponent healthBar;
-  late final HealthBarComponent manaBar;
+  //late final HealthBarComponent healthBar;
+  //late final HealthBarComponent manaBar;
 
   Map? status;
 
-  EntityComponent(this.gameLayout, this.entity, this.initialX, this.initialY)
+  EntityComponent(this.game, this.entity, this.initialX, this.initialY)
   {
     this.x = initialX;
     this.y = initialY;
@@ -313,12 +340,12 @@ class EntityComponent extends SpriteComponent
   Future<void>? onLoad() async 
   {
     int clan = entity.getClan();
-    spriteDead = Sprite(gameLayout.images.fromCache('entity_dead.png'));
-    sprite = Sprite(gameLayout.images.fromCache(clan == 1 ? 'entity_warrior.png' : 'entity_orc.png'));
+    //spriteDead = Sprite(game.images.fromCache('entity_dead.png'));
+    //sprite = Sprite(game.images.fromCache(clan == 1 ? 'entity_warrior.png' : 'entity_orc.png'));
     size = Vector2(clan == 1 ? 94 : 120, clan == 1 ? 150 : 120);
     anchor = Anchor.bottomCenter;
 
-    healthBar = HealthBarComponent(entity.getHPMax());
+    /*healthBar = HealthBarComponent(entity.getHPMax());
     healthBar.position.x = 120;
     healthBar.position.y = size.y - 120;
     addChild(healthBar);
@@ -330,7 +357,7 @@ class EntityComponent extends SpriteComponent
       manaBar.position.y = size.y - 120;
       manaBar.setColor(Colors.blue);
       addChild(manaBar);
-    }
+    }*/
 
     return super.onLoad();
   }
@@ -372,8 +399,21 @@ class EntityComponent extends SpriteComponent
   void setHP()
   {
     int hp = status![VALUE.HP] as int;
-    healthBar.setHP(hp);
+    //healthBar.setHP(hp);
     if(hp <= 0)
       sprite = spriteDead;
   }
+}
+
+class Step 
+{
+  final Function action;
+  final Function stopCondition;
+
+  Step(this.action, this.stopCondition);
+}
+
+class StepTrue extends Step
+{
+  StepTrue(Function action):super(action, () => true);
 }

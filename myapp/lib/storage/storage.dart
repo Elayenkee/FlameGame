@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:myapp/bdd.dart';
 import 'package:myapp/builder.dart';
+import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
@@ -15,6 +16,38 @@ class Storage
   static Future<void> init() async
   {
     prefs = await SharedPreferences.getInstance();
+  }
+
+  static bool hasDonjon()
+  {
+    String? json = prefs.getString('donjon');
+    return json != null;
+  }
+
+  static void storeDonjon(Donjon donjon)
+  {
+    final map = donjon.toMap();
+    try
+    {
+      final json = jsonEncode(map);
+      prefs.setString('donjon', json);
+      print(json);
+    }
+    catch(e)
+    {
+      print(e);
+    }
+  }
+
+  static Donjon getDonjon()
+  {
+    String? json = prefs.getString('donjon');
+    if(json != null)
+    {
+      Map<String, dynamic> map = jsonDecode(json);
+      return Donjon.fromMap(map);
+    }
+    return Donjon.fromMap(null);
   }
 
   static void storeWorld(World world)
