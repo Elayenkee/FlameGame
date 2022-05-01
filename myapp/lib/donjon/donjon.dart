@@ -134,7 +134,7 @@ class DonjonEntity
 {
   late Donjon _donjon;
   Entity _entity;
-  Position _position = Position(0, 4.6);
+  Position _position = Position(0, 4.3);
   Position? _target;
   final double _speed = 3.4;
   double _next = -1;

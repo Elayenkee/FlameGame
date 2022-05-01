@@ -65,6 +65,8 @@ class GameLayout extends AbstractLayout with PanDetector
     }
 
     startOptions();
+
+    
   }
 
   void startWorld()

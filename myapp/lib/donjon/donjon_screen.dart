@@ -12,7 +12,9 @@ class DonjonScreen extends AbstractScreen
 {
   late final Donjon _donjon;
   late final PlayerComponent _player;
-  late Decor _decor;
+  late final Decor _decor;
+
+  late final SpriteComponent _buttonSettings;
 
   DonjonScreen(Vector2 size):super("D", size);
 
@@ -34,6 +36,9 @@ class DonjonScreen extends AbstractScreen
     
     _donjon.setScreen(this);
     _donjon.setPlayerListener(_player);
+
+    _buttonSettings = SpriteComponent(position: Vector2(gameRef.size.x - 100, 5), size: Vector2.all(32), sprite: Sprite(await Images().load("button_settings.png")));
+    hud.addChild(_buttonSettings);
 
     _player.onMove(force: true);
     print("DonjonScreen.onLoaded");
@@ -71,6 +76,13 @@ class DonjonScreen extends AbstractScreen
   bool onClick(Vector2 p) 
   {
     print(p);
+
+    if(_buttonSettings.containsPoint(p))
+    {
+      gameRef.startOptions();
+      return true;
+    }
+
     final eClick = Vector2(p.x, p.y) - gameRef.size / 2;
     final click = eClick..divide(Vector2(50, 50));
     if(!_donjon.entityGoTo(click))
@@ -290,15 +302,12 @@ class PlayerComponent extends PositionComponent with HasGameRef<GameLayout> impl
   }
 }
 
-class Player extends SpriteAnimationComponent// with HasGameRef<GameLayout> 
+class Player extends SpriteAnimationComponent
 {
   late final SpriteAnimation idle;
   late final SpriteAnimation move;
   
-  Player():super()
-  {
-    size = Vector2(160, 95);
-  }
+  Player():super(size: Vector2(160, 95));
   
   @override
   Future<void> onLoad() async 

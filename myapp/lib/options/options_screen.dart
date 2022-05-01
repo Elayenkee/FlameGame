@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
@@ -30,6 +32,10 @@ class OptionsScreen  extends AbstractScreen
     popup.position = Vector2.all(marge / 2);
     add(popup);
 
+    final player = Player();
+    player.position = Vector2(Popup.square, -30);
+    popup.addChild(player);
+
     print("OptionsScreen.onLoaded");
   }
 
@@ -38,6 +44,29 @@ class OptionsScreen  extends AbstractScreen
   {
     popup.onClick(p);
     return true;
+  }
+}
+
+class Player extends SpriteComponent
+{
+  Player():super(size: Vector2(70, 80));
+  
+  @override
+  Future<void> onLoad() async 
+  {
+    print("Player.onLoad");
+    await super.onLoad();
+    final spriteSheet = SpriteSheet(image: await Images().load("hero_knight.png"), srcSize: Vector2(100, 55));
+    final SpriteAnimationComponent player = SpriteAnimationComponent();
+    player.animation = spriteSheet.createAnimation(row: 0, stepTime: .15, from: 0, to: 6);
+    player.size = Vector2(130, 72);
+    player.anchor = Anchor.topCenter;
+    player.position = Vector2(size.x / 2, 0);
+    addChild(player);
+
+    sprite = Sprite(await Images().load("cadre_player.png"));
+
+    print("Player.onLoaded");
   }
 }
 
@@ -60,6 +89,7 @@ class Popup extends SpriteComponent
     if(inited)
       return;
 
+    inited = true;
     print("Popup.init.start");
     final sheet = SpriteSheet(image: await Images().load("gui.png"), srcSize: Vector2(32, 32));
     _cornerTopLeft = sheet.getSprite(7, 0);
