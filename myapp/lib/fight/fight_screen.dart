@@ -136,6 +136,12 @@ class FightScreen extends AbstractScreen
       gameRef.startWorld();
     }
   }
+
+  @override
+  bool onClick(Vector2 p) 
+  {
+    return true;
+  }
 }
 
 class StoryAnimation

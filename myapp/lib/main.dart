@@ -8,8 +8,11 @@ import 'package:flame/components.dart' as draggable;
 import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/donjon/donjon_screen.dart';
 import 'package:myapp/fight/fight_screen.dart';
+import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world_screen.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 Future<void> main() async
 {
@@ -42,6 +45,7 @@ class GameLayout extends AbstractLayout with PanDetector
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
   DonjonScreen? _donjonScreen;
+  OptionsScreen? _optionsScreen;
 
   GameLayout():super();
 
@@ -59,6 +63,8 @@ class GameLayout extends AbstractLayout with PanDetector
       startDonjon();
       //startWorld();
     }
+
+    startOptions();
   }
 
   void startWorld()
@@ -94,16 +100,35 @@ class GameLayout extends AbstractLayout with PanDetector
     add(_donjonScreen!);
   }
 
+  void startOptions()
+  {
+    _optionsScreen = OptionsScreen(size, onClickClose: closeOptions);
+    add(_optionsScreen!);
+  }
+
+  void closeOptions()
+  {
+    _optionsScreen?.remove();
+    _optionsScreen = null;
+  }
+
   @override
   void onPanDown(DragDownInfo info) 
   {
     super.onPanDown(info);
+
+    if(_optionsScreen != null)
+    {
+      _optionsScreen?.onClick(info.eventPosition.game);
+      return;
+    }
+    
     _worldScreen?.onClick(info.eventPosition.game);
     _donjonScreen?.onClick(info.eventPosition.game);
   }
 }
 
-class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
+abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
 {
   late final String _title;
 
@@ -129,6 +154,10 @@ class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   {
     layout.addChild(c);
   }
+
+  bool onClick(Vector2 p);
+
+  get isWeb => kIsWeb;
 }
 
 class Layer extends PositionComponent
@@ -171,7 +200,12 @@ class AbstractLayout extends BaseGame
   @override
   void render(Canvas canvas) 
   {
-    //super.render(canvas);
+    super.render(canvas);
+  }
+
+  void setBackgroundColor(Color color)
+  {
+    background.setColor(color);
   }
 
   @override
@@ -181,7 +215,7 @@ class AbstractLayout extends BaseGame
 class Background extends SpriteComponent 
 {
   late final Rect rect;
-  late final Paint paint;
+  late Paint paint;
 
   Background(Vector2 size) : super(size: size) 
   {
@@ -189,10 +223,35 @@ class Background extends SpriteComponent
     rect = Rect.fromLTWH(x, y, size.x, size.y);
   }
 
+  void setColor(Color color)
+  {
+    paint.color = color;
+  }
+
   @override
   void render(Canvas canvas) 
   {
     canvas.drawRect(rect, paint);
+    super.render(canvas);
+  }
+}
+
+class Shadow extends SpriteComponent 
+{
+  late final Rect rect;
+  late final Paint paint;
+
+  Shadow(Vector2 size, Vector2 position) : super(size: size) 
+  {
+    paint = Paint()..color = Color.fromARGB(178, 28, 26, 26);
+    rect = Rect.fromLTWH(position.x, position.y, size.x, size.y);
+    anchor = Anchor.bottomCenter;
+  }
+
+  @override
+  void render(Canvas canvas) 
+  {
+    canvas.drawOval(rect, paint);
     super.render(canvas);
   }
 }

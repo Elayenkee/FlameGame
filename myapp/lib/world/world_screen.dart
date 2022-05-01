@@ -49,11 +49,13 @@ class WorldScreen extends AbstractScreen
       _player.onMove();
   }
 
-  void onClick(Vector2 p) 
+  @override
+  bool onClick(Vector2 p) 
   {
     final eClick = Vector2(p.x - 425, p.y - 250);
     final click = eClick..divide(Vector2(50, 50));
     _world.entityGoTo(click);
+    return true;
   }
 
   @override

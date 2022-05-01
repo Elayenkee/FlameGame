@@ -31,7 +31,6 @@ class Storage
     {
       final json = jsonEncode(map);
       prefs.setString('donjon', json);
-      print(json);
     }
     catch(e)
     {
@@ -45,7 +44,14 @@ class Storage
     if(json != null)
     {
       Map<String, dynamic> map = jsonDecode(json);
-      return Donjon.fromMap(map);
+      try
+      {
+        return Donjon.fromMap(map);
+      }
+      catch(e)
+      {
+        print(e);
+      }
     }
     return Donjon.fromMap(null);
   }

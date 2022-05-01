@@ -4,7 +4,6 @@ import 'package:flame/components.dart';
 import 'package:myapp/donjon/donjon_screen.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/storage/storage.dart';
-import 'package:myapp/utils.dart';
 import 'package:myapp/world/world.dart';
 
 class Donjon
@@ -13,6 +12,7 @@ class Donjon
   late final DonjonEntity _donjonEntity;
 
   late final Salle start;
+  late Salle currentSalle;
 
   void setScreen(DonjonScreen screen)
   {
@@ -24,16 +24,39 @@ class Donjon
     _donjonEntity._update(dt);
   }
 
-  void entityGoTo(Vector2 target)
+  bool entityGoTo(Vector2 target, {int dir = -1})
   {
     Position newPosition = Position.fromVector2(target);
-    _donjonEntity._goTo(newPosition);
+    return _donjonEntity._goTo(newPosition, dir: dir);
   }
 
   void _startFight()
   {
     print("Donjon.startFight");
     _donjonScreen.startFight();
+  }
+
+  void changeSalle(Salle? salle)
+  {
+    print("Donjon.changeSalle $salle");
+    if(salle == null)
+      return;
+
+    if(salle == currentSalle.w)
+      _donjonEntity._position = Position(6.5, .95);
+
+    if(salle == currentSalle.e)
+      _donjonEntity._position = Position(-6.5, .95);
+
+    if(salle == currentSalle.n)
+      _donjonEntity._position = Position(0, 4.1);
+
+    if(salle == currentSalle.s)
+      _donjonEntity._position = Position(0, -2.2);
+
+    currentSalle = salle;
+
+    _donjonScreen.changeSalle();
   }
 
   void setPlayerListener(EntityListener listener)
@@ -48,6 +71,7 @@ class Donjon
     final map = Map<String, dynamic>();
     map["entity"] = _donjonEntity.toMap();
     map["salles"] = [];
+    map["currentSalleID"] = currentSalle.id;
     addSalleToMap(start, map, []);
     return map;
   }
@@ -67,13 +91,31 @@ class Donjon
 
   Donjon.fromMap(Map<String, dynamic>? map)
   {
-    print("Donjon start");
     if(map != null)
     {
+      print("Donjon.fromMap");
       _donjonEntity = DonjonEntity.fromMap(Storage.getEntity(), map["entity"]);
+      int currentSalleID = map["currentSalleID"];
+      List listeSalles = map["salles"];
+      final mapSalles = Map<int, Salle>();
+      listeSalles.forEach((mapSalle) { 
+        Salle salle = Salle.fromMap(mapSalle);
+        mapSalles[salle.id] = salle;
+      });
+      listeSalles.forEach((mapSalle) { 
+        int id = mapSalle["id"];
+        Salle salle = mapSalles[id]!;
+        salle.complete(mapSalle, mapSalles);
+        if(id == 1)
+          start = salle;
+        if(id == currentSalleID)
+          currentSalle = salle;
+      });
+      print("Donjon.fromMap.end");
     }
     else
     {
+      print("Donjon.fromNull");
       _donjonEntity = DonjonEntity(Storage.getEntity());
     }
     _donjonEntity._donjon = this;
@@ -82,6 +124,7 @@ class Donjon
 
   static void generate()
   {
+    print("Donjon.generate");
     Donjon donjon = Generate().start();
     Storage.storeDonjon(donjon);
   }
@@ -91,10 +134,11 @@ class DonjonEntity
 {
   late Donjon _donjon;
   Entity _entity;
-  Position _position = Position(0, 5);
+  Position _position = Position(0, 4.6);
   Position? _target;
-  final double _speed = 2.5;
+  final double _speed = 3.4;
   double _next = -1;
+  int nextDir = -1;
 
   EntityListener? listener;
 
@@ -108,12 +152,22 @@ class DonjonEntity
     _next = 1 + World.Rand.nextDouble() * 2;
   }
 
-  void _goTo(Position p)
+  bool _goTo(Position p, {int dir = -1})
   {
+    if(p.x > 7.5 || p.x < -7.5 || p.y > 4.25 || p.y < -2.95)
+      return false;
+
+    nextDir = dir;
+
     _target = p;
+    _target!.y = min(4.1, _target!.y);
+    _target!.y = max(-2.2, _target!.y);
+    _target!.x = max(-6.5, _target!.x);
+    _target!.x = min(6.5, _target!.x);
     double diffX = _target!.x - _position.x;
     print("DonjonEntity.goTo $p from $_position $diffX");
     listener?.onStartMove(diffX);
+    return true;
   }
 
   void _update(double dt)
@@ -129,7 +183,23 @@ class DonjonEntity
       _position = _target!;
       _target = null;
       listener?.onStopMove();
+      
+      if(nextDir >= 0)
+      {
+        int d = nextDir;
+        nextDir = -1;
+        if(d == 0)
+          _donjon.changeSalle(_donjon.currentSalle.n);
+        if(d == 1)
+          _donjon.changeSalle(_donjon.currentSalle.e);
+        if(d == 2)
+          _donjon.changeSalle(_donjon.currentSalle.s);
+        if(d == 3)
+          _donjon.changeSalle(_donjon.currentSalle.w);
+      }
+
       Storage.storeDonjon(_donjon);
+
       return;
     }
     
@@ -140,6 +210,7 @@ class DonjonEntity
     /*_next -= dt;
     if(_next <= 0)
     {
+      nextDir = -1;
       listener?.onStopMove();
       Storage.storeDonjon(_donjon);
       _resetNext();
@@ -175,9 +246,9 @@ class Salle
 
   late bool isStart;
 
-  Salle(this.id, this.i, this.j, {bool isStart = false})
+  Salle(this.id, this.i, this.j)
   {
-    this.isStart = isStart;
+    this.isStart = id == 1;
   }
 
   Map<String, dynamic> toMap()
@@ -191,6 +262,16 @@ class Salle
     if(s != null)map["s"] = s!.id;
     if(e != null)map["e"] = e!.id;
     return map;
+  }
+
+  Salle.fromMap(Map<String, dynamic> map):this(map["id"], map["i"], map["j"]);
+
+  void complete(Map<String, dynamic> map, Map<int, Salle> salles)
+  {
+    if(map.containsKey("w")) w = salles[map["w"]];
+    if(map.containsKey("e")) e = salles[map["e"]];
+    if(map.containsKey("s")) s = salles[map["s"]];
+    if(map.containsKey("n")) n = salles[map["n"]]; 
   }
 
   @override
@@ -264,7 +345,8 @@ class Generate
   Donjon start()
   {
     donjon = Donjon.fromMap(null);
-    donjon.start = Salle(idSalle++, 0, 0, isStart: true);
+    donjon.start = Salle(idSalle++, 0, 0);
+    donjon.currentSalle = donjon.start;
 
     int count = 0;
     int essai = 0;
