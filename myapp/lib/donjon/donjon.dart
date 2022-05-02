@@ -32,13 +32,13 @@ class Donjon
 
   void _startFight()
   {
-    print("Donjon.startFight");
+    //print("Donjon.startFight");
     _donjonScreen.startFight();
   }
 
   void changeSalle(Salle? salle)
   {
-    print("Donjon.changeSalle $salle");
+    //print("Donjon.changeSalle $salle");
     if(salle == null)
       return;
 
@@ -93,7 +93,7 @@ class Donjon
   {
     if(map != null)
     {
-      print("Donjon.fromMap");
+      //print("Donjon.fromMap");
       _donjonEntity = DonjonEntity.fromMap(Storage.getEntity(), map["entity"]);
       int currentSalleID = map["currentSalleID"];
       List listeSalles = map["salles"];
@@ -111,11 +111,11 @@ class Donjon
         if(id == currentSalleID)
           currentSalle = salle;
       });
-      print("Donjon.fromMap.end");
+      //print("Donjon.fromMap.end");
     }
     else
     {
-      print("Donjon.fromNull");
+      //print("Donjon.fromNull");
       _donjonEntity = DonjonEntity(Storage.getEntity());
     }
     _donjonEntity._donjon = this;
@@ -124,7 +124,7 @@ class Donjon
 
   static void generate()
   {
-    print("Donjon.generate");
+    //print("Donjon.generate");
     Donjon donjon = Generate().start();
     Storage.storeDonjon(donjon);
   }
@@ -142,10 +142,7 @@ class DonjonEntity
 
   EntityListener? listener;
 
-  DonjonEntity(this._entity)
-  {
-    print("DonjonEntity.<init> : $_position");
-  }
+  DonjonEntity(this._entity);
 
   void _resetNext()
   {
@@ -165,7 +162,6 @@ class DonjonEntity
     _target!.x = max(-6.5, _target!.x);
     _target!.x = min(6.5, _target!.x);
     double diffX = _target!.x - _position.x;
-    print("DonjonEntity.goTo $p from $_position $diffX");
     listener?.onStartMove(diffX);
     return true;
   }
@@ -179,7 +175,6 @@ class DonjonEntity
     final max = _speed * dt;
     if(d < max)
     {
-      print("DonjonEntity arrived at target $_target");
       _position = _target!;
       _target = null;
       listener?.onStopMove();
@@ -229,7 +224,6 @@ class DonjonEntity
   DonjonEntity.fromMap(this._entity, Map<String, dynamic> map)
   {
     _position = Position.fromMap(map["position"]);
-    print("DonjonEntity.fromMap : $_position");
   }
 }
 
