@@ -16,7 +16,7 @@ class DonjonScreen extends AbstractScreen
 
   late final SpriteComponent _buttonSettings;
 
-  DonjonScreen(Vector2 size):super("D", size);
+  DonjonScreen(GameLayout gameRef, Vector2 size):super(gameRef, "D", size);
 
   @override
   Future<void> onLoad() async 

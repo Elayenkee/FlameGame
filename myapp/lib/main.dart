@@ -45,7 +45,7 @@ class GameLayout extends AbstractLayout with PanDetector
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
   DonjonScreen? _donjonScreen;
-  OptionsScreen? _optionsScreen;
+  OptionsScreen? optionsScreen;
 
   GameLayout():super();
 
@@ -76,7 +76,7 @@ class GameLayout extends AbstractLayout with PanDetector
     _fightScreen = null;
     _donjonScreen?.remove();
     _donjonScreen = null;
-    _worldScreen = WorldScreen(size);
+    _worldScreen = WorldScreen(this, size);
     add(_worldScreen!);
   }
 
@@ -87,7 +87,7 @@ class GameLayout extends AbstractLayout with PanDetector
     _worldScreen = null;
     _donjonScreen?.remove();
     _donjonScreen = null;
-    _fightScreen = FightScreen(size);
+    _fightScreen = FightScreen(this, size);
     add(_fightScreen!);
   }
 
@@ -98,20 +98,20 @@ class GameLayout extends AbstractLayout with PanDetector
     _worldScreen = null;
     _fightScreen?.remove();
     _fightScreen = null;
-    _donjonScreen = DonjonScreen(size);
+    _donjonScreen = DonjonScreen(this, size);
     add(_donjonScreen!);
   }
 
   void startOptions()
   {
-    _optionsScreen = OptionsScreen(size, onClickClose: closeOptions);
-    add(_optionsScreen!);
+    optionsScreen = OptionsScreen(this, size, onClickClose: closeOptions);
+    add(optionsScreen!);
   }
 
   void closeOptions()
   {
-    _optionsScreen?.remove();
-    _optionsScreen = null;
+    optionsScreen?.remove();
+    optionsScreen = null;
   }
 
   @override
@@ -119,26 +119,41 @@ class GameLayout extends AbstractLayout with PanDetector
   {
     super.onPanDown(info);
 
-    if(_optionsScreen != null)
+    if(optionsScreen != null)
     {
-      _optionsScreen?.onClick(info.eventPosition.game);
+      optionsScreen?.onClick(info.eventPosition.game);
       return;
     }
     
     _worldScreen?.onClick(info.eventPosition.game);
     _donjonScreen?.onClick(info.eventPosition.game);
   }
+
+  @override
+  void onPanUpdate(DragUpdateInfo info) 
+  {
+    super.onPanUpdate(info);
+    optionsScreen?.onPanUpdate(info);
+  }
+  
+  @override
+  void onPanEnd(DragEndInfo info) 
+  {
+    super.onPanEnd(info);
+    optionsScreen?.onPanEnd();
+  }
 }
 
 abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
 {
+  final GameLayout gameRef;
   late final String _title;
 
   final BaseComponent layout = Layer();
   final BaseComponent hud = Layer();
   final BaseComponent debug = Layer();
 
-  AbstractScreen(this._title, Vector2 size):super();
+  AbstractScreen(this.gameRef, this._title, Vector2 size):super();
 
   @override
   Future<void> onLoad() async 

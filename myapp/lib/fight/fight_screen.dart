@@ -18,7 +18,7 @@ class FightScreen extends AbstractScreen
   final List<Story> stories = [];
   StoryAnimation? storyAnimation;
 
-  FightScreen(Vector2 size):super("F", size);
+  FightScreen(GameLayout gameRef, Vector2 size):super(gameRef, "F", size);
 
   @override
   Future<void> onLoad() async 

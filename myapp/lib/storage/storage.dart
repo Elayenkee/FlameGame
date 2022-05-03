@@ -131,7 +131,8 @@ class Storage
     BuilderTotal builder = builderEntity.builderTotal;
 
     // Poison if no poison
-    /*BuilderBehaviour builderBehaviour = builder.addBehaviour(name: "Poison if no poison");
+    BuilderBehaviour builderBehaviour = builder.addBehaviour(name: "Poison if no poison");
+    builderBehaviour.activated = true;
     builderBehaviour.builderWork.work = Works.POISON;
     BuilderConditionGroup builderConditionGroup = builderBehaviour.builderTargetSelector.builderConditionGroup;
     BuilderTriFunction builderTriFunction = builderBehaviour.builderTargetSelector.builderTriFunction;
@@ -146,10 +147,11 @@ class Storage
     builderCondition2.setParam(1, ValueAtom(0));
     BuilderCount builderCount = BuilderCount();
     builderCount.setValue(VALUE.POISON);
-    builderCondition2.setParam(2, builderCount);*/
+    builderCondition2.setParam(2, builderCount);
 
     // Bleed if no bleed
-    /*BuilderBehaviour builderBehaviourBleed = builder.addBehaviour(name: "Bleed if no bleed");
+    BuilderBehaviour builderBehaviourBleed = builder.addBehaviour(name: "Bleed if no bleed");
+    builderBehaviourBleed.activated = true;
     builderBehaviourBleed.builderWork.work = Works.BLEED;
     BuilderConditionGroup builderConditionGroupBleed = builderBehaviourBleed.builderTargetSelector.builderConditionGroup;
     BuilderTriFunction builderTriFunctionBleed = builderBehaviourBleed.builderTargetSelector.builderTriFunction;
@@ -164,10 +166,11 @@ class Storage
     builderCondition2Bleed.setParam(1, ValueAtom(0));
     BuilderCount builderCountBleed = BuilderCount();
     builderCountBleed.setValue(VALUE.BLEED);
-    builderCondition2Bleed.setParam(2, builderCountBleed);*/
+    builderCondition2Bleed.setParam(2, builderCountBleed);
 
     // Attack lowest HP
     BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attack lowest HP");
+    builderBehaviour2.activated = true;
     builderBehaviour2.builderWork.work = Works.ATTACK;
     BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;
     BuilderTriFunction builderTriFunction2 = builderBehaviour2.builderTargetSelector.builderTriFunction;
@@ -177,6 +180,9 @@ class Storage
     builderCondition3.setCondition(Conditions.NOT_EQUALS);
     builderCondition3.setParam(1, builderEntity);
     builderCondition3.setParam(2, VALUE.CLAN);
+
+    builder.addBehaviour(name: "");
+    builder.addBehaviour(name: "");
 
     storeEntity(entity);
 

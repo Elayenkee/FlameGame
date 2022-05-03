@@ -261,7 +261,7 @@ class BuilderTotal extends Builder<List<Behaviour>>
   {
     BuilderBehaviour builder = BuilderBehaviour();
     builderBehaviours.add(builder);
-    builder.name = name.length > 0 ? name : "[BuilderBehaviour ${builderBehaviours.length}]";
+    builder.name = name;
     return builder;
   }
 
@@ -301,7 +301,7 @@ class BuilderTotal extends Builder<List<Behaviour>>
   {
     bool result = true;
     builderBehaviours.forEach((element) {
-      if (!validator.isValid(element)) 
+      if (element.activated && !validator.isValid(element)) 
         result = false;
     });
     return result;
@@ -339,6 +339,8 @@ class BuilderBehaviour extends Builder<Behaviour>
   BuilderTargetSelector builderTargetSelector = BuilderTargetSelector();
   BuilderWork builderWork = BuilderWork();
 
+  bool activated = false;
+
   BuilderBehaviour(){}
 
   @override
@@ -346,9 +348,12 @@ class BuilderBehaviour extends Builder<Behaviour>
   {
     Utils.logBuild("BuilderBehaviour.build.start : " + name + " [$builderConditions] [$builderTargetSelector] [$builderWork]");
     Behaviour behaviour = Behaviour.withName(name);
-    behaviour.condition = builderConditions.build();
-    behaviour.selector = builderTargetSelector.build();
-    behaviour.work = builderWork.build();
+    if(activated)
+    {
+      behaviour.condition = builderConditions.build();
+      behaviour.selector = builderTargetSelector.build();
+      behaviour.work = builderWork.build();
+    }
     Utils.logBuild("BuilderBehaviour.build.end");
     return behaviour;
   }
@@ -376,6 +381,7 @@ class BuilderBehaviour extends Builder<Behaviour>
     map["builderTargetSelector"] = builderTargetSelector.toMap();
     map["builderWork"] = builderWork.toMap();
     map["name"] = name;
+    map["activated"] = activated;
     Utils.logToMap("BuilderBehaviour.toMap.end");
   }
 
@@ -388,6 +394,7 @@ class BuilderBehaviour extends Builder<Behaviour>
     builderTargetSelector = BuilderTargetSelector.fromJson(map["builderTargetSelector"], uuids);
     builderWork = BuilderWork.fromJson(map["builderWork"], uuids);
     name = map["name"];
+    activated = !map.containsKey("activated") || map["activated"];
     Utils.logFromJson("BuilderBehaviour.fromJson.end");
   }
 }

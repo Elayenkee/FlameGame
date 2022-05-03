@@ -11,7 +11,7 @@ class WorldScreen extends AbstractScreen
   late final Player _player;
   late final Decor _decor;
 
-  WorldScreen(Vector2 size):super("W", size);
+  WorldScreen(GameLayout gameRef, Vector2 size):super(gameRef, "W", size);
 
   @override
   Future<void> onLoad() async 
