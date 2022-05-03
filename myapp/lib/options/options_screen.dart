@@ -26,7 +26,7 @@ class OptionsScreen  extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    print("OptionsScreen.onLoad");
+    //print("OptionsScreen.onLoad");
     await super.onLoad();
 
     selectedEntity = Storage.getEntity();
@@ -37,7 +37,6 @@ class OptionsScreen  extends AbstractScreen
 
     await Popup.init();
 
-    print("add popup");
     final marge = 120.0;  
     popup = Popup(gameRef.size - Vector2.all(marge), onClickClose: onClickClose);
     popup.position = Vector2.all(marge / 2);
@@ -50,7 +49,7 @@ class OptionsScreen  extends AbstractScreen
     for(BuilderBehaviour behaviour in selectedEntity.builder.builderTotal.builderBehaviours)
       addBuilderBehaviour(behaviour);
     
-    print("OptionsScreen.onLoaded");
+    //print("OptionsScreen.onLoaded");
   }
 
   void addBuilderBehaviour(BuilderBehaviour behaviour)
@@ -281,7 +280,7 @@ class Player extends SpriteComponent
   @override
   Future<void> onLoad() async 
   {
-    print("Player.onLoad");
+    //print("Player.onLoad");
     await super.onLoad();
     final spriteSheet = SpriteSheet(image: await Images().load("hero_knight.png"), srcSize: Vector2(100, 55));
     final SpriteAnimationComponent player = SpriteAnimationComponent();
@@ -293,7 +292,7 @@ class Player extends SpriteComponent
 
     sprite = Sprite(await Images().load("cadre_player.png"));
 
-    print("Player.onLoaded");
+    //print("Player.onLoaded");
   }
 }
 
@@ -317,7 +316,7 @@ class Popup extends SpriteComponent
       return;
 
     inited = true;
-    print("Popup.init.start");
+    //print("Popup.init.start");
     final sheet = SpriteSheet(image: await Images().load("gui.png"), srcSize: Vector2(32, 32));
     _cornerTopLeft = sheet.getSprite(7, 0);
     _cornerTopRight = sheet.getSprite(7, 3);
@@ -327,7 +326,7 @@ class Popup extends SpriteComponent
     _centerTop = sheet.getSprite(7, 1);
     _centerBottom = sheet.getSprite(10, 1);
 
-    print("Popup.init.end");
+    //print("Popup.init.end");
   }
 
   late final SpriteComponent? _buttonClose;

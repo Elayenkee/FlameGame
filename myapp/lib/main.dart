@@ -10,6 +10,7 @@ import 'package:myapp/donjon/donjon_screen.dart';
 import 'package:myapp/fight/fight_screen.dart';
 import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/storage/storage.dart';
+import 'package:myapp/utils/pathfinding.dart';
 import 'package:myapp/world/world_screen.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -66,7 +67,9 @@ class GameLayout extends AbstractLayout with PanDetector
 
     startOptions();
 
-    
+    final t = Topology.fromExample();
+    final p = t.pathTo(Vector2(0, 0), Vector2(850, 500));
+    print("END >>> $p");
   }
 
   void startWorld()
@@ -217,7 +220,7 @@ class AbstractLayout extends BaseGame
   @override
   void render(Canvas canvas) 
   {
-    super.render(canvas);
+    //super.render(canvas);
   }
 
   void setBackgroundColor(Color color)

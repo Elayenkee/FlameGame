@@ -21,7 +21,7 @@ class DonjonScreen extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    print("DonjonScreen.onLoad");
+    //print("DonjonScreen.onLoad");
     await super.onLoad();
 
     gameRef.setBackgroundColor(Colors.black);
@@ -41,12 +41,12 @@ class DonjonScreen extends AbstractScreen
     hud.addChild(_buttonSettings);
 
     _player.onMove(force: true);
-    print("DonjonScreen.onLoaded");
+    //print("DonjonScreen.onLoaded");
   }
 
   void startFight()
   {
-    print("DonjonScreen.startFight");
+    //print("DonjonScreen.startFight");
     gameRef.startFight();
   }
 
@@ -105,7 +105,7 @@ class DonjonScreen extends AbstractScreen
   @override
   void onRemove() 
   {
-    print("DonjonScreen.onRemove");
+    //print("DonjonScreen.onRemove");
     super.onRemove();
   }
 }
@@ -125,7 +125,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
   @override
   Future<void> onLoad() async 
   {
-    print("Decor.onLoad");
+    //print("Decor.onLoad");
     await super.onLoad();
 
     await gameRef.images.load('arrow.png');
@@ -136,7 +136,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
 
     changeSalle();
 
-    print("Decor.onLoaded");
+    //print("Decor.onLoaded");
   }
 
   void changeSalle() async
@@ -144,7 +144,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     children.clear();
     if(donjon.currentSalle == donjon.start || donjon.currentSalle.s != null)
     {
-      print("Decor.addPorteSud");
+      //print("Decor.addPorteSud");
       final porteSud = SpriteComponent();
       porteSud.sprite = Sprite(await Images().load("porte_sud.png"));
       porteSud.size = Vector2(130, 28);
@@ -166,7 +166,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
 
     if(donjon.currentSalle.n != null)
     {
-      print("Decor.addPorteNord");
+      //print("Decor.addPorteNord");
       final porteNord = SpriteComponent();
       porteNord.sprite = Sprite(await Images().load("porte_nord.png"));
       porteNord.size = Vector2(130, 95);
@@ -184,7 +184,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
 
     if(donjon.currentSalle.w != null)
     {
-      print("Decor.addPorteOuest");
+      //print("Decor.addPorteOuest");
       final porteOuest = SpriteComponent();
       porteOuest.sprite = Sprite(await Images().load("porte_ouest.png"));
       porteOuest.size = Vector2(43, 130);
@@ -204,7 +204,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
 
     if(donjon.currentSalle.e != null)
     {
-      print("Decor.addPorteEst");
+      //print("Decor.addPorteEst");
       final porteEst = SpriteComponent();
       porteEst.sprite = Sprite(await Images().load("porte_ouest.png"));
       porteEst.size = Vector2(43, 130);
@@ -297,7 +297,7 @@ class PlayerComponent extends PositionComponent with HasGameRef<GameLayout> impl
   @override
   void onRemove() 
   {
-    print("PlayerComponent.onRemove");
+    //print("PlayerComponent.onRemove");
     super.onRemove();
   }
 }
@@ -312,7 +312,7 @@ class Player extends SpriteAnimationComponent
   @override
   Future<void> onLoad() async 
   {
-    print("Player.onLoad");
+    //print("Player.onLoad");
     await super.onLoad();
     final spriteSheet = SpriteSheet(image: await Images().load("hero_knight.png"), srcSize: Vector2(100, 55));
     idle = spriteSheet.createAnimation(row: 0, stepTime: .1, from: 0, to: 6);
@@ -324,6 +324,6 @@ class Player extends SpriteAnimationComponent
     move = SpriteAnimation.spriteList(runSprites, stepTime: .06, loop: true);
     animation = idle;
     //anchor = Anchor.bottomCenter;
-    print("Player.onLoaded");
+    //print("Player.onLoaded");
   }
 }
