@@ -25,7 +25,7 @@ class WorldScreen extends AbstractScreen
     _player = Player(this);
     add(_player);
     
-    _world = Storage.getWorld();
+    _world = Storage.world;
     _world.setWorldScreen(this);
     _world.setPlayerListener(_player);
 

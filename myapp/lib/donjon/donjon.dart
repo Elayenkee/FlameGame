@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:myapp/donjon/donjon_screen.dart';
 import 'package:myapp/engine/entity.dart';
+import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world.dart';
 
@@ -94,7 +95,7 @@ class Donjon
     if(map != null)
     {
       //print("Donjon.fromMap");
-      _donjonEntity = DonjonEntity.fromMap(Storage.getEntity(), map["entity"]);
+      _donjonEntity = DonjonEntity.fromMap(Storage.entity, map["entity"]);
       int currentSalleID = map["currentSalleID"];
       List listeSalles = map["salles"];
       final mapSalles = Map<int, Salle>();
@@ -116,7 +117,7 @@ class Donjon
     else
     {
       //print("Donjon.fromNull");
-      _donjonEntity = DonjonEntity(Storage.getEntity());
+      _donjonEntity = DonjonEntity(Storage.entity);
     }
     _donjonEntity._donjon = this;
     _donjonEntity._resetNext();
@@ -351,7 +352,7 @@ class Generate
       checked.clear();
       count = countSalles(donjon.start, []);
     }
-    print("Generated $count $nbLeaf $essai");
+    //print("Generated $count $nbLeaf $essai");
     return donjon;
   }
 
@@ -378,7 +379,7 @@ class Generate
             if(!isLeaf)nbLeaf++;
             salle.e = Salle(idSalle++, salle.i + 1, salle.j);
             salle.e!.w = salle;
-            print("Added ${salle.e} to ${salle} at E - $isLeaf");
+            //print("Added ${salle.e} to ${salle} at E - $isLeaf");
             _generate(salle.e!);
           }
         }
@@ -400,7 +401,7 @@ class Generate
             if(!isLeaf)nbLeaf++;
             salle.w = Salle(idSalle++, salle.i - 1, salle.j);
             salle.w!.e = salle;
-            print("Added ${salle.w} to ${salle} at W - $isLeaf");
+            //print("Added ${salle.w} to ${salle} at W - $isLeaf");
             _generate(salle.w!);
           }
         }
@@ -422,7 +423,7 @@ class Generate
             if(!isLeaf)nbLeaf++;
             salle.s = Salle(idSalle++, salle.i, salle.j - 1);
             salle.s!.n = salle;
-            print("Added ${salle.s} to ${salle} at S - $isLeaf");
+            //print("Added ${salle.s} to ${salle} at S - $isLeaf");
             _generate(salle.s!);
           }
         }
@@ -444,7 +445,7 @@ class Generate
             if(!isLeaf)nbLeaf++;
             salle.n = Salle(idSalle++, salle.i, salle.j + 1);
             salle.n!.s = salle;
-            print("Added ${salle.n} to ${salle} at N - $isLeaf");
+            //print("Added ${salle.n} to ${salle} at N - $isLeaf");
             _generate(salle.n!);
           }
         }

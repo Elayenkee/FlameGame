@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:core';
 import 'package:flame/game.dart';
 import 'package:myapp/engine/entity.dart';
+import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world_screen.dart';
 
@@ -55,17 +56,20 @@ class World
 
   World.fromMap(Map<String, dynamic>? map)
   {
-    print("World start");
+    print("World.fromMap.start");
     if(map != null)
     {
-      _worldEntity = WorldEntity.fromMap(Storage.getEntity(), map["entity"]);
+      print("World.fromMap.map");
+      _worldEntity = WorldEntity.fromMap(Storage.entity, map["entity"]);
     }
     else
     {
-      _worldEntity = WorldEntity(Storage.getEntity());
+      print("World.fromMap.null");
+      _worldEntity = WorldEntity(Storage.entity);
     }
     _worldEntity._world = this;
     _worldEntity._resetNext();
+    print("World.fromMap.end");
   }
 }
 

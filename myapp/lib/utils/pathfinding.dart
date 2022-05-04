@@ -13,7 +13,7 @@ class Topology
   Map<Vector2, double> h = {};
   Map<Vector2, Vector2> parents = {};
 
-  Topology.fromExample()
+  /*Topology.fromExample()
   {
     _addVertex(0, 0);
     _addVertex(50, 0);
@@ -30,7 +30,7 @@ class Topology
     _addTriangle(3, 5, 4);
     _addTriangle(4, 5, 7);
     _addTriangle(4, 7, 6);
-  }
+  }*/
 
   List<Vector2> pathTo(Vector2 start, Vector2 goal)
   {

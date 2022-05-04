@@ -26,7 +26,7 @@ class DonjonScreen extends AbstractScreen
 
     gameRef.setBackgroundColor(Colors.black);
 
-    _donjon = Storage.getDonjon();
+    _donjon = Storage.donjon!;
 
     _decor = Decor(gameRef, _donjon);
     add(_decor);

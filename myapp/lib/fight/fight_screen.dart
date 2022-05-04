@@ -26,13 +26,8 @@ class FightScreen extends AbstractScreen
     print("FightScreen.onLoad");
     await super.onLoad();
 
-    Entity entity = Storage.getEntity();
-
-    //TODO REMOVE
-    entity.addHP(1000);
-
     BuilderServer builder = BuilderServer();
-    builder.addEntity(e:entity);
+    Storage.entities.forEach((element) {builder.addEntity(e:element);});
     addRandomEnemmy(builder);
 
     print("FightScreen.onLoad.build");
@@ -45,7 +40,7 @@ class FightScreen extends AbstractScreen
       if(story != null)
         stories.add(story);  
     } while (story != null && stories.length < 100);
-    Storage.storeEntity(entity);
+    Storage.storeEntities();
 
     List<Entity> allies = server.getAllies();
     double xAllies = 150;

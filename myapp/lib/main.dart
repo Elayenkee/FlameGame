@@ -1,3 +1,4 @@
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
@@ -5,15 +6,18 @@ import 'package:flame/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/components.dart' as draggable;
-import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/donjon/donjon_screen.dart';
+import 'package:myapp/engine/entity.dart';
 import 'package:myapp/fight/fight_screen.dart';
+import 'package:myapp/google/google_signin.dart';
 import 'package:myapp/options/options_screen.dart';
+import 'package:myapp/start/start_screen.dart';
 import 'package:myapp/storage/storage.dart';
-import 'package:myapp/utils/pathfinding.dart';
 import 'package:myapp/world/world_screen.dart';
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+
+final TextPaint textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco"));
+late final String test;
 
 Future<void> main() async
 {
@@ -21,8 +25,8 @@ Future<void> main() async
   WidgetsFlutterBinding.ensureInitialized();
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
-  await Storage.init();
-  runApp(MaterialApp(home: GameScreen()));
+  //await Firebase.initializeApp();
+  runApp(MaterialApp(theme: ThemeData(fontFamily: 'Disco'),home: GameScreen()));
 }
 
 class GameScreen extends StatelessWidget
@@ -35,7 +39,7 @@ class GameScreen extends StatelessWidget
   }
 
   @override
-  Widget build(BuildContext context) 
+  Widget build(BuildContext context)
   {
     return GameWidget(game: gameLayout);
   }
@@ -43,6 +47,7 @@ class GameScreen extends StatelessWidget
 
 class GameLayout extends AbstractLayout with PanDetector
 {
+  StartScreen? _startScreen;
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
   DonjonScreen? _donjonScreen;
@@ -56,17 +61,36 @@ class GameLayout extends AbstractLayout with PanDetector
     print("GameLayout.onLoad");
     await super.onLoad();
 
-    if(Storage.hasDonjon())
-      startDonjon();
-    else
-    {
-      //TODO REMOVE
-      Donjon.generate();
-      startDonjon();
-      //startWorld();
-    }
+    _startScreen = StartScreen(this, size);
+    add(_startScreen!);
 
-    startOptions();
+    rendering = true;
+    Future<String?> str = signInWithGoogle();
+    str.then((value) async{
+      if(value != null)
+      {
+        _startScreen?.onLoading();
+        Storage.uuid = value;
+        await Storage.init();
+
+        if(Storage.hasDonjon())
+        {
+          rendering = false;
+          _startScreen?.remove();
+          _startScreen = null;
+          startDonjon();
+        }
+        else
+        {
+          _startScreen?.onNewGame();
+        }
+      }
+      else
+      {
+        _startScreen?.onNewGame();
+      }
+    });
+
     print("GameLayout.onLoaded");
   }
 
@@ -120,6 +144,12 @@ class GameLayout extends AbstractLayout with PanDetector
   {
     super.onPanDown(info);
 
+    if(_startScreen != null)
+    {
+      _startScreen?.onClick(info.eventPosition.game);
+      return;
+    }
+
     if(optionsScreen != null)
     {
       optionsScreen?.onClick(info.eventPosition.game);
@@ -164,7 +194,7 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
     addChild(hud);
 
     final title = TextComponent(_title);
-    debug.addChild(title);
+    //debug.addChild(title);
     addChild(debug);
   }
 
@@ -185,6 +215,7 @@ class Layer extends PositionComponent
 
 class AbstractLayout extends BaseGame
 {
+  bool rendering = false;
   late final Vector2 size;
   late final Background background;
   
@@ -218,7 +249,8 @@ class AbstractLayout extends BaseGame
   @override
   void render(Canvas canvas) 
   {
-    super.render(canvas);
+    if(rendering)
+      super.render(canvas);
   }
 
   void setBackgroundColor(Color color)
