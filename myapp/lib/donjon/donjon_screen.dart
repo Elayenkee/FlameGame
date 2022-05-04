@@ -21,7 +21,7 @@ class DonjonScreen extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    //print("DonjonScreen.onLoad");
+    print("DonjonScreen.onLoad");
     await super.onLoad();
 
     gameRef.setBackgroundColor(Colors.black);
@@ -41,7 +41,7 @@ class DonjonScreen extends AbstractScreen
     hud.addChild(_buttonSettings);
 
     _player.onMove(force: true);
-    //print("DonjonScreen.onLoaded");
+    print("DonjonScreen.onLoaded");
   }
 
   void startFight()

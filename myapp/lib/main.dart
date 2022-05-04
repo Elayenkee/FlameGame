@@ -53,6 +53,7 @@ class GameLayout extends AbstractLayout with PanDetector
   @override
   Future<void> onLoad() async 
   {
+    print("GameLayout.onLoad");
     await super.onLoad();
 
     if(Storage.hasDonjon())
@@ -66,10 +67,7 @@ class GameLayout extends AbstractLayout with PanDetector
     }
 
     startOptions();
-
-    final t = Topology.fromExample();
-    final p = t.pathTo(Vector2(0, 0), Vector2(850, 500));
-    print("END >>> $p");
+    print("GameLayout.onLoaded");
   }
 
   void startWorld()
@@ -156,7 +154,7 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   final BaseComponent hud = Layer();
   final BaseComponent debug = Layer();
 
-  AbstractScreen(this.gameRef, this._title, Vector2 size):super();
+  AbstractScreen(this.gameRef, this._title, Vector2 size, {int priority = 0}):super(priority: priority);
 
   @override
   Future<void> onLoad() async 
@@ -220,7 +218,7 @@ class AbstractLayout extends BaseGame
   @override
   void render(Canvas canvas) 
   {
-    //super.render(canvas);
+    super.render(canvas);
   }
 
   void setBackgroundColor(Color color)

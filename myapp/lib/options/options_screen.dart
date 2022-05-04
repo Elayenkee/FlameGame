@@ -6,12 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/main.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:myapp/storage/storage.dart';
 
 class OptionsScreen  extends AbstractScreen
 {
-  late final Popup popup;
   late final VoidCallback? onClickClose;
 
   late Entity selectedEntity;
@@ -19,14 +17,17 @@ class OptionsScreen  extends AbstractScreen
   BuilderBehaviourComponent? draggingBehaviour;
   double draggingOffsetY = 0;
 
+  late final PositionComponent cadre;
+  late final SpriteComponent _buttonClose;
+
   PopupBuilderBehaviour? popupBuilderBehaviour;
 
-  OptionsScreen(GameLayout gameRef, Vector2 size, {VoidCallback? this.onClickClose}):super(gameRef, "D", size);
+  OptionsScreen(GameLayout gameRef, Vector2 size, {VoidCallback? this.onClickClose}):super(gameRef, "D", size, priority: 500);
 
   @override
   Future<void> onLoad() async 
   {
-    //print("OptionsScreen.onLoad");
+    print("OptionsScreen.onLoad");
     await super.onLoad();
 
     selectedEntity = Storage.getEntity();
@@ -35,30 +36,31 @@ class OptionsScreen  extends AbstractScreen
     b.setColor(Color.fromARGB(129, 0, 0, 0));
     add(b);
 
-    await Popup.init();
-
-    final marge = 120.0;  
-    popup = Popup(gameRef.size - Vector2.all(marge), onClickClose: onClickClose);
-    popup.position = Vector2.all(marge / 2);
-    add(popup);
+    final marge = 120.0;
+    cadre = SpriteComponent(size: gameRef.size - Vector2.all(marge));
+    cadre.position = Vector2.all(marge / 2);
+    add(cadre);
 
     final player = Player();
-    player.position = Vector2(Popup.square, -30);
-    popup.addChild(player);
+    player.position = cadre.position + Vector2(38, -30);
+    addChild(player);
+
+    _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(cadre.size.x - 38, 0), size: Vector2.all(38));
+    cadre.addChild(_buttonClose);
 
     for(BuilderBehaviour behaviour in selectedEntity.builder.builderTotal.builderBehaviours)
       addBuilderBehaviour(behaviour);
     
-    //print("OptionsScreen.onLoaded");
+    print("OptionsScreen.onLoaded");
   }
 
   void addBuilderBehaviour(BuilderBehaviour behaviour)
   {
-    BuilderBehaviourComponent behaviourComponent = BuilderBehaviourComponent(gameRef, selectedEntity, behaviour, Vector2(popup.size.x - 30, popup.size.y / 7.2));
+    BuilderBehaviourComponent behaviourComponent = BuilderBehaviourComponent(gameRef, selectedEntity, behaviour, Vector2(cadre.size.x - 30, cadre.size.y / 7.2));
     behaviourComponent.position = Vector2(10, 55 + ((10 + behaviourComponent.size.y) * behaviours.length));
     behaviourComponent.init();
     behaviours.add(behaviourComponent);
-    popup.addChild(behaviourComponent);
+    cadre.addChild(behaviourComponent);
   }
 
   void onBehaviourDragging(DragUpdateInfo info)
@@ -97,7 +99,11 @@ class OptionsScreen  extends AbstractScreen
       return true;
     }
 
-    popup.onClick(p);
+    if(_buttonClose.containsPoint(p))
+    {
+      onClickClose?.call();
+      return true;
+    }
 
     for(BuilderBehaviourComponent b in behaviours)
     {
@@ -241,7 +247,7 @@ class PopupBuilderBehaviour extends SpriteComponent
 
   late final SpriteComponent _buttonClose;
 
-  PopupBuilderBehaviour(this.gameRef):super(size: Vector2(730, 400))
+  PopupBuilderBehaviour(this.gameRef):super(size: Vector2(730, 400), priority: 900)
   {
     gameRef.optionsScreen!.popupBuilderBehaviour = this;
   }
@@ -296,7 +302,7 @@ class Player extends SpriteComponent
   }
 }
 
-class Popup extends SpriteComponent
+/*class Popup extends SpriteComponent
 {
   static bool inited = false;
   static late final Sprite _cornerTopLeft;
@@ -372,7 +378,7 @@ class Popup extends SpriteComponent
       onClickClose?.call();
     }
   }
-}
+}*/
 
 class Bouton extends SpriteComponent with Tappable
 {
