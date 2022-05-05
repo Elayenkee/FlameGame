@@ -64,7 +64,7 @@ class World
     }
     else
     {
-      print("World.fromMap.null");
+      print("World.fromMap.null ${Storage.entity}");
       _worldEntity = WorldEntity(Storage.entity);
     }
     _worldEntity._world = this;

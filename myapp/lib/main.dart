@@ -1,4 +1,4 @@
-//import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
@@ -25,7 +25,8 @@ Future<void> main() async
   WidgetsFlutterBinding.ensureInitialized();
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
-  //await Firebase.initializeApp();
+  await Firebase.initializeApp();
+  print("Firebase.init.ok");
   runApp(MaterialApp(theme: ThemeData(fontFamily: 'Disco'),home: GameScreen()));
 }
 
@@ -62,39 +63,13 @@ class GameLayout extends AbstractLayout with PanDetector
     await super.onLoad();
 
     _startScreen = StartScreen(this, size);
-    add(_startScreen!);
-
-    rendering = true;
-    Future<String?> str = signInWithGoogle();
-    str.then((value) async{
-      if(value != null)
-      {
-        _startScreen?.onLoading();
-        Storage.uuid = value;
-        await Storage.init();
-
-        if(Storage.hasDonjon())
-        {
-          rendering = false;
-          _startScreen?.remove();
-          _startScreen = null;
-          startDonjon();
-        }
-        else
-        {
-          _startScreen?.onNewGame();
-        }
-      }
-      else
-      {
-        _startScreen?.onNewGame();
-      }
-    });
+    await add(_startScreen!);
+    _startScreen?.start();
 
     print("GameLayout.onLoaded");
   }
 
-  void startWorld()
+  void startWorld() async
   {
     print("GameLayout.startWorld");
     _fightScreen?.remove();
@@ -102,7 +77,7 @@ class GameLayout extends AbstractLayout with PanDetector
     _donjonScreen?.remove();
     _donjonScreen = null;
     _worldScreen = WorldScreen(this, size);
-    add(_worldScreen!);
+    await add(_worldScreen!);
   }
 
   void startFight()
@@ -116,27 +91,35 @@ class GameLayout extends AbstractLayout with PanDetector
     add(_fightScreen!);
   }
 
-  void startDonjon()
+  void startDonjon() async 
   {
     print("GameLayout.startDonjon");
+    _startScreen?.remove();
+    _startScreen = null;
     _worldScreen?.remove();
     _worldScreen = null;
     _fightScreen?.remove();
     _fightScreen = null;
     _donjonScreen = DonjonScreen(this, size);
-    add(_donjonScreen!);
+    await add(_donjonScreen!);
   }
 
-  void startOptions()
+  void startOptions() async 
   {
     optionsScreen = OptionsScreen(this, size, onClickClose: closeOptions);
-    add(optionsScreen!);
+    await add(optionsScreen!);
   }
 
   void closeOptions()
   {
     optionsScreen?.remove();
     optionsScreen = null;
+  }
+
+  @override
+  void update(double dt) 
+  {
+    super.update(dt);
   }
 
   @override
@@ -189,6 +172,7 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   @override
   Future<void> onLoad() async 
   {
+    print("AbstractScreen.onLoad");
     await super.onLoad();
     addChild(layout);
     addChild(hud);
@@ -196,11 +180,12 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
     final title = TextComponent(_title);
     //debug.addChild(title);
     addChild(debug);
+    print("AbstractScreen.onLoaded");
   }
 
-  void add(Component c)
+  Future<void> add(Component c) async
   {
-    layout.addChild(c);
+    await layout.addChild(c);
   }
 
   bool onClick(Vector2 p);
@@ -215,7 +200,7 @@ class Layer extends PositionComponent
 
 class AbstractLayout extends BaseGame
 {
-  bool rendering = false;
+  bool rendering = true;
   late final Vector2 size;
   late final Background background;
   

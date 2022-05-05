@@ -18,6 +18,8 @@ class Entity extends UUIDHolder implements ValueReader//, Param
   List<Behaviour> behaviours = [];
   late BuilderEntity builder;
 
+  int nbCombat = 0;
+
   Entity(Map map) 
   {
     setValues(map);
@@ -194,7 +196,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     uuid = map["uuid"];
     final uuids = Map<String, dynamic>();
     uuids[uuid] = this;
-    Utils.logFromJson("Entity.fromJson $uuid");
+    nbCombat = map["nbCombat"]??0;
     final Map k = map["values"];
     k.keys.forEach((key) {
       VALUE? value = ValueExtension.get(key);
@@ -217,6 +219,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
       map["values"][key.name] = value is int ? value : value.toString();
     });
     map["builder"] = builder.toMap();
+    map["nbCombat"] = nbCombat;
   }
 
   @override

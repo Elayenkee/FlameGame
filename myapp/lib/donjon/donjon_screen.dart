@@ -21,23 +21,30 @@ class DonjonScreen extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    print("DonjonScreen.onLoad");
+    print("DonjonScreen.onLoad.start");
     await super.onLoad();
 
+    print("DonjonScreen.onLoad.gameRef");
+
     gameRef.setBackgroundColor(Colors.black);
+    print("DonjonScreen.onLoad.background.ok");
 
     _donjon = Storage.donjon!;
-
+    print("DonjonScreen.onLoad.donjon.ok");
+    
     _decor = Decor(gameRef, _donjon);
-    add(_decor);
+    await add(_decor);
+    print("DonjonScreen.onLoad.decor.ok");
 
     _player = PlayerComponent(this);
-    add(_player);
+    await add(_player);
+    print("DonjonScreen.onLoad.player.ok");
     
     _donjon.setScreen(this);
     _donjon.setPlayerListener(_player);
 
-    _buttonSettings = SpriteComponent(position: Vector2(gameRef.size.x - 100, 5), size: Vector2.all(32), sprite: Sprite(await Images().load("button_settings.png")));
+    _buttonSettings = SpriteComponent(size: Vector2.all(32), sprite: Sprite(await Images().load("button_settings.png")));
+    _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 100, 5) : Vector2(-1000, 0); 
     hud.addChild(_buttonSettings);
 
     _player.onMove(force: true);
@@ -47,7 +54,14 @@ class DonjonScreen extends AbstractScreen
   void startFight()
   {
     //print("DonjonScreen.startFight");
-    gameRef.startFight();
+    if(Storage.entity.nbCombat > 0)
+    {
+      gameRef.startFight();
+    }
+    else
+    {
+      
+    }
   }
 
   void changeSalle()

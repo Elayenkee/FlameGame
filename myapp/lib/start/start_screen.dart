@@ -1,10 +1,19 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/donjon/donjon.dart';
+import 'package:myapp/google/google_signin.dart';
 import 'package:myapp/main.dart';
+import 'package:myapp/storage/storage.dart';
+import 'package:flame/assets.dart';
+import 'package:flame/components.dart';
+import 'package:flame/gestures.dart';
+import 'package:flame/sprite.dart';
 
 class StartScreen  extends AbstractScreen
 {
   late final TextComponent _txtConnexion;
+
+  int step = 1;
 
   StartScreen(GameLayout gameRef, Vector2 size):super(gameRef, "S", size, priority: 1);
 
@@ -16,27 +25,69 @@ class StartScreen  extends AbstractScreen
 
     gameRef.setBackgroundColor(Colors.black);
 
+    SpriteComponent start = SpriteComponent();
+    start.sprite = Sprite(await Images().load("startscreen.png"));
+    start.size = gameRef.size;
+    add(start);
+
     TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
     _txtConnexion = TextComponent("Connexion...", textRenderer: textPaint);
-    _txtConnexion.position = Vector2(5, 0);
-    add(_txtConnexion);
+    _txtConnexion.position = Vector2(gameRef.size.x / 2, gameRef.size.y - 50);
+    _txtConnexion.anchor = Anchor.center;
+    await add(_txtConnexion);
 
     print("StartScreen.onLoaded");
   }
 
-  void onLoading()
+  void start() async
   {
-    _txtConnexion.text = "Chargement des données...";
-  }
-
-  void onNewGame()
-  {
-
+    String? uuid = await signInWithGoogle();
+    print("StartScreen.signedIn.uuid $uuid");
+    if(uuid != null)
+    {
+      step = 2;
+      await Storage.init(uuid);
+      print("StartScreen.storage.init.ok");
+      if(Storage.hasDonjon())
+      {
+        gameRef.startDonjon();
+      }
+      else
+      {
+        step = 3;
+      }
+    }  
+    else
+      step = 3;
   }
 
   @override
   bool onClick(Vector2 p) 
   {
+    if(_txtConnexion.text == "New Game")
+    {
+      if(Storage.uuid == null)
+      {
+        _txtConnexion.text = "Connexion...";
+        start();
+      }
+      else
+      {
+        Storage.storeDonjon(Donjon.generate());
+        gameRef.startDonjon();
+      }
+    }
     return true;
+  }
+
+  @override
+  void update(double dt) 
+  {
+    super.update(dt);
+    if(step == 2)
+      _txtConnexion.text = "Chargement des données...";
+    if(step == 3)
+      _txtConnexion.text = "New Game";
+    step = -1;
   }
 }

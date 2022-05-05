@@ -123,11 +123,10 @@ class Donjon
     _donjonEntity._resetNext();
   }
 
-  static void generate()
+  static Donjon generate()
   {
     //print("Donjon.generate");
-    Donjon donjon = Generate().start();
-    Storage.storeDonjon(donjon);
+    return Generate().start();
   }
 }
 
@@ -331,7 +330,7 @@ class Generate
 
   int idSalle = 1;
   late final Donjon donjon;
-  final Random rnd = Random(3);
+  final Random rnd = Random();
   final List<Salle> salles = [];
 
   final List<Salle> checked = [];
