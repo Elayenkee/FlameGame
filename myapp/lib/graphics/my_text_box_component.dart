@@ -47,8 +47,9 @@ class MyTextBoxComponent<T extends TextRenderer> extends PositionComponent {
       maxTime = text.length * boxConfig.timePerChar;
     
     text.split(' ').forEach((word) {
-      word.split("\n").forEach((word) { 
-        final possibleLine = _lines.isEmpty ? word : '${_lines.last} $word';
+      bool echap = word.contains("\n");
+      word.split("\n").forEach((w) { 
+        final possibleLine = _lines.isEmpty || _lines.last == "" ? w : '${_lines.last} $w';
         lineHeight ??= _textRenderer.measureTextHeight(possibleLine);
 
         final textWidth = _textRenderer.measureTextWidth(possibleLine);
@@ -57,18 +58,23 @@ class MyTextBoxComponent<T extends TextRenderer> extends PositionComponent {
           if (_lines.isNotEmpty) 
           {
             _lines.last = possibleLine;
+            
           } 
           else 
           {
             _lines.add(possibleLine);
           }
-          _updateMaxWidth(textWidth);
         } 
         else 
         {
           _lines.add(word);
-          _updateMaxWidth(textWidth);
         }
+        if(echap)
+        {
+          _lines.add("");
+          echap = false;
+        }
+        _updateMaxWidth(textWidth);
       });
     });
     _totalLines = _lines.length;

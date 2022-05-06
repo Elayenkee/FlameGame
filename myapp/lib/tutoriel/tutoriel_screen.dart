@@ -71,7 +71,7 @@ class TutorielSettings extends TutorielScreen
   {
     if(step == 1)
     {
-      startPhrase("Pour l'instant, ma stratégie est plutôt simple : J'ATTAQUE LE MONSTRE !");
+      startPhrase("Pour l'instant, ma stratégie est plutôt simple :\nJ'ATTAQUE LE MONSTRE !");
       step = 2;
     }
     else if(step == 2)
