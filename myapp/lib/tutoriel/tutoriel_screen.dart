@@ -79,7 +79,7 @@ class TutorielSettings extends TutorielScreen
     }
     else if(step == 2)
     {
-      startPhrase("En détail : \nMon action c'est d'attaquer;\nEt ma cible, c'est l'ennemi.");
+      startPhrase("En détail : \nMon action c'est <ATTAQUER>;\nEt ma cible, c'est <ENNEMI>");
       txtPhrase?.onEnd = () => step = 4;
       step = 3;
     }
