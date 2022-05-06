@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:myapp/graphics/my_text_box_component.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/options/options_screen.dart';
+import 'package:flame/assets.dart';
 
 abstract class TutorielScreen extends AbstractScreen
 {
@@ -23,6 +24,11 @@ abstract class TutorielScreen extends AbstractScreen
     cadre = Popup(Vector2(gameRef.size.x, 150));
     cadre.position = Vector2(0, gameRef.size.y - cadre.size.y);
     await addChild(cadre);
+
+    SpriteComponent portrait = SpriteComponent();
+    portrait.sprite = Sprite(await Images().load("portrait.png"));
+    portrait.size = Vector2.all(150);
+    await cadre.addChild(portrait);
   }
 
   void startPhrase(String phrase)
