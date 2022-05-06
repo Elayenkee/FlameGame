@@ -53,7 +53,8 @@ class OptionsScreen extends AbstractScreen
     }
 
     _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(cadre.size.x - 38, 0), size: Vector2.all(38));
-    await cadre.addChild(_buttonClose);
+    if(Storage.entity.nbCombat > 0)
+      await cadre.addChild(_buttonClose);
 
     updateSelectedPlayer();
     
@@ -72,7 +73,7 @@ class OptionsScreen extends AbstractScreen
 
   void addBuilderBehaviour(BuilderBehaviour behaviour)
   {
-    BuilderBehaviourComponent behaviourComponent = BuilderBehaviourComponent(gameRef, selectedEntity, behaviour, Vector2(cadre.size.x - 30, cadre.size.y / 7.2));
+    BuilderBehaviourComponent behaviourComponent = BuilderBehaviourComponent(gameRef, this, selectedEntity, behaviour, Vector2(cadre.size.x - 30, cadre.size.y / 7.2));
     behaviourComponent.position = Vector2(10, 55 + ((10 + behaviourComponent.size.y) * behaviours.length));
     behaviourComponent.init();
     behaviours.add(behaviourComponent);
@@ -173,6 +174,7 @@ class OptionsScreen extends AbstractScreen
 class BuilderBehaviourComponent extends SpriteComponent
 {
   final GameLayout gameRef;
+  final OptionsScreen optionsScreen;
   final Entity entity;
   final BuilderBehaviour builderBehaviour;
 
@@ -189,7 +191,7 @@ class BuilderBehaviourComponent extends SpriteComponent
 
   final List<Paint> paints = [];
 
-  BuilderBehaviourComponent(this.gameRef, this.entity, this.builderBehaviour, size):super(size: size);
+  BuilderBehaviourComponent(this.gameRef, this.optionsScreen, this.entity, this.builderBehaviour, size):super(size: size);
 
   @override
   Future<void> onLoad() async 
@@ -257,11 +259,18 @@ class BuilderBehaviourComponent extends SpriteComponent
 
   bool onClick(Vector2 p) 
   {
+    if(gameRef.tutorielScreen != null && gameRef.tutorielScreen!.onClick(p))
+      return true;
+
     if(edit.containsPoint(p))
     {
-      gameRef.add(PopupBuilderBehaviour(gameRef));
+      gameRef.tutorielScreen?.next();
+      optionsScreen.addChild(PopupBuilderBehaviour(gameRef), gameRef: gameRef);
       return true;
     }
+
+    if(gameRef.tutorielScreen != null)
+      return true;
 
     if(torch.containsPoint(p) && (builderBehaviour.activated || builderBehaviour.isValid(Validator(false))))
     {
@@ -308,6 +317,7 @@ class PopupBuilderBehaviour extends SpriteComponent
     position = gameRef.size / 2;
 
     _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(size.x - 32, -6), size: Vector2.all(38));
+    if(Storage.entity.nbCombat > 0)
       addChild(_buttonClose);
 
     print("PopupBuilderBehaviour.onLoaded");
@@ -315,6 +325,9 @@ class PopupBuilderBehaviour extends SpriteComponent
 
   bool onClick(Vector2 p) 
   {
+    if(gameRef.tutorielScreen != null)
+      return true;
+
     if(_buttonClose.containsPoint(p))
     {
       gameRef.optionsScreen!.popupBuilderBehaviour = null;
@@ -358,7 +371,7 @@ class Player extends SpriteComponent
   }
 }
 
-/*class Popup extends SpriteComponent
+class Popup extends SpriteComponent
 {
   static bool inited = false;
   static late final Sprite _cornerTopLeft;
@@ -372,69 +385,61 @@ class Player extends SpriteComponent
   static final double square = 19;
   static final double square2 = square * 2;
 
-  static Future<void> init() async
+  static init() async
   {
     if(inited)
       return;
 
     inited = true;
-    //print("Popup.init.start");
-    final sheet = SpriteSheet(image: await Images().load("gui.png"), srcSize: Vector2(32, 32));
-    _cornerTopLeft = sheet.getSprite(7, 0);
-    _cornerTopRight = sheet.getSprite(7, 3);
-    _cornerBottomLeft = sheet.getSprite(10, 0);
-    _cornerBottomRight = sheet.getSprite(10, 3);
-    _center = sheet.getSprite(1, 13);
-    _centerTop = sheet.getSprite(7, 1);
-    _centerBottom = sheet.getSprite(10, 1);
-
-    //print("Popup.init.end");
+    print("Popup.init.start");
+    try
+    {
+      final sheet = SpriteSheet(image: await Images().load("gui.png"), srcSize: Vector2(32, 32));
+      print("Popup.init.sheet.ok");
+      _cornerTopLeft = sheet.getSprite(7, 0);
+      _cornerTopRight = sheet.getSprite(7, 3);
+      _cornerBottomLeft = sheet.getSprite(10, 0);
+      _cornerBottomRight = sheet.getSprite(10, 3);
+      _center = sheet.getSprite(1, 13);
+      _centerTop = sheet.getSprite(7, 1);
+      _centerBottom = sheet.getSprite(10, 1);
+    }
+    catch(e)
+    {
+      print(e);
+    }
+    print("Popup.init.end");
   }
 
-  late final SpriteComponent? _buttonClose;
-  late final VoidCallback? onClickClose;
-
-  Popup(Vector2 size, {VoidCallback? this.onClickClose}):super(size: size);
+  Popup(Vector2 size):super(size: size);
 
   @override
   Future<void> onLoad() async 
   {
+    print("Popup.onLoad.start");
+    await init();
     await super.onLoad();
 
-    //addChild(SpriteComponent(sprite: _centerTop, size: Vector2(size.x - square2, square), position: Vector2(square, 0)));
-    //addChild(SpriteComponent(sprite: _centerBottom, size: Vector2(size.x - square2, square), position: Vector2(square, size.y - square)));
+    addChild(SpriteComponent(sprite: _centerTop, size: Vector2(size.x - square2, square), position: Vector2(square, 0)));
+    addChild(SpriteComponent(sprite: _centerBottom, size: Vector2(size.x - square2, square), position: Vector2(square, size.y - square)));
 
     final left = SpriteComponent(sprite: _centerBottom, size: Vector2(size.y - square2, square), position: Vector2(square, square));
     left.angle = degrees2Radians * 90;
-    //addChild(left);
+    addChild(left);
 
     final right = SpriteComponent(sprite: _centerBottom, size: Vector2(size.y - square2, square), position: Vector2(size.x, square));
     right.angle = degrees2Radians * 90;
     right.renderFlipY = true;
-    //addChild(right);
+    addChild(right);
 
-    //addChild(SpriteComponent(sprite: _cornerTopLeft, size: Vector2.all(square)));
-    //addChild(SpriteComponent(sprite: _cornerTopRight, size: Vector2.all(square), position: size - Vector2(square, size.y)));
-    //addChild(SpriteComponent(sprite: _cornerBottomLeft, size: Vector2.all(square), position: size - Vector2(size.x, square)));
-    //addChild(SpriteComponent(sprite: _cornerBottomRight, size: Vector2.all(square), position: size - Vector2(square, square)));
-    //addChild(SpriteComponent(sprite: _center, size: size - Vector2.all(square2), position: Vector2(square, square)));
-  
-    if(kIsWeb)
-    {
-      _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(size.x - square2, 0), size: Vector2.all(square2));
-      addChild(_buttonClose!);
-    }
+    addChild(SpriteComponent(sprite: _cornerTopLeft, size: Vector2.all(square)));
+    addChild(SpriteComponent(sprite: _cornerTopRight, size: Vector2.all(square), position: size - Vector2(square, size.y)));
+    addChild(SpriteComponent(sprite: _cornerBottomLeft, size: Vector2.all(square), position: size - Vector2(size.x, square)));
+    addChild(SpriteComponent(sprite: _cornerBottomRight, size: Vector2.all(square), position: size - Vector2(square, square)));
+    addChild(SpriteComponent(sprite: _center, size: size - Vector2.all(square2), position: Vector2(square, square)));
+    print("Popup.onLoad.end");
   }
-
-  void onClick(Vector2 p) 
-  {
-    print(p);
-    if(kIsWeb && _buttonClose!.containsPoint(p))
-    {
-      onClickClose?.call();
-    }
-  }
-}*/
+}
 
 class Bouton extends SpriteComponent with Tappable
 {

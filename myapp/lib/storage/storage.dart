@@ -24,7 +24,7 @@ abstract class Storage
   {
     print("Storage.init.start $uuid");
     Storage.uuid = uuid;
-    storage = Remote();
+    storage = Local();
     print("Storage.init.start.init");
     await storage.start();
     print("Storage.init.start.init.ok");
@@ -102,7 +102,7 @@ abstract class Storage
     BuilderTotal builder = builderEntity.builderTotal;
 
     // Poison if no poison
-    BuilderBehaviour builderBehaviour = builder.addBehaviour(name: "Poison if no poison");
+    /*BuilderBehaviour builderBehaviour = builder.addBehaviour(name: "Poison if no poison");
     builderBehaviour.activated = true;
     builderBehaviour.builderWork.work = Works.POISON;
     BuilderConditionGroup builderConditionGroup = builderBehaviour.builderTargetSelector.builderConditionGroup;
@@ -137,10 +137,10 @@ abstract class Storage
     builderCondition2Bleed.setParam(1, ValueAtom(0));
     BuilderCount builderCountBleed = BuilderCount();
     builderCountBleed.setValue(VALUE.BLEED);
-    builderCondition2Bleed.setParam(2, builderCountBleed);
+    builderCondition2Bleed.setParam(2, builderCountBleed);*/
 
     // Attack lowest HP
-    BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attack lowest HP");
+    /*BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attaquer monstre");
     builderBehaviour2.activated = true;
     builderBehaviour2.builderWork.work = Works.ATTACK;
     BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;
@@ -150,10 +150,23 @@ abstract class Storage
     BuilderCondition builderCondition3 = builderConditionGroup2.addCondition();
     builderCondition3.setCondition(Conditions.NOT_EQUALS);
     builderCondition3.setParam(1, builderEntity);
+    builderCondition3.setParam(2, VALUE.CLAN);*/
+
+    // Attack lowest HP
+    BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attaquer monstre");
+    builderBehaviour2.activated = true;
+    builderBehaviour2.builderWork.work = Works.ATTACK;
+    BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;
+    //BuilderTriFunction builderTriFunction2 = builderBehaviour2.builderTargetSelector.builderTriFunction;
+    //builderTriFunction2.tri = TriFunctions.LOWEST;
+    //builderTriFunction2.value = VALUE.HP;
+    BuilderCondition builderCondition3 = builderConditionGroup2.addCondition();
+    builderCondition3.setCondition(Conditions.NOT_EQUALS);
+    builderCondition3.setParam(1, builderEntity);
     builderCondition3.setParam(2, VALUE.CLAN);
 
-    builder.addBehaviour(name: "");
-    builder.addBehaviour(name: "");
+    //builder.addBehaviour(name: "");
+    //builder.addBehaviour(name: "");
 
     return entity;
   }
@@ -171,8 +184,11 @@ class Remote extends Storage
     try
     {
       userCollection = FirebaseFirestore.instance.collection("users");
+      print("Remote.start.1");
       DocumentSnapshot<Map<String, dynamic>> snapshot = await userCollection!.doc(Storage.uuid).get();
+      print("Remote.start.2");
       all = snapshot.data();
+      print("Remote.start.3");
     }
     catch(e)
     {

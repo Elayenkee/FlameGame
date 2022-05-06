@@ -43,6 +43,7 @@ class Donjon
     if(salle == null)
       return;
 
+    print("Donjon.changeSalle $salle");
     if(salle == currentSalle.w)
       _donjonEntity._position = Position(6.5, .95);
 
@@ -146,7 +147,10 @@ class DonjonEntity
 
   void _resetNext()
   {
-    _next = 1 + World.Rand.nextDouble() * 2;
+    if(Storage.entity.nbCombat == 0)
+      _next = 1;
+    else
+      _next = 1 + World.Rand.nextDouble() * 2;
   }
 
   bool _goTo(Position p, {int dir = -1})
@@ -202,7 +206,7 @@ class DonjonEntity
     _position.x += v.x;
     _position.y += v.y;
     
-    /*_next -= dt;
+    _next -= dt;
     if(_next <= 0)
     {
       nextDir = -1;
@@ -211,7 +215,7 @@ class DonjonEntity
       _resetNext();
       _target = null;
       _donjon._startFight();
-    }*/
+    }
   }
 
   Map<String, dynamic> toMap()
@@ -410,7 +414,7 @@ class Generate
     }
 
     //SOUTH
-    if(!stop())
+    if(!stop() && salle.id != 1)
     {
       if(!exists(salle.i, salle.j - 1))
       {

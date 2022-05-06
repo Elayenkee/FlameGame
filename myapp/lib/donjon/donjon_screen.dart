@@ -4,8 +4,11 @@ import 'package:flame/gestures.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/donjon/donjon.dart';
+import 'package:myapp/graphics/my_text_box_component.dart';
 import 'package:myapp/main.dart';
+import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/storage/storage.dart';
+import 'package:myapp/tutoriel/tutoriel_screen.dart';
 import 'package:myapp/world/world.dart';
 
 class DonjonScreen extends AbstractScreen
@@ -48,19 +51,30 @@ class DonjonScreen extends AbstractScreen
     hud.addChild(_buttonSettings);
 
     _player.onMove(force: true);
+
+    //TODO REMOVE
+    startTutorielSettings();
     print("DonjonScreen.onLoaded");
   }
 
   void startFight()
   {
-    //print("DonjonScreen.startFight");
+    print("DonjonScreen.startFight");
     if(Storage.entity.nbCombat > 0)
     {
       gameRef.startFight();
     }
     else
     {
-      
+      startTutorielSettings();
+    }
+  }
+
+  void startTutorielSettings()
+  {
+    if(gameRef.tutorielScreen == null)
+    {
+      gameRef.startTutoriel(TutorielSettings(gameRef, _buttonSettings));
     }
   }
 
@@ -89,13 +103,18 @@ class DonjonScreen extends AbstractScreen
   @override
   bool onClick(Vector2 p) 
   {
-    print(p);
+    if(gameRef.tutorielScreen != null && gameRef.tutorielScreen!.onClick(p))
+      return true;
 
     if(_buttonSettings.containsPoint(p))
     {
+      gameRef.tutorielScreen?.next();
       gameRef.startOptions();
       return true;
     }
+
+    if(gameRef.tutorielScreen != null)
+      return true;
 
     final eClick = Vector2(p.x, p.y) - gameRef.size / 2;
     final click = eClick..divide(Vector2(50, 50));
@@ -341,3 +360,4 @@ class Player extends SpriteAnimationComponent
     //print("Player.onLoaded");
   }
 }
+

@@ -13,6 +13,7 @@ import 'package:myapp/google/google_signin.dart';
 import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/start/start_screen.dart';
 import 'package:myapp/storage/storage.dart';
+import 'package:myapp/tutoriel/tutoriel_screen.dart';
 import 'package:myapp/world/world_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -53,7 +54,8 @@ class GameLayout extends AbstractLayout with PanDetector
   FightScreen? _fightScreen;
   DonjonScreen? _donjonScreen;
   OptionsScreen? optionsScreen;
-
+  TutorielScreen? tutorielScreen;
+  
   GameLayout():super();
 
   @override
@@ -64,7 +66,6 @@ class GameLayout extends AbstractLayout with PanDetector
 
     _startScreen = StartScreen(this, size);
     await add(_startScreen!);
-    _startScreen?.start();
 
     print("GameLayout.onLoaded");
   }
@@ -104,6 +105,20 @@ class GameLayout extends AbstractLayout with PanDetector
     await add(_donjonScreen!);
   }
 
+  void startTutoriel(TutorielScreen screen) async
+  {
+    print("GameLayout.startTutoriel");
+    tutorielScreen = screen;
+    await add(tutorielScreen!);
+  }
+
+  void stopTutoriel()
+  {
+    print("GameLayout.stopTutoriel");
+    tutorielScreen?.remove();
+    tutorielScreen = null;
+  }
+
   void startOptions() async 
   {
     optionsScreen = OptionsScreen(this, size, onClickClose: closeOptions);
@@ -112,10 +127,11 @@ class GameLayout extends AbstractLayout with PanDetector
 
   void closeOptions()
   {
+    print("GameLayout.closeOptions");
     optionsScreen?.remove();
     optionsScreen = null;
   }
-
+  
   @override
   void update(double dt) 
   {
@@ -126,6 +142,12 @@ class GameLayout extends AbstractLayout with PanDetector
   void onPanDown(DragDownInfo info) 
   {
     super.onPanDown(info);
+
+    if(tutorielScreen != null)
+    {
+      if(tutorielScreen!.onClick(info.eventPosition.game))
+        return;
+    }
 
     if(_startScreen != null)
     {
@@ -186,6 +208,11 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   Future<void> add(Component c) async
   {
     await layout.addChild(c);
+  }
+
+  Future<void> addWithGameRef(Component c) async
+  {
+    await layout.addChild(c, gameRef: gameRef);
   }
 
   bool onClick(Vector2 p);
