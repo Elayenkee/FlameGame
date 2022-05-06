@@ -1,4 +1,5 @@
 import 'package:flame/components.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:myapp/graphics/my_text_box_component.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/options/options_screen.dart';
@@ -10,7 +11,9 @@ abstract class TutorielScreen extends AbstractScreen
   MyTextBoxComponent? txtPhrase = null;
   String phrase = "";
 
-  TutorielScreen(GameLayout gameRef, Vector2 size):super(gameRef, "T", size, priority: 6500);
+  VoidCallback? onEnd;
+
+  TutorielScreen(GameLayout gameRef, Vector2 size, this.onEnd):super(gameRef, "T", size, priority: 6500);
 
   @override
   Future<void> onLoad() async 
@@ -53,7 +56,7 @@ class TutorielSettings extends TutorielScreen
 
   int step = 1;
 
-  TutorielSettings(GameLayout gameRef, this.buttonSettings):super(gameRef, gameRef.size);
+  TutorielSettings(GameLayout gameRef, this.buttonSettings, VoidCallback onEnd):super(gameRef, gameRef.size, onEnd);
 
   @override
   Future<void> onLoad() async 
@@ -89,9 +92,8 @@ class TutorielSettings extends TutorielScreen
     if(step == 4)
     {
       gameRef.stopTutoriel();
-      Future.delayed(Duration(milliseconds: 200), () {
-        gameRef.closeOptions();
-      });
+      Future.delayed(Duration(milliseconds: 200), gameRef.closeOptions);
+      Future.delayed(Duration(milliseconds: 500), onEnd);
       return true;
     }
     return false;

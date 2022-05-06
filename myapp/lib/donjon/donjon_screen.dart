@@ -74,7 +74,7 @@ class DonjonScreen extends AbstractScreen
   {
     if(gameRef.tutorielScreen == null)
     {
-      gameRef.startTutoriel(TutorielSettings(gameRef, _buttonSettings));
+      gameRef.startTutoriel(TutorielSettings(gameRef, _buttonSettings, gameRef.startFight));
     }
   }
 

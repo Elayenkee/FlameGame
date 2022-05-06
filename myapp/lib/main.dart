@@ -84,12 +84,12 @@ class GameLayout extends AbstractLayout with PanDetector
   void startFight()
   {
     print("GameLayout.startFight");
-    _worldScreen?.remove();
+    /*_worldScreen?.remove();
     _worldScreen = null;
     _donjonScreen?.remove();
     _donjonScreen = null;
     _fightScreen = FightScreen(this, size);
-    add(_fightScreen!);
+    add(_fightScreen!);*/
   }
 
   void startDonjon() async 
