@@ -7,6 +7,7 @@ import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
+import 'package:myapp/works/work.dart';
 import 'package:myapp/world/world.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -155,15 +156,14 @@ abstract class Storage
     // Attack lowest HP
     BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attaquer monstre");
     builderBehaviour2.activated = true;
-    builderBehaviour2.builderWork.work = Works.ATTACK;
+    builderBehaviour2.builderWork.work = Work.attaquer;
     BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;
     //BuilderTriFunction builderTriFunction2 = builderBehaviour2.builderTargetSelector.builderTriFunction;
     //builderTriFunction2.tri = TriFunctions.LOWEST;
     //builderTriFunction2.value = VALUE.HP;
-    BuilderCondition builderCondition3 = builderConditionGroup2.addCondition();
-    builderCondition3.setCondition(Conditions.NOT_EQUALS);
-    builderCondition3.setParam(1, builderEntity);
-    builderCondition3.setParam(2, VALUE.CLAN);
+    BuilderCondition builderCondition = isEnnemy(builderEntity);
+    builderConditionGroup2.addCondition(b: builderCondition);
+    builderCondition.onAddedToTargetSelector(builderBehaviour2.builderTargetSelector);
 
     //builder.addBehaviour(name: "");
     //builder.addBehaviour(name: "");
@@ -371,6 +371,7 @@ class Local extends Storage
   List<Entity>? getEntities()
   {
     String? json = prefs.getString('entities');
+    print(json);
     if(json != null)
     {
       List<Entity> entities = [];
@@ -400,5 +401,6 @@ class Local extends Storage
     entities.forEach((element) {liste.add(element.toMap());});
     final json = jsonEncode(liste);
     prefs.setString('entities', json);
+    print(json);
   }
 }

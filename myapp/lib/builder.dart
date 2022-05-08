@@ -8,6 +8,7 @@ import 'package:myapp/engine/work.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
 import 'package:myapp/bdd.dart';
+import 'package:myapp/works/work.dart';
 
 abstract class UUIDHolder
 {
@@ -647,24 +648,37 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     return param;
   }
 
-  BuilderCondition.fromJson(Map<String, dynamic> map, Map uuids)
+  static BuilderCondition fromJson(Map<String, dynamic> map, Map uuids)
   {
-    uuid = map["uuid"];
-    map[uuid] = this;
     Utils.logFromJson("BuilderCondition.fromJson.start params ${map["params"]}");
+    final BuilderCondition builderCondition = create(map);
+    builderCondition.uuid = map["uuid"];
+    map[builderCondition.uuid] = builderCondition;
     String builderTargetSelectorUUID = map["builderTargetSelectorUUID"];
-    builderTargetSelector = uuids[builderTargetSelectorUUID];
+    builderCondition.builderTargetSelector = uuids[builderTargetSelectorUUID];
     
-    setCondition(ConditionsExtension.get(map["conditions"]));
+    builderCondition.setCondition(ConditionsExtension.get(map["conditions"]));
 
-    Object? param1 = paramFromMap(map["params"][1], uuids);
-    Object? param2 = paramFromMap(map["params"][2], uuids);
-    Object? param0 = paramFromMap(map["params"][0], uuids);
-    setParam(0, param0);
-    setParam(1, param1);
-    setParam(2, param2);
+    Object? param1 = builderCondition.paramFromMap(map["params"][1], uuids);
+    Object? param2 = builderCondition.paramFromMap(map["params"][2], uuids);
+    Object? param0 = builderCondition.paramFromMap(map["params"][0], uuids);
+    builderCondition.setParam(0, param0);
+    builderCondition.setParam(1, param1);
+    builderCondition.setParam(2, param2);
 
     Utils.logFromJson("BuilderCondition.fromJson.end");
+    return builderCondition;
+  }
+
+  static BuilderCondition create(Map<String, dynamic> map)
+  {
+    if(map.containsKey("predefinedType"))
+    {
+      String type = map["predefinedType"];
+      if(type == "isEnnemy")
+        return isEnnemy.fromMap();
+    }
+    return BuilderCondition();
   }
 
   Object? paramFromMap(Map<String, dynamic> p, Map uuids)
@@ -679,6 +693,26 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     }
     print("ICIIIII");
     return null;
+  }
+}
+
+class isEnnemy extends BuilderCondition
+{
+  isEnnemy(BuilderEntity builderEntity):super()
+  {
+    print("isEnnemy.init.start $builderEntity");
+    setCondition(Conditions.NOT_EQUALS);
+    setParam(1, builderEntity);
+    setParam(2, VALUE.CLAN);
+    print("isEnnemy.init.end");
+  }
+
+  isEnnemy.fromMap();
+
+  addToMap(Map<String, dynamic> map)
+  {
+    super.addToMap(map);
+    map["predefinedType"] = "isEnnemy";
   }
 }
 
@@ -787,7 +821,7 @@ class BuilderTriFunction extends Builder<TriFunction?>
 
 class BuilderWork extends Builder<Work> 
 {
-  Works? work;
+  Work? work;
 
   BuilderWork(){}
 
@@ -795,9 +829,9 @@ class BuilderWork extends Builder<Work>
   Work build() 
   {
     Utils.logBuild("BuilderWork.build.start $work");
-    Work result = work!.instanciate();
+    result = work!;
     Utils.logBuild("BuilderWork.build.end $result");
-    return result;
+    return result as Work;
   }
 
   @override
@@ -811,7 +845,7 @@ class BuilderWork extends Builder<Work>
   String getName()
   {
     if(work != null)
-      return work!.getName();
+      return work!.name;
     return "BuilderWork";
   }
 
@@ -827,7 +861,7 @@ class BuilderWork extends Builder<Work>
     uuid = map["uuid"];
     uuids[uuid] = this;
     Utils.logFromJson("BuilderWork.fromJson $uuid");
-    work = WorksExtension.get(map["work"]);
+    work = Work.get(map["work"]);
     Utils.logFromJson("BuilderWork.fromJson.end");
   }
 }

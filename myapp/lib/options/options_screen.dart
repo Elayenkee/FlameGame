@@ -9,6 +9,7 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/main.dart';
 import 'package:flame/effects.dart';
 import 'package:myapp/storage/storage.dart';
+import 'package:myapp/works/work.dart';
 
 class OptionsScreen extends AbstractScreen
 {
@@ -16,8 +17,8 @@ class OptionsScreen extends AbstractScreen
 
   late Entity selectedEntity;
   final List<Player> players = [];
-  final List<BuilderBehaviourComponent> behaviours = [];
-  BuilderBehaviourComponent? draggingBehaviour;
+  final List<BuilderBehaviourItemComponent> behaviours = [];
+  BuilderBehaviourItemComponent? draggingBehaviour;
   double draggingOffsetY = 0;
 
   late final PositionComponent cadre;
@@ -73,8 +74,8 @@ class OptionsScreen extends AbstractScreen
 
   void addBuilderBehaviour(BuilderBehaviour behaviour)
   {
-    BuilderBehaviourComponent behaviourComponent = BuilderBehaviourComponent(gameRef, this, selectedEntity, behaviour, Vector2(cadre.size.x - 30, cadre.size.y / 7.2));
-    behaviourComponent.position = Vector2(10, 55 + ((10 + behaviourComponent.size.y) * behaviours.length));
+    BuilderBehaviourItemComponent behaviourComponent = BuilderBehaviourItemComponent(gameRef, this, selectedEntity, behaviour, Vector2(cadre.size.x - 30, cadre.size.y / 7.2));
+    behaviourComponent.position = Vector2(10, 65 + ((10 + behaviourComponent.size.y) * behaviours.length));
     behaviourComponent.init();
     behaviours.add(behaviourComponent);
     cadre.addChild(behaviourComponent, gameRef: gameRef);
@@ -88,7 +89,7 @@ class OptionsScreen extends AbstractScreen
     draggingBehaviour!.y += info.delta.game.y;
     for(int i = 0; i < behaviours.length; i++)
     {
-      BuilderBehaviourComponent b = behaviours[i];
+      BuilderBehaviourItemComponent b = behaviours[i];
       if(b != draggingBehaviour)
       {
         if(draggingBehaviour!.y >= b.initialPosition.y - 10 && draggingBehaviour!.y < b.initialPosition.y + b.size.y)
@@ -132,7 +133,7 @@ class OptionsScreen extends AbstractScreen
       return true;
     }
 
-    for(BuilderBehaviourComponent b in behaviours)
+    for(BuilderBehaviourItemComponent b in behaviours)
     {
       if(b.onClick(p))
         return true;
@@ -140,7 +141,7 @@ class OptionsScreen extends AbstractScreen
 
     if(draggingBehaviour == null)
     {
-      for(BuilderBehaviourComponent b in behaviours)
+      for(BuilderBehaviourItemComponent b in behaviours)
       {
         if(b.containsPoint(p))
         {
@@ -171,7 +172,7 @@ class OptionsScreen extends AbstractScreen
   }
 }
 
-class BuilderBehaviourComponent extends SpriteComponent
+class BuilderBehaviourItemComponent extends SpriteComponent
 {
   final GameLayout gameRef;
   final OptionsScreen optionsScreen;
@@ -191,7 +192,7 @@ class BuilderBehaviourComponent extends SpriteComponent
 
   final List<Paint> paints = [];
 
-  BuilderBehaviourComponent(this.gameRef, this.optionsScreen, this.entity, this.builderBehaviour, size):super(size: size);
+  BuilderBehaviourItemComponent(this.gameRef, this.optionsScreen, this.entity, this.builderBehaviour, size):super(size: size);
 
   @override
   Future<void> onLoad() async 
@@ -264,8 +265,8 @@ class BuilderBehaviourComponent extends SpriteComponent
 
     if(edit.containsPoint(p))
     {
+      optionsScreen.addChild(PopupBuilderBehaviour(gameRef, entity, builderBehaviour), gameRef: gameRef);
       gameRef.tutorielScreen?.next();
-      optionsScreen.addChild(PopupBuilderBehaviour(gameRef), gameRef: gameRef);
       return true;
     }
 
@@ -298,12 +299,33 @@ class BuilderBehaviourComponent extends SpriteComponent
 class PopupBuilderBehaviour extends SpriteComponent
 {
   final GameLayout gameRef;
+  final Entity entity;
+  final BuilderBehaviour builderBehaviour;
 
+  late final VerticalContainer container;
   late final SpriteComponent _buttonClose;
 
-  PopupBuilderBehaviour(this.gameRef):super(size: Vector2(730, 400), priority: 900)
+  late final CibleComponent cibleComponent;
+
+  late final WorkComponent workComponent;
+  PopupChooseCible? popupChooseCible;
+  PopupChooseWork? popupChooseWork;
+
+  PopupBuilderBehaviour(this.gameRef, this.entity, this.builderBehaviour):super(size: Vector2(730, 400), priority: 900)
   {
     gameRef.optionsScreen!.popupBuilderBehaviour = this;
+    container = VerticalContainer(gameRef, marginBottom: 20);
+    container.position = Vector2(30, 23);
+
+    cibleComponent = CibleComponent(gameRef, builderBehaviour);
+    container.add(cibleComponent);
+    
+    container.add(LineComponent(Vector2(size.x - 60, 4)));
+    
+    workComponent = WorkComponent(gameRef, builderBehaviour);
+    container.add(workComponent);
+    
+    container.invalidate();
   }
 
   @override
@@ -311,29 +333,420 @@ class PopupBuilderBehaviour extends SpriteComponent
   {
     await super.onLoad();
 
-    print("PopupBuilderBehaviour.onLoad");
+    print("PopupBuilderBehaviour.onLoad.start");
     sprite = Sprite(await Images().load("cadre_behaviour.png"));
     anchor = Anchor.center;
     position = gameRef.size / 2;
 
     _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(size.x - 32, -6), size: Vector2.all(38));
-    if(Storage.entity.nbCombat > 0)
-      addChild(_buttonClose);
+    await addChild(_buttonClose);
+    
+    await addChild(container);
 
-    print("PopupBuilderBehaviour.onLoaded");
+    print("PopupBuilderBehaviour.onLoad.end");
   }
 
   bool onClick(Vector2 p) 
   {
-    if(gameRef.tutorielScreen != null)
+    if(popupChooseWork != null && popupChooseWork!.onClick(p))
       return true;
+
+    if(cibleComponent.onClick(p))
+    {
+      if(popupChooseCible == null)
+      {
+        popupChooseWork?.remove();
+        popupChooseWork = null;
+        popupChooseCible = PopupChooseCible();
+        popupChooseCible!.size = Vector2(size.x /2 - 15, size.y - 30);
+        popupChooseCible!.position = Vector2(size.x /2, 15);
+        addChild(popupChooseCible!, gameRef: gameRef);
+      }
+      else
+      {
+        popupChooseCible?.remove();
+        popupChooseCible = null;
+      }
+      return true;
+    }
+
+    if(workComponent.onClick(p))
+    {
+      if(popupChooseWork == null)
+      {
+        popupChooseCible?.remove();
+        popupChooseCible = null;
+        popupChooseWork = PopupChooseWork((Work newWork){
+          if(newWork != builderBehaviour.builderWork.work)
+          {
+            builderBehaviour.builderWork.work = newWork;
+            workComponent.setWork(newWork);
+            Storage.storeEntities();
+          }
+        });
+        popupChooseWork!.size = Vector2(size.x /2 - 15, size.y - 30);
+        popupChooseWork!.position = Vector2(size.x /2, 15);
+        addChild(popupChooseWork!, gameRef: gameRef);
+      }
+      else
+      {
+        popupChooseWork?.remove();
+        popupChooseWork = null;
+      }
+      return true;
+    }
 
     if(_buttonClose.containsPoint(p))
     {
+      gameRef.tutorielScreen?.next();
       gameRef.optionsScreen!.popupBuilderBehaviour = null;
       remove();
     }
+
+    if(gameRef.tutorielScreen != null)
+      return true;
+    
     return true;
+  }
+}
+
+class BuilderConditionComponent extends PositionComponent
+{
+  final GameLayout gameRef;
+  final BuilderCondition builderCondition;
+  final List<Function> callbacks = [];
+
+  BuilderConditionComponent(this.gameRef, this.builderCondition)
+  {
+    if(builderCondition is isEnnemy)
+    {
+      size = Vector2(150, 40);
+      return;
+    }
+  }
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+    if(builderCondition is isEnnemy)
+    {
+      SpriteComponent button = SpriteComponent();
+      button.sprite = Sprite(await Images().load("button_ennemy.png"));
+      button.size = size;
+      TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
+      TextComponent text = TextComponent("Ennemi", textRenderer: textPaint);
+      text.anchor = Anchor.center;
+      text.position = size / 2;
+      await button.addChild(text);
+      await addChild(button);
+      callbacks.add((Vector2 p){
+        if(button.containsPoint(p))
+        {
+          gameRef.tutorielScreen?.next(param: 0);
+          return true;
+        }
+        return false;
+      });
+      return;
+    }
+  }
+
+  bool onClick(Vector2 p) 
+  {
+    for(Function f in callbacks)
+    {
+      if(f.call(p))
+        return true;
+    }
+    return false;
+  }
+}
+
+class CibleComponent extends VerticalContainer
+{
+  final BuilderBehaviour builderBehaviour;
+  final List<BuilderConditionComponent> conditionsComponents = [];
+
+  CibleComponent(GameLayout gameRef, this.builderBehaviour):super(gameRef)
+  {
+    add(TextSizedComponent("Cible", textRenderer: textPaint));
+    for(int i = 0; i < builderBehaviour.builderTargetSelector.builderConditionGroup.conditions.length; i++)
+    {
+      BuilderCondition builderCondition = builderBehaviour.builderTargetSelector.builderConditionGroup.conditions[i];
+      BuilderConditionComponent conditionComponent = BuilderConditionComponent(gameRef, builderCondition);
+      conditionsComponents.add(conditionComponent);
+      add(conditionComponent);
+    }
+  }
+
+  bool onClick(Vector2 p) 
+  {
+    for(BuilderConditionComponent b in conditionsComponents)
+    {
+      if(b.onClick(p))
+        return true;
+    }
+    return false;
+  }
+}
+
+class WorkComponent extends VerticalContainer
+{
+  final BuilderBehaviour builderBehaviour;
+  late final BuilderWorkComponent builderWorkComponent;
+
+  WorkComponent(GameLayout gameRef, this.builderBehaviour):super(gameRef)
+  {
+    add(TextSizedComponent("Action", textRenderer: textPaint));
+    BuilderWork builderWork = builderBehaviour.builderWork;
+    builderWorkComponent = BuilderWorkComponent(gameRef, builderWork);
+    add(builderWorkComponent);
+  }
+
+  void setWork(Work work)
+  {
+    builderWorkComponent.button.setWork(work);
+  }
+
+  bool onClick(Vector2 p) 
+  {
+    return builderWorkComponent.onClick(p);
+  }
+}
+
+class PopupChooseCible extends PopupChoose
+{
+  
+}
+
+class PopupChooseWork extends PopupChoose
+{
+  final Function onChooseWork;
+  final List<Function> callbacks = [];
+
+  PopupChooseWork(this.onChooseWork);
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+
+    for(int i = 0; i < Work.dispo.length; i++)
+    {
+      Work w = Work.dispo[i];
+      ButtonWork b = ButtonWork(w);
+      await addChild(b);
+      b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, 5 + (5 + b.size.y) * (i / 2).toInt());
+      b.size = Vector2(.9 * size.x / 2, b.size.y);
+      callbacks.add((Vector2 p){
+        if(b.containsPoint(p))
+        {
+          onChooseWork(w);
+          return true;
+        }
+        return false;
+      });
+    }
+  }
+
+  bool onClick(Vector2 p)
+  {
+    for(Function c in callbacks)
+    {
+      if(c.call(p))
+        return true;
+    }
+    return false;
+  }
+}
+
+class PopupChoose extends PositionComponent
+{
+  @override
+  Future<void> onLoad() async 
+  {
+    await init();
+    await super.onLoad();
+    Paint paint = BasicPalette.white.withAlpha(240).paint();
+    addChild(SpriteComponent(overridePaint: paint, sprite: _centerTop, size: Vector2(size.x - square2 +2, square), position: Vector2(square -1, 0)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _centerBottom, size: Vector2(size.x - square2 +2, square), position: Vector2(square-1, size.y - square)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _centerLeft, size: Vector2(square, size.y - square2 + 2), position: Vector2(0, square-1)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _centerRight, size: Vector2(square, size.y - square2 + 2), position: Vector2(size.x-square, square-1)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _cornerTopLeft, size: Vector2.all(square)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _cornerTopRight, size: Vector2.all(square), position: Vector2(size.x - square, 0)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _cornerBottomLeft, size: Vector2.all(square), position: Vector2(0, size.y - square)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _cornerBottomRight, size: Vector2.all(square), position: Vector2(size.x - square, size.y - square)));
+    addChild(SpriteComponent(overridePaint: paint, sprite: _center, size: size - Vector2.all(square2 -2), position: Vector2.all(square -1)));
+  }
+
+  bool onClick(Vector2 p)
+  {
+    return false;
+  }
+
+  static bool inited = false;
+  static late final Sprite _cornerTopLeft;
+  static late final Sprite _cornerTopRight;
+  static late final Sprite _cornerBottomLeft;
+  static late final Sprite _cornerBottomRight;
+  static late final Sprite _center;
+  static late final Sprite _centerTop;
+  static late final Sprite _centerBottom;
+  static late final Sprite _centerLeft;
+  static late final Sprite _centerRight;
+  static final double square = 19;
+  static final double square2 = square * 2;
+  static init() async
+  {
+    if(inited)
+      return;
+
+    inited = true;
+    print("Popup.init.start");
+    try
+    {
+      print("Popup.init.sheet.ok");
+      _cornerTopLeft = GameLayout.gui.getSprite(0, 0);
+      _cornerTopRight = GameLayout.gui.getSprite(0, 2);
+      _cornerBottomLeft = GameLayout.gui.getSprite(2, 0);
+      _cornerBottomRight = GameLayout.gui.getSprite(2, 2);
+      _center = GameLayout.gui.getSprite(1, 1);
+      _centerTop = GameLayout.gui.getSprite(0, 1);
+      _centerBottom = GameLayout.gui.getSprite(2, 1);
+      _centerLeft = GameLayout.gui.getSprite(1, 0);
+      _centerRight = GameLayout.gui.getSprite(1, 2);
+    }
+    catch(e)
+    {
+      print(e);
+    }
+    print("Popup.init.end");
+  }
+}
+
+class ButtonWork extends PositionComponent
+{
+  late final TextComponent textComponent;
+  late final SpriteComponent button;
+  late Work work;
+
+  ButtonWork(Work? work)
+  {
+    button = SpriteComponent();
+    TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
+    textComponent = TextComponent("", textRenderer: textPaint);
+    textComponent.anchor = Anchor.center;
+    this.work = work ?? Work.aucun;
+    size = Vector2(textPaint.measureTextWidth(this.work.name) + 60, 40);  
+  }
+
+  void setWork(Work? work)
+  {
+    print("setWork");
+    this.work = work ?? Work.aucun;
+    textComponent.text = this.work.name;
+    size = Vector2(textPaint.measureTextWidth(this.work.name) + 60, 40);
+    textComponent.position = size / 2;
+    if(work is Aucun)
+      button.sprite = spriteNone;
+    else if(work is MagicWork)
+      button.sprite = spriteMagie;
+    else
+      button.sprite = spriteAction;
+    button.size = size;
+  }
+
+  @override
+  set size(Vector2 size) 
+  {
+    super.size = size;
+    button.size = size;
+    textComponent.position = size / 2;
+  }
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await init();
+    await super.onLoad();
+    setWork(work);
+    await addChild(button);
+    await button.addChild(textComponent);
+  }
+
+  static late final Sprite spriteNone;
+  static late final Sprite spriteAction;
+  static late final Sprite spriteMagie;
+  static bool inited = false;
+  static Future<void> init() async
+  {
+    if(inited)
+      return;
+
+    print("ButtonWork.init");
+    inited = true;
+    spriteNone = Sprite(await Images().load("button_none.png"));
+    spriteAction = Sprite(await Images().load("button_work.png"));
+    spriteMagie = Sprite(await Images().load("button_magic.png"));
+  }
+}
+
+class BuilderWorkComponent extends PositionComponent
+{
+  final GameLayout gameRef;
+  final BuilderWork builderWork;
+  late final ButtonWork button;
+
+  BuilderWorkComponent(this.gameRef, this.builderWork)
+  {
+    button = ButtonWork(builderWork.work);
+    size = button.size;
+  }
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+    await addChild(button);
+    size = button.size;
+  }
+
+  bool onClick(Vector2 p) 
+  {
+    if(button.containsPoint(p))
+    {
+      gameRef.tutorielScreen?.next(param: 1);
+      return true;
+    }
+    return false;
+  }
+}
+
+class LineComponent extends PositionComponent
+{
+  late Rect rect;
+  late final Paint paint;
+
+  LineComponent(Vector2 size):super(size: size)
+  {
+    rect = Rect.fromLTWH(0, 0, size.x, size.y);
+    paint = Paint()..color = Colors.black;
+  }
+
+  @override
+  set position(Vector2 p)
+  {
+    super.position = p;
+    rect = Rect.fromLTWH(0, 0, size.x, size.y);
+    print(rect);
+  }
+
+  @override
+  void render(Canvas canvas)
+  {
+    super.render(canvas);
+    canvas.drawRect(rect, paint);
   }
 }
 
@@ -349,12 +762,11 @@ class Player extends SpriteComponent
   {
     //print("Player.onLoad");
     await super.onLoad();
-    final spriteSheet = SpriteSheet(image: await Images().load("hero_knight.png"), srcSize: Vector2(100, 55));
-    final SpriteAnimationComponent player = SpriteAnimationComponent();
-    player.animation = spriteSheet.createAnimation(row: 0, stepTime: .15, from: 0, to: 6);
-    player.size = Vector2(130, 72);
-    player.anchor = Anchor.topCenter;
-    player.position = Vector2(size.x / 2, 0);
+    final SpriteComponent player = SpriteComponent();
+    player.sprite = Sprite(await Images().load("portrait.png"));
+    player.size = Vector2(72, 72);
+    player.anchor = Anchor.bottomCenter;
+    player.position = Vector2(size.x / 2, size.y);
     player.overridePaint = BasicPalette.white.paint();
     playerPaint = player.overridePaint!;
     addChild(player);
@@ -394,15 +806,14 @@ class Popup extends SpriteComponent
     print("Popup.init.start");
     try
     {
-      final sheet = SpriteSheet(image: await Images().load("gui.png"), srcSize: Vector2(32, 32));
       print("Popup.init.sheet.ok");
-      _cornerTopLeft = sheet.getSprite(7, 0);
-      _cornerTopRight = sheet.getSprite(7, 3);
-      _cornerBottomLeft = sheet.getSprite(10, 0);
-      _cornerBottomRight = sheet.getSprite(10, 3);
-      _center = sheet.getSprite(1, 13);
-      _centerTop = sheet.getSprite(7, 1);
-      _centerBottom = sheet.getSprite(10, 1);
+      _cornerTopLeft = GameLayout.gui.getSprite(7, 0);
+      _cornerTopRight = GameLayout.gui.getSprite(7, 3);
+      _cornerBottomLeft = GameLayout.gui.getSprite(10, 0);
+      _cornerBottomRight = GameLayout.gui.getSprite(10, 3);
+      _center = GameLayout.gui.getSprite(1, 13);
+      _centerTop = GameLayout.gui.getSprite(7, 1);
+      _centerBottom = GameLayout.gui.getSprite(10, 1);
     }
     catch(e)
     {
@@ -441,19 +852,58 @@ class Popup extends SpriteComponent
   }
 }
 
-class Bouton extends SpriteComponent with Tappable
+class VerticalContainer extends PositionComponent
 {
-  final Function onTap;
+  final GameLayout gameRef;
+  final List<PositionComponent> items = [];
+  int marginBottom = 0;
 
-  Bouton(this.onTap, Sprite sprite):super(sprite:sprite)
+  VerticalContainer(this.gameRef, {this.marginBottom = 0});
+
+  void add(PositionComponent component)
   {
-    size = Vector2(30, 30);
+    items.add(component);
+    invalidate();
   }
 
   @override
-  bool onTapUp(TapUpInfo info) 
+  Future<void> onLoad() async 
   {
-    onTap();
-    return true;
+    await super.onLoad();
+    items.forEach((element) async{await addChild(element, gameRef: gameRef);});
+  }
+
+  void invalidate()
+  {
+    for(int i = 1; i < items.length; i++)
+    {
+      PositionComponent last = items[i - 1];
+      PositionComponent current = items[i];
+      current.position = Vector2(0, last.position.y + last.size.y + marginBottom);
+      print("${last.runtimeType} ${last.size}");
+    }
+  }
+
+  @override
+  Vector2 get size
+  {
+    if(items.isEmpty)
+      return Vector2.all(0);
+
+    double maxW = 0;
+    items.forEach((element) { 
+      if(element.size.x > maxW)
+        maxW = element.size.x;
+    });
+    return Vector2(maxW, items.last.position.y +  items.last.size.y + marginBottom);
+  }
+}
+
+class TextSizedComponent extends TextComponent
+{
+  TextSizedComponent(String text, {TextRenderer? textRenderer}):super(text, textRenderer: textRenderer)
+  {
+    if(textRenderer != null)
+      size = Vector2(textRenderer.measureTextWidth(text), textRenderer.measureTextHeight(text));
   }
 }

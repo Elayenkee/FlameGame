@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
+import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/components.dart' as draggable;
@@ -18,7 +19,7 @@ import 'package:myapp/world/world_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 final TextPaint textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco"));
-late final String test;
+late final SpriteSheet gui;
 
 Future<void> main() async
 {
@@ -27,6 +28,7 @@ Future<void> main() async
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
   await Firebase.initializeApp();
+
   print("Firebase.init.ok");
   runApp(MaterialApp(theme: ThemeData(fontFamily: 'Disco'),home: GameScreen()));
 }
@@ -49,6 +51,8 @@ class GameScreen extends StatelessWidget
 
 class GameLayout extends AbstractLayout with PanDetector
 {
+  static late final SpriteSheet gui;
+
   StartScreen? _startScreen;
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
@@ -63,6 +67,8 @@ class GameLayout extends AbstractLayout with PanDetector
   {
     print("GameLayout.onLoad");
     await super.onLoad();
+
+    gui = SpriteSheet(image: await images.load("gui.png"), srcSize: Vector2.all(32));
 
     _startScreen = StartScreen(this, size);
     await add(_startScreen!);

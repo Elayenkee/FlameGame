@@ -13,6 +13,8 @@ import 'package:myapp/graphics/themes/firstTheme.dart';
 import 'package:myapp/settings/popupBehaviour.dart';
 import 'dart:math' as math;
 
+import 'package:myapp/works/work.dart';
+
 class Images
 {
   static String warrior = '${Utils.pathImages}entity_warrior.png';
@@ -842,8 +844,8 @@ String getNameForButton(Object o)
     return o.entity.getName();
   if(o is Entity)
     return o.getName();
-  if(o is Works)
-    return o.getName();
+  if(o is Work)
+    return o.name;
   if(o is ValueAtom)
     return o.getName();
   if(o is BuilderCount)

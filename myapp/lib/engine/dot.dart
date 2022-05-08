@@ -1,24 +1,7 @@
-import 'package:myapp/engine/entity.dart';
+/*import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/engine/work.dart';
-
-class DOT extends Work
-{
-  VALUE source;
-  Function toExecute;
-
-  int count = 0;
-  
-  DOT(this.source, this.toExecute);
-
-  bool execute(Entity caller, Entity target, Story story) 
-  {
-    toExecute.call(story, this);
-    count++;
-    return true;
-  }
-}
 
 class DotList implements Countable 
 {
@@ -50,4 +33,4 @@ class DotList implements Countable
   {
     return dots.length;
   }
-}
+}*/

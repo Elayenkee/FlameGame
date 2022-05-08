@@ -5,6 +5,7 @@ import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/targerselector.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/engine/work.dart';
+import 'package:myapp/works/work.dart';
 
 class Behaviour implements ValueReader 
 {
@@ -12,7 +13,7 @@ class Behaviour implements ValueReader
 
   Condition condition = TRUE();
   TargetSelector selector = TargetSelector();
-  Work work = Work();
+  Work work = Work.aucun;
   Entity? target;
 
   Behaviour();

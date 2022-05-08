@@ -9,6 +9,7 @@ import 'package:myapp/main.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/utils.dart';
+import 'package:myapp/works/work.dart';
 
 class FightScreen extends AbstractScreen
 {
@@ -106,7 +107,7 @@ class FightScreen extends AbstractScreen
     entity3.setValues(values);
     BuilderTotal builder3 = entity3.builderTotal;
     BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
-    builderBehaviour4.builderWork.work = Works.ATTACK;
+    builderBehaviour4.builderWork.work = Work.attaquer;
 
     BuilderConditionGroup builderConditionGroup4 = builderBehaviour4.builderTargetSelector.builderConditionGroup;
     BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();

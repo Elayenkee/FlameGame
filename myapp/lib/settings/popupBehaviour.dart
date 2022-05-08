@@ -5,6 +5,7 @@ import 'package:myapp/bdd.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/settings/settings.dart';
+import 'package:myapp/works/work.dart';
 
 class PopupBehaviour extends PositionComponent with Tappable
 {
@@ -140,7 +141,7 @@ class PopupBehaviour extends PositionComponent with Tappable
     // WORK
     String txtWork = builderComponent.builderBehaviour.builderWork.work != null ? getNameForButton(builderComponent.builderBehaviour.builderWork.work!) : "Aucun";
     btnWork = Bouton(layout, (){
-      PopupChoose(layout, btnWork.position + position + Vector2(btnWork.size.x, 0), Works.values, (Works chosen){
+      PopupChoose(layout, btnWork.position + position + Vector2(btnWork.size.x, 0), Work.values, (Work chosen){
         builderComponent.builderBehaviour.builderWork.work = chosen;
         builderComponent.updateComponentValid();
         updateComponentValid();

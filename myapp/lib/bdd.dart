@@ -4,7 +4,7 @@ import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/engine/trifunction.dart';
 import 'package:myapp/engine/work.dart';
 
-enum Works { ATTACK, HEAL, POISON, BLEED }
+/*enum Works { ATTACK, HEAL, POISON, BLEED }
 
 extension WorksExtension on Works 
 {
@@ -26,11 +26,11 @@ extension WorksExtension on Works
   String getName() {
     switch (this) {
       case Works.ATTACK:
-        return "ATTACK";
+        return "Attaquer";
       case Works.HEAL:
-        return "HEAL";
+        return "Magie : Soin";
       case Works.POISON:
-        return "POISON";
+        return "Magie : Poison";
       case Works.BLEED:
         return "BLEED";
     }
@@ -46,7 +46,7 @@ extension WorksExtension on Works
     logRun("Works.get NULL");
     return null;
   }
-}
+}*/
 
 enum ParamTypes { ValueReader, Value, TargetSelector, Int }
 

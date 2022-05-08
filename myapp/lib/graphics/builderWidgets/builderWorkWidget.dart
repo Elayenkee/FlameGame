@@ -5,6 +5,7 @@ import 'package:myapp/graphics/builderWidgets/builderBehaviourTotalWidget.dart';
 import 'package:myapp/graphics/builderWidgets/widgets/builderButton.dart';
 import 'package:myapp/graphics/themes/firstTheme.dart';
 import 'package:myapp/graphics/themes/popup.dart';
+import 'package:myapp/works/work.dart';
 
 class BuilderWorkWidget extends StatefulWidget {
   late final BuilderBehaviourTotalWidget builderTotal;
@@ -64,14 +65,14 @@ class _BuilderWorkWidget extends State<BuilderWorkWidget> {
 
   Widget worksWidget(BuildContext context) {
     return Column(
-      children: Works.values.map((w) {
+      children: Work.values.map((w) {
         return Column(
             children: [workButton(context, w), Container(height: 10)]);
       }).toList(),
     );
   }
 
-  Widget workButton(BuildContext context, Works w) {
+  Widget workButton(BuildContext context, Work w) {
     return MaterialButton(
       onPressed: () {
         widget.builderWork.work = w;

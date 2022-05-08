@@ -47,7 +47,7 @@ class DonjonScreen extends AbstractScreen
     _donjon.setPlayerListener(_player);
 
     _buttonSettings = SpriteComponent(size: Vector2.all(32), sprite: Sprite(await Images().load("button_settings.png")));
-    _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 100, 5) : Vector2(-1000, 0); 
+    _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 32, 5) : Vector2(-1000, 0); 
     hud.addChild(_buttonSettings);
 
     _player.onMove(force: true);

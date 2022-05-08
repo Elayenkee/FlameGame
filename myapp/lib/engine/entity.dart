@@ -5,6 +5,7 @@ import 'package:myapp/utils.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/behaviour.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/works/work.dart';
 
 class Entity extends UUIDHolder implements ValueReader//, Param
 {
@@ -73,11 +74,11 @@ class Entity extends UUIDHolder implements ValueReader//, Param
   @override
   getValue(VALUE? value) 
   {
-    if(value == VALUE.POISON)
+    /*if(value == VALUE.POISON)
       return DotList.withValue(VALUE.POISON, getDots());
 
     if(value == VALUE.BLEED)
-      return DotList.withValue(VALUE.BLEED, getDots());
+      return DotList.withValue(VALUE.BLEED, getDots());*/
     
     return values[value!];
   }
@@ -90,7 +91,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
   void run(Server server, Story story) 
   {
     Utils.logRun("Entity.run.start");
-    List<DOT> dots = getDots().dots;
+    /*List<DOT> dots = getDots().dots;
     Utils.logRun("Entity.run dots : $dots");
     for(DOT dot in dots)
     {
@@ -100,7 +101,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
         Utils.logRun("Entity.run.end DEAD");
         return;
       }
-    }
+    }*/
 
     timer = maxTimer;
     Utils.logRun("Entity.run behaviours : $behaviours");
@@ -118,7 +119,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     }
 
     Utils.logRun("Entity.run.end Nothing to execute");
-    NOTHING().execute(this, this, story);
+    Work.aucun.execute(this, this, story);
   }
 
   void ellapse(int time)
@@ -172,10 +173,10 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     return int.parse(getValue(VALUE.CLAN).toString());
   }
 
-  DotList getDots()
+  /*DotList getDots()
   {
     return getValue(VALUE.DOT) as DotList;
-  }
+  }*/
 
   void addHP(int h) 
   {

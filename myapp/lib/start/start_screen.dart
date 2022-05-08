@@ -66,7 +66,7 @@ class StartScreen  extends AbstractScreen
   @override
   bool onClick(Vector2 p) 
   {
-    if(_txtConnexion.text == "NEW GAME")
+    if(_txtConnexion.text == "NOUVELLE PARTIE")
     {
       if(Storage.uuid == null)
       {
@@ -93,7 +93,7 @@ class StartScreen  extends AbstractScreen
       if(step == 2)
         _txtConnexion.text = "Chargement des données...";
       if(step == 3)
-        _txtConnexion.text = "NEW GAME";
+        _txtConnexion.text = "NOUVELLE PARTIE";
       step = -1; 
     }
   }

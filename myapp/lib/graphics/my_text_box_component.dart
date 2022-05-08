@@ -186,7 +186,6 @@ class MyTextBoxComponent<T extends TextRenderer> extends PositionComponent {
       dy += _lineHeight;
     }
     final max = math.min(currentChar - charCount, _lines[_currentLine].length);
-    print(currentLine);
     _drawLine(c, _lines[_currentLine].substring(0, max), dy);
   }
 

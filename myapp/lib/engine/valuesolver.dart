@@ -39,12 +39,12 @@ extension ValueExtension on VALUE
     {
       case VALUE.NAME:
         return "unknown";
-      case VALUE.DOT:
+      /*case VALUE.DOT:
         return DotList();
       case VALUE.POISON:
         return DotList();
       case VALUE.BLEED:
-        return DotList();
+        return DotList();*/
     }
     return 0;
   }
