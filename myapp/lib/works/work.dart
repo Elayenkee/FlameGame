@@ -11,9 +11,9 @@ abstract class Work
   static Work bandage = Bandage();
   static Work soin = Soin();
   
-  static List<Work> get values => [aucun, attaquer, soin];
+  static List<Work> get values => [aucun, bandage, attaquer, soin];
 
-  static Work get(String name)
+  static Work getFromName(String name)
   {
     for(Work w in values)
     {

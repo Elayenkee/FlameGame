@@ -341,6 +341,7 @@ class PopupBuilderBehaviour extends SpriteComponent
     await addChild(_buttonClose);
     
     await addChild(container);
+    container.invalidate();
 
     print("PopupBuilderBehaviour.onLoad.end");
   }
@@ -350,14 +351,20 @@ class PopupBuilderBehaviour extends SpriteComponent
     if(popupChooseWork != null && popupChooseWork!.onClick(p))
       return true;
 
-    if(cibleComponent.onClick(p))
+    BuilderConditionComponent? conditionClicked = cibleComponent.onClick(p);
+    if(conditionClicked != null)
     {
       if(popupChooseCible == null)
       {
         popupChooseWork?.remove();
         popupChooseWork = null;
-        popupChooseCible = PopupChooseCible();
-        popupChooseCible!.size = Vector2(size.x /2 - 15, size.y - 30);
+        popupChooseCible = PopupChooseCible(gameRef, entity, (BuilderCondition b){
+          int index = builderBehaviour.builderConditions.conditions.indexOf(conditionClicked.builderCondition);
+          builderBehaviour.builderConditions.conditions[index] = b;
+          cibleComponent.setCible(index, b);
+          Storage.storeEntities();
+        });
+        popupChooseCible!.size = Vector2(size.x /4 - 15, size.y - 30);
         popupChooseCible!.position = Vector2(size.x /2, 15);
         addChild(popupChooseCible!, gameRef: gameRef);
       }
@@ -383,7 +390,7 @@ class PopupBuilderBehaviour extends SpriteComponent
             Storage.storeEntities();
           }
         });
-        popupChooseWork!.size = Vector2(size.x /2 - 15, size.y - 30);
+        popupChooseWork!.size = Vector2(size.x /4 - 15, size.y - 30);
         popupChooseWork!.position = Vector2(size.x /2, 15);
         addChild(popupChooseWork!, gameRef: gameRef);
       }
@@ -409,46 +416,119 @@ class PopupBuilderBehaviour extends SpriteComponent
   }
 }
 
-class BuilderConditionComponent extends PositionComponent
+class ButtonBuilderCondition extends PositionComponent
 {
   final GameLayout gameRef;
-  final BuilderCondition builderCondition;
-  final List<Function> callbacks = [];
 
-  BuilderConditionComponent(this.gameRef, this.builderCondition)
+  BuilderCondition builderCondition;
+  late final TextComponent textComponent;
+  late final SpriteAlphaComponent button;
+
+  ButtonBuilderCondition(this.gameRef, this.builderCondition)
   {
-    if(builderCondition is isEnnemy)
-    {
-      size = Vector2(150, 40);
-      return;
-    }
+    _updateSize();
+  }
+
+  void setBuilderCondition(BuilderCondition builderCondition)
+  {
+    children.forEach((element) {element.remove();});
+    this.builderCondition = builderCondition;
+    _updateSize();
+    _updateButton();
+  }
+
+  set alpha(int alpha)
+  {
+    textComponent.textRenderer = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white.withAlpha(alpha)));
+    button.alpha = alpha;
   }
 
   @override
   Future<void> onLoad() async 
   {
     await super.onLoad();
+    await _updateButton();
+  }
+
+  void _updateSize()
+  {
     if(builderCondition is isEnnemy)
     {
-      SpriteComponent button = SpriteComponent();
+      size = Vector2(150, 40);
+      return;
+    }
+
+    if(builderCondition is isMe)
+    {
+      size = Vector2(150, 40);
+      return;
+    }
+  }
+
+  Future<void> _updateButton() async
+  {
+    if(builderCondition is isEnnemy)
+    {
+      button = SpriteAlphaComponent();
       button.sprite = Sprite(await Images().load("button_ennemy.png"));
       button.size = size;
       TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
-      TextComponent text = TextComponent("Ennemi", textRenderer: textPaint);
-      text.anchor = Anchor.center;
-      text.position = size / 2;
-      await button.addChild(text);
-      await addChild(button);
-      callbacks.add((Vector2 p){
-        if(button.containsPoint(p))
-        {
-          gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_BEHAVIOUR_PARAM, param: 0);
-          return true;
-        }
-        return false;
-      });
+      textComponent = TextComponent("Ennemi", textRenderer: textPaint);
+      textComponent.anchor = Anchor.center;
+      textComponent.position = size / 2;
+      await button.addChild(textComponent);
+      await addChild(button, gameRef: gameRef);
       return;
     }
+
+    if(builderCondition is isMe)
+    {
+      button = SpriteAlphaComponent();
+      button.sprite = Sprite(await Images().load("button_me.png"));
+      button.size = size;
+      TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
+      textComponent = TextComponent("Moi", textRenderer: textPaint);
+      textComponent.anchor = Anchor.center;
+      textComponent.position = size / 2;
+      await button.addChild(textComponent);
+      await addChild(button, gameRef: gameRef);
+      return;
+    }
+  }
+}
+
+class BuilderConditionComponent extends PositionComponent
+{
+  final GameLayout gameRef;
+  final BuilderCondition builderCondition;
+  final List<Function> callbacks = [];
+  late final ButtonBuilderCondition buttonBuilderCondition;
+
+  BuilderConditionComponent(this.gameRef, this.builderCondition)
+  {
+    buttonBuilderCondition = ButtonBuilderCondition(gameRef, builderCondition);
+    size = buttonBuilderCondition.size;
+  }
+
+  void setBuilderCondition(BuilderCondition builderCondition)
+  {
+    buttonBuilderCondition.setBuilderCondition(builderCondition);
+    size = buttonBuilderCondition.size;
+  }
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+    await addChild(buttonBuilderCondition);
+    callbacks.add((Vector2 p){
+      if(buttonBuilderCondition.containsPoint(p))
+      {
+        gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_BEHAVIOUR_PARAM, param: 0);
+        return true;
+      }
+      return false;
+    });
   }
 
   bool onClick(Vector2 p) 
@@ -477,16 +557,31 @@ class CibleComponent extends VerticalContainer
       conditionsComponents.add(conditionComponent);
       add(conditionComponent);
     }
+    print("CIBLE COMPONENT SIZE $size");
   }
 
-  bool onClick(Vector2 p) 
+  void setCible(int index, BuilderCondition builderCondition)
+  {
+    conditionsComponents[index].setBuilderCondition(builderCondition);
+    invalidate();
+  }
+
+  BuilderConditionComponent? onClick(Vector2 p) 
   {
     for(BuilderConditionComponent b in conditionsComponents)
     {
       if(b.onClick(p))
-        return true;
+        return b;
     }
-    return false;
+    return null;
+  }
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+    invalidate();
+    print("CIBLE COMPONENT ONLOADED SIZE $size");
   }
 }
 
@@ -516,7 +611,40 @@ class WorkComponent extends VerticalContainer
 
 class PopupChooseCible extends PopupChoose
 {
-  PopupChooseCible():super("Cible");
+  final GameLayout gameRef;
+  final Entity entity;
+  final Function onChooseCible;
+  final List<Function> callbacks = [];
+
+  PopupChooseCible(this.gameRef, this.entity, this.onChooseCible):super("Cibles");
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+
+    List<BuilderCondition> dispo = entity.availablesBuilderConditions();
+    for(int i = 0; i < dispo.length; i++)
+    {
+      BuilderCondition c = dispo[i];
+      ButtonBuilderCondition b = ButtonBuilderCondition(gameRef, c);
+      await addChild(b);
+      b.position = Vector2(.05 * size.x, startY + 2 + (5 + b.size.y) * i);
+      b.size = Vector2(.9 * size.x / 2, b.size.y);
+      b.alpha = gameRef.tutorielScreen != null && !(c is isEnnemy) ? 40 : 255;
+      if(gameRef.tutorielScreen == null)
+      {
+        callbacks.add((Vector2 p){
+          if(b.containsPoint(p))
+          {
+            onChooseCible(c);
+            return true;
+          }
+          return false;
+        });
+      }
+    }
+  }
 }
 
 class PopupChooseWork extends PopupChoose
@@ -526,7 +654,7 @@ class PopupChooseWork extends PopupChoose
   final Function onChooseWork;
   final List<Function> callbacks = [];
 
-  PopupChooseWork(this.gameRef, this.entity, this.onChooseWork):super("Action");
+  PopupChooseWork(this.gameRef, this.entity, this.onChooseWork):super("Actions");
 
   @override
   Future<void> onLoad() async 
@@ -539,9 +667,9 @@ class PopupChooseWork extends PopupChoose
       Work w = dispo[i];
       ButtonWork b = ButtonWork(w);
       await addChild(b);
-      b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, startY + 2 + (5 + b.size.y) * (i ~/ 2));
-      b.size = Vector2(.9 * size.x / 2, b.size.y);
-      b.alpha = gameRef.tutorielScreen != null && w != Work.attaquer ? 90 : 255;
+      b.position = Vector2(.05 * size.x, startY + 2 + (5 + b.size.y) * i);
+      b.size = Vector2(.9 * size.x, b.size.y);
+      b.alpha = gameRef.tutorielScreen != null && w != Work.attaquer ? 40 : 255;
       if(gameRef.tutorielScreen == null)
       {
         callbacks.add((Vector2 p){
@@ -579,7 +707,7 @@ class PopupChoose extends PositionComponent
   {
     await init();
     await super.onLoad();
-    Paint paint = BasicPalette.white.withAlpha(240).paint();
+    Paint paint = BasicPalette.white.withAlpha(255).paint();
     addChild(SpriteComponent(overridePaint: paint, sprite: _centerTop, size: Vector2(size.x - square2 +2, square), position: Vector2(square -1, 0)));
     addChild(SpriteComponent(overridePaint: paint, sprite: _centerBottom, size: Vector2(size.x - square2 +2, square), position: Vector2(square-1, size.y - square)));
     addChild(SpriteComponent(overridePaint: paint, sprite: _centerLeft, size: Vector2(square, size.y - square2 + 2), position: Vector2(0, square-1)));
@@ -595,7 +723,7 @@ class PopupChoose extends PositionComponent
     txt.position = Vector2(size.x / 2, 5);
     await addChild(txt);
 
-    LineComponent line = LineComponent(Vector2(size.x - 4, 3), color: Colors.white);
+    LineComponent line = LineComponent(Vector2(size.x - 8, 3), color: Colors.white);
     line.position = Vector2(4, txt.textRenderer.measureTextHeight(title) + 8);
     await addChild(line);
 

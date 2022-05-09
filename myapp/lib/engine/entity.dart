@@ -20,6 +20,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
   late BuilderEntity builder;
 
   List<Work> _availablesWorks = [];
+  List<PredefinedBuilderCondition> _availablesBuilderConditions = [];
 
   int nbCombat = 0;
 
@@ -200,6 +201,21 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     return _availablesWorks;
   }
 
+  void addAvailableBuilderCondition(PredefinedBuilderCondition builderCondition)
+  {
+    for(PredefinedBuilderCondition b in _availablesBuilderConditions)
+    {
+      if(b.name == builderCondition.name)
+        return;
+    }
+    _availablesBuilderConditions.add(builderCondition);
+  }
+
+  List<BuilderCondition> availablesBuilderConditions()
+  {
+    return _availablesBuilderConditions;
+  }
+
   @override
   String toString() {
     return "${getName()} [${getHP()}/ ${getHPMax()}]";
@@ -219,12 +235,20 @@ class Entity extends UUIDHolder implements ValueReader//, Param
         values[value] = k[key];
       }
     });
-    List w = map["works"];
-    w.forEach((element) {_availablesWorks.add(Work.get(element));});
+
     setValue(VALUE.DOT, VALUE.DOT.defaultValue);
     setValue(VALUE.POISON, VALUE.POISON.defaultValue);
     setValue(VALUE.BLEED, VALUE.BLEED.defaultValue);
     builder = BuilderEntity.fromJson(this, map["builder"], uuids);
+
+    // Availables works
+    List w = map["works"];
+    w.forEach((element) {_availablesWorks.add(Work.getFromName(element));});
+    
+    // Availables builderConditions
+    List b = map["builderConditions"];
+    b.forEach((element) {_availablesBuilderConditions.add(PredefinedBuilderCondition.getFromName(element, builder));});
+
     Utils.logFromJson("Entity.fromJson.end");
   }
 
@@ -237,6 +261,10 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     map["works"] = [];
     _availablesWorks.forEach((element) { 
       map["works"].add(element.name);
+    });
+    map["builderConditions"] = [];
+    _availablesBuilderConditions.forEach((element) { 
+      map["builderConditions"].add(element.name);
     });
     map["builder"] = builder.toMap();
     map["nbCombat"] = nbCombat;

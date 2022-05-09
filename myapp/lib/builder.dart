@@ -696,7 +696,27 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   }
 }
 
-class isEnnemy extends BuilderCondition
+abstract class PredefinedBuilderCondition extends BuilderCondition
+{
+  String get name;
+
+  static PredefinedBuilderCondition getFromName(String name, BuilderEntity builderEntity)
+  {
+    if(name == "isEnnemy")
+      return isEnnemy(builderEntity);
+    if(name == "isMe")
+      return isMe(builderEntity);
+    return isEnnemy(builderEntity);
+  }
+
+  addToMap(Map<String, dynamic> map)
+  {
+    super.addToMap(map);
+    map["predefinedType"] = name;
+  }
+}
+
+class isEnnemy extends PredefinedBuilderCondition
 {
   isEnnemy(BuilderEntity builderEntity):super()
   {
@@ -709,11 +729,23 @@ class isEnnemy extends BuilderCondition
 
   isEnnemy.fromMap();
 
-  addToMap(Map<String, dynamic> map)
+  String get name => "isEnnemy";
+}
+
+class isMe extends PredefinedBuilderCondition
+{
+  isMe(BuilderEntity builderEntity):super()
   {
-    super.addToMap(map);
-    map["predefinedType"] = "isEnnemy";
+    print("isMe.init.start $builderEntity");
+    setCondition(Conditions.EQUALS);
+    setParam(1, builderEntity);
+    setParam(2, VALUE.NAME);
+    print("isMe.init.end");
   }
+
+  isMe.fromMap();
+
+  String get name => "isMe";
 }
 
 class BuilderTargetSelector extends Builder<TargetSelector> 
@@ -861,7 +893,7 @@ class BuilderWork extends Builder<Work>
     uuid = map["uuid"];
     uuids[uuid] = this;
     Utils.logFromJson("BuilderWork.fromJson $uuid");
-    work = Work.get(map["work"]);
+    work = Work.getFromName(map["work"]);
     Utils.logFromJson("BuilderWork.fromJson.end");
   }
 }

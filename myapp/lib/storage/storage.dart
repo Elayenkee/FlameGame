@@ -168,6 +168,8 @@ abstract class Storage
     entity.addAvailableWork(Work.attaquer);
     entity.addAvailableWork(Work.bandage);
     entity.addAvailableWork(Work.aucun);
+    entity.addAvailableBuilderCondition(isEnnemy(builderEntity));
+    entity.addAvailableBuilderCondition(isMe(builderEntity));
 
     //builder.addBehaviour(name: "");
     //builder.addBehaviour(name: "");
