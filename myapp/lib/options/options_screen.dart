@@ -375,7 +375,7 @@ class PopupBuilderBehaviour extends SpriteComponent
       {
         popupChooseCible?.remove();
         popupChooseCible = null;
-        popupChooseWork = PopupChooseWork(gameRef, (Work newWork){
+        popupChooseWork = PopupChooseWork(gameRef, entity, (Work newWork){
           if(newWork != builderBehaviour.builderWork.work)
           {
             builderBehaviour.builderWork.work = newWork;
@@ -522,19 +522,21 @@ class PopupChooseCible extends PopupChoose
 class PopupChooseWork extends PopupChoose
 {
   final GameLayout gameRef;
+  final Entity entity;
   final Function onChooseWork;
   final List<Function> callbacks = [];
 
-  PopupChooseWork(this.gameRef, this.onChooseWork):super("Action");
+  PopupChooseWork(this.gameRef, this.entity, this.onChooseWork):super("Action");
 
   @override
   Future<void> onLoad() async 
   {
     await super.onLoad();
 
-    for(int i = 0; i < Work.dispo.length; i++)
+    List<Work> dispo = entity.availablesWorks();
+    for(int i = 0; i < dispo.length; i++)
     {
-      Work w = Work.dispo[i];
+      Work w = dispo[i];
       ButtonWork b = ButtonWork(w);
       await addChild(b);
       b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, startY + 2 + (5 + b.size.y) * (i ~/ 2));

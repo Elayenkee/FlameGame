@@ -165,6 +165,10 @@ abstract class Storage
     builderConditionGroup2.addCondition(b: builderCondition);
     builderCondition.onAddedToTargetSelector(builderBehaviour2.builderTargetSelector);
 
+    entity.addAvailableWork(Work.attaquer);
+    entity.addAvailableWork(Work.bandage);
+    entity.addAvailableWork(Work.aucun);
+
     //builder.addBehaviour(name: "");
     //builder.addBehaviour(name: "");
 

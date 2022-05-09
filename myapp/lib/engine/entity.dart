@@ -19,6 +19,8 @@ class Entity extends UUIDHolder implements ValueReader//, Param
   List<Behaviour> behaviours = [];
   late BuilderEntity builder;
 
+  List<Work> _availablesWorks = [];
+
   int nbCombat = 0;
 
   Entity(Map map) 
@@ -187,6 +189,17 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     setValue(VALUE.HP, newHP);
   }
 
+  void addAvailableWork(Work work)
+  {
+    if(!_availablesWorks.contains(work))
+      _availablesWorks.add(work);
+  }
+
+  List<Work> availablesWorks()
+  {
+    return _availablesWorks;
+  }
+
   @override
   String toString() {
     return "${getName()} [${getHP()}/ ${getHPMax()}]";
@@ -206,6 +219,8 @@ class Entity extends UUIDHolder implements ValueReader//, Param
         values[value] = k[key];
       }
     });
+    List w = map["works"];
+    w.forEach((element) {_availablesWorks.add(Work.get(element));});
     setValue(VALUE.DOT, VALUE.DOT.defaultValue);
     setValue(VALUE.POISON, VALUE.POISON.defaultValue);
     setValue(VALUE.BLEED, VALUE.BLEED.defaultValue);
@@ -218,6 +233,10 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     map["values"] = Map();
     values.forEach((key, value) {
       map["values"][key.name] = value is int ? value : value.toString();
+    });
+    map["works"] = [];
+    _availablesWorks.forEach((element) { 
+      map["works"].add(element.name);
     });
     map["builder"] = builder.toMap();
     map["nbCombat"] = nbCombat;
