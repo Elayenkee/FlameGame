@@ -8,10 +8,11 @@ abstract class Work
 {
   static Work aucun = Aucun();
   static Work attaquer = Attaquer();
+  static Work bandage = Bandage();
   static Work soin = Soin();
   
   static List<Work> get values => [aucun, attaquer, soin];
-  static List<Work> get dispo => [aucun, attaquer, soin];
+  static List<Work> get dispo => [attaquer, bandage, aucun];
 
   static Work get(String name)
   {
@@ -28,6 +29,12 @@ abstract class Work
   bool execute(Entity caller, Entity target, Story story) 
   {
     return false;
+  }
+
+  @override
+  String toString()
+  {
+    return name;
   }
 }
 
@@ -68,6 +75,30 @@ class Attaquer extends Work
   }
 }
 
+class Bandage extends Work
+{
+  String get name => "Bandage";
+
+  @override
+  bool execute(Entity caller, Entity target, Story story) 
+  {
+    StoryEvent event = StoryEvent();
+
+    int hpMax = caller.getHPMax();
+    int hpToGain = (hpMax * 15) ~/ 100;
+    target.addHP(hpToGain);
+    event.set("work", name);
+    event.setCaller(caller);
+    event.setTarget(caller);
+    event.set("damage", hpToGain);
+    event.log = "$caller used $name [$hpToGain] on $caller";
+
+    story.addStoryEvent(event);
+
+    return true;
+  }
+}
+
 class Soin extends MagicWork
 {
   String get name => "Soin ${mp}mp";
@@ -78,7 +109,7 @@ class Soin extends MagicWork
   {
     if (caller.getMP() < mp) 
     {
-      Utils.log("$caller pas assez de MP pour use HEAL");
+      Utils.log("$caller pas assez de MP pour use $name");
       return false;
     }
 
@@ -96,8 +127,7 @@ class Soin extends MagicWork
     dmg2 *= dmg;
     target.addHP(dmg2);
 
-    event.set("work", "HEAL");
-    event.set("source", "heal");
+    event.set("work", name);
     event.setCaller(caller);
     event.setTarget(target);
     event.set("damage", dmg2);
@@ -133,7 +163,7 @@ class Aucun extends Work
   bool execute(Entity caller, Entity target, Story story) 
   {
     StoryEvent event = StoryEvent();
-    event.set("work", "NOTHING");
+    event.set("work", name);
     event.set("caller", caller.toMap());
     event.log = "$caller ne fait rien";
     return true;

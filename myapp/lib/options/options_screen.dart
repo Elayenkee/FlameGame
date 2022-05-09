@@ -375,7 +375,7 @@ class PopupBuilderBehaviour extends SpriteComponent
       {
         popupChooseCible?.remove();
         popupChooseCible = null;
-        popupChooseWork = PopupChooseWork((Work newWork){
+        popupChooseWork = PopupChooseWork(gameRef, (Work newWork){
           if(newWork != builderBehaviour.builderWork.work)
           {
             builderBehaviour.builderWork.work = newWork;
@@ -521,10 +521,11 @@ class PopupChooseCible extends PopupChoose
 
 class PopupChooseWork extends PopupChoose
 {
+  final GameLayout gameRef;
   final Function onChooseWork;
   final List<Function> callbacks = [];
 
-  PopupChooseWork(this.onChooseWork):super("Action");
+  PopupChooseWork(this.gameRef, this.onChooseWork):super("Action");
 
   @override
   Future<void> onLoad() async 
@@ -536,16 +537,20 @@ class PopupChooseWork extends PopupChoose
       Work w = Work.dispo[i];
       ButtonWork b = ButtonWork(w);
       await addChild(b);
-      b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, startY + 2 + (5 + b.size.y) * (i / 2).toInt());
+      b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, startY + 2 + (5 + b.size.y) * (i ~/ 2));
       b.size = Vector2(.9 * size.x / 2, b.size.y);
-      callbacks.add((Vector2 p){
-        if(b.containsPoint(p))
-        {
-          onChooseWork(w);
-          return true;
-        }
-        return false;
-      });
+      b.alpha = gameRef.tutorielScreen != null && w != Work.attaquer ? 90 : 255;
+      if(gameRef.tutorielScreen == null)
+      {
+        callbacks.add((Vector2 p){
+          if(b.containsPoint(p))
+          {
+            onChooseWork(w);
+            return true;
+          }
+          return false;
+        });
+      }
     }
   }
 
@@ -643,23 +648,26 @@ class PopupChoose extends PositionComponent
 class ButtonWork extends PositionComponent
 {
   late final TextComponent textComponent;
-  late final SpriteComponent button;
+  late final SpriteAlphaComponent button;
   late Work work;
 
-  ButtonWork(Work? work)
+  ButtonWork(this.work)
   {
-    button = SpriteComponent();
+    button = SpriteAlphaComponent();
     TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
     textComponent = TextComponent("", textRenderer: textPaint);
     textComponent.anchor = Anchor.center;
-    this.work = work ?? Work.aucun;
     size = Vector2(textPaint.measureTextWidth(this.work.name) + 60, 40);  
   }
 
-  void setWork(Work? work)
+  set alpha(int alpha)
   {
-    print("setWork");
-    this.work = work ?? Work.aucun;
+    textComponent.textRenderer = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white.withAlpha(alpha)));
+    button.alpha = alpha;
+  }
+
+  void setWork(Work work)
+  {
     textComponent.text = this.work.name;
     size = Vector2(textPaint.measureTextWidth(this.work.name) + 60, 40);
     textComponent.position = size / 2;
@@ -699,7 +707,6 @@ class ButtonWork extends PositionComponent
     if(inited)
       return;
 
-    print("ButtonWork.init");
     inited = true;
     spriteNone = Sprite(await Images().load("button_none.png"));
     spriteAction = Sprite(await Images().load("button_work.png"));
@@ -715,7 +722,7 @@ class BuilderWorkComponent extends PositionComponent
 
   BuilderWorkComponent(this.gameRef, this.builderWork)
   {
-    button = ButtonWork(builderWork.work);
+    button = ButtonWork(builderWork.work ?? Work.aucun);
     size = button.size;
   }
 
@@ -920,5 +927,15 @@ class TextSizedComponent extends TextComponent
   {
     if(textRenderer != null)
       size = Vector2(textRenderer.measureTextWidth(text), textRenderer.measureTextHeight(text));
+  }
+}
+
+class SpriteAlphaComponent extends SpriteComponent
+{
+  SpriteAlphaComponent():super(overridePaint: BasicPalette.white.withAlpha(255).paint());
+
+  set alpha(int alpha)
+  {
+    overridePaint = BasicPalette.white.withAlpha(alpha).paint();
   }
 }
