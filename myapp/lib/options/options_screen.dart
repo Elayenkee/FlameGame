@@ -2,13 +2,12 @@ import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/gestures.dart';
 import 'package:flame/palette.dart';
-import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/main.dart';
-import 'package:flame/effects.dart';
 import 'package:myapp/storage/storage.dart';
+import 'package:myapp/tutoriel/tutoriel_screen.dart';
 import 'package:myapp/works/work.dart';
 
 class OptionsScreen extends AbstractScreen
@@ -266,7 +265,7 @@ class BuilderBehaviourItemComponent extends SpriteComponent
     if(edit.containsPoint(p))
     {
       optionsScreen.addChild(PopupBuilderBehaviour(gameRef, entity, builderBehaviour), gameRef: gameRef);
-      gameRef.tutorielScreen?.next();
+      gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_OPEN_DETAILS);
       return true;
     }
 
@@ -398,7 +397,7 @@ class PopupBuilderBehaviour extends SpriteComponent
 
     if(_buttonClose.containsPoint(p))
     {
-      gameRef.tutorielScreen?.next();
+      gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR);
       gameRef.optionsScreen!.popupBuilderBehaviour = null;
       remove();
     }
@@ -443,7 +442,7 @@ class BuilderConditionComponent extends PositionComponent
       callbacks.add((Vector2 p){
         if(button.containsPoint(p))
         {
-          gameRef.tutorielScreen?.next(param: 0);
+          gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_BEHAVIOUR_PARAM, param: 0);
           return true;
         }
         return false;
@@ -517,7 +516,7 @@ class WorkComponent extends VerticalContainer
 
 class PopupChooseCible extends PopupChoose
 {
-  
+  PopupChooseCible():super("Cible");
 }
 
 class PopupChooseWork extends PopupChoose
@@ -525,7 +524,7 @@ class PopupChooseWork extends PopupChoose
   final Function onChooseWork;
   final List<Function> callbacks = [];
 
-  PopupChooseWork(this.onChooseWork);
+  PopupChooseWork(this.onChooseWork):super("Action");
 
   @override
   Future<void> onLoad() async 
@@ -537,7 +536,7 @@ class PopupChooseWork extends PopupChoose
       Work w = Work.dispo[i];
       ButtonWork b = ButtonWork(w);
       await addChild(b);
-      b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, 5 + (5 + b.size.y) * (i / 2).toInt());
+      b.position = Vector2(i % 2 == 0 ? .05 * size.x / 2 : .05 * size.x / 2 + size.x / 2, startY + 2 + (5 + b.size.y) * (i / 2).toInt());
       b.size = Vector2(.9 * size.x / 2, b.size.y);
       callbacks.add((Vector2 p){
         if(b.containsPoint(p))
@@ -563,6 +562,11 @@ class PopupChooseWork extends PopupChoose
 
 class PopupChoose extends PositionComponent
 {
+  final String title;
+  late final double startY;
+
+  PopupChoose(this.title);
+
   @override
   Future<void> onLoad() async 
   {
@@ -578,6 +582,17 @@ class PopupChoose extends PositionComponent
     addChild(SpriteComponent(overridePaint: paint, sprite: _cornerBottomLeft, size: Vector2.all(square), position: Vector2(0, size.y - square)));
     addChild(SpriteComponent(overridePaint: paint, sprite: _cornerBottomRight, size: Vector2.all(square), position: Vector2(size.x - square, size.y - square)));
     addChild(SpriteComponent(overridePaint: paint, sprite: _center, size: size - Vector2.all(square2 -2), position: Vector2.all(square -1)));
+
+    TextComponent txt = TextComponent(title, textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white)));
+    txt.anchor = Anchor.topCenter;
+    txt.position = Vector2(size.x / 2, 5);
+    await addChild(txt);
+
+    LineComponent line = LineComponent(Vector2(size.x - 4, 3), color: Colors.white);
+    line.position = Vector2(4, txt.textRenderer.measureTextHeight(title) + 8);
+    await addChild(line);
+
+    startY = line.position.y + line.size.y + 5;
   }
 
   bool onClick(Vector2 p)
@@ -716,7 +731,7 @@ class BuilderWorkComponent extends PositionComponent
   {
     if(button.containsPoint(p))
     {
-      gameRef.tutorielScreen?.next(param: 1);
+      gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_BEHAVIOUR_PARAM, param: 1);
       return true;
     }
     return false;
@@ -728,10 +743,10 @@ class LineComponent extends PositionComponent
   late Rect rect;
   late final Paint paint;
 
-  LineComponent(Vector2 size):super(size: size)
+  LineComponent(Vector2 size, {Color color = Colors.black}):super(size: size)
   {
     rect = Rect.fromLTWH(0, 0, size.x, size.y);
-    paint = Paint()..color = Colors.black;
+    paint = Paint()..color = color;
   }
 
   @override

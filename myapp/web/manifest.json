@@ -1,7 +1,7 @@
 {
     "name": "myapp",
     "short_name": "myapp",
-    "start_url": "Jeux/FlameTwo/",
+    "start_url": "Jeux/FlameGame/",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",

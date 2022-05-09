@@ -6,6 +6,7 @@ import 'package:myapp/graphics/my_text_box_component.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/options/options_screen.dart';
 import 'package:flame/assets.dart';
+import 'package:myapp/utils.dart';
 
 abstract class TutorielScreen extends AbstractScreen
 {
@@ -52,7 +53,7 @@ abstract class TutorielScreen extends AbstractScreen
     return false;
   }
 
-  void next({dynamic param})
+  void onEvent(String event, {dynamic param})
   {
 
   }
@@ -60,6 +61,11 @@ abstract class TutorielScreen extends AbstractScreen
 
 class TutorielSettings extends TutorielScreen
 {
+  static final String EVENT_CLICK_OPEN_SETTINGS = Utils.generateUUID();
+  static final String EVENT_CLICK_OPEN_DETAILS = Utils.generateUUID();
+  static final String EVENT_CLICK_BEHAVIOUR_PARAM = Utils.generateUUID();
+  static final String EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR = Utils.generateUUID();
+  
   final SpriteComponent buttonSettings;
 
   List<Pointer?> pointers = [];
@@ -87,9 +93,9 @@ class TutorielSettings extends TutorielScreen
   }
 
   @override
-  void next({dynamic param})
+  void onEvent(String event, {dynamic param})
   {
-    if(step == 1)
+    if(step == 1 && event == EVENT_CLICK_OPEN_SETTINGS)
     {
       removePointers();
       startPhrase("Pour l'instant, ma stratégie est plutôt simple :\nJ'ATTAQUE LE MONSTRE !");
@@ -100,7 +106,7 @@ class TutorielSettings extends TutorielScreen
       };
       step = 2;
     }
-    else if(step == 2)
+    else if(step == 2 && event == EVENT_CLICK_OPEN_DETAILS)
     {
       removePointers();
       startPhrase("En détail : \nMa cible, c'est <Ennemi>\nEt l'action, c'est <Attaquer>");
@@ -116,19 +122,13 @@ class TutorielSettings extends TutorielScreen
       pointers.add(Pointer("Action à effectuer sur la cible", 2, positionPointerWork));
       addChild(pointers.last!);
     }
-    else if(step == 3)
+    else if(step == 3 && event == EVENT_CLICK_BEHAVIOUR_PARAM)
     {
-      pointers[param]?.remove();
-      pointers[param] = null;
-      if(pointers[1 - param as int] == null)
-      {
-        pointers.clear();
-        step = 4;
-      }
-      else
-        next(param: 1 - param as int);
+      removePointers();
+      startPhrase("Plusieurs choix sont possibles,\nmais je vais laisser comme ça pour l'instant.");
+      step = 4;
     }
-    else if(step == 4)
+    else if(step == 4 && event == EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR)
     {
       gameRef.stopTutoriel();
       Future.delayed(Duration(milliseconds: 200), gameRef.closeOptions);

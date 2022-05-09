@@ -108,7 +108,7 @@ class DonjonScreen extends AbstractScreen
 
     if(_buttonSettings.containsPoint(p))
     {
-      gameRef.tutorielScreen?.next();
+      gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_OPEN_SETTINGS);
       gameRef.startOptions();
       return true;
     }
