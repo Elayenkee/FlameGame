@@ -83,14 +83,14 @@ class Bandage extends Work
   {
     StoryEvent event = StoryEvent();
 
-    int hpMax = caller.getHPMax();
+    int hpMax = target.getHPMax();
     int hpToGain = (hpMax * 15) ~/ 100;
     target.addHP(hpToGain);
     event.set("work", name);
     event.setCaller(caller);
-    event.setTarget(caller);
+    event.setTarget(target);
     event.set("damage", hpToGain);
-    event.log = "$caller used $name [$hpToGain] on $caller";
+    event.log = "$caller used $name [$hpToGain] on $target";
 
     story.addStoryEvent(event);
 
