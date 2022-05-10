@@ -19,7 +19,8 @@ abstract class Storage
   static late World world;
   static late List<Entity> entities;
   static late Entity entity;
-  static Donjon? donjon = null;
+  static late Donjon donjon;
+  static bool newGame = true;
 
   static Future<void> init(String uuid) async
   {
@@ -46,27 +47,36 @@ abstract class Storage
       world = pWorld;
 
     //Donjon
-    donjon = storage.getDonjon();
+    var pDonjon = storage.getDonjon();
+    if(pDonjon == null)
+      donjon = Donjon.generate();
+    else
+      donjon = pDonjon;
 
     if(pWorld == null)
       storeWorld(world);
 
     if(pEntities == null)
       storeEntities();
+
+    if(pDonjon == null)
+      storeDonjon(donjon);
+    else
+      newGame = false;
     
     print("Storage.init.end");
   }
 
   Future<void> start() async{}
+
+  static bool isNewGame()
+  {
+    return newGame;
+  }
   
   // Donjon
   Donjon? getDonjon();
   void setDonjon(Donjon donjon);
-  static bool hasDonjon()
-  {
-    print("Storage.hasDonjon");
-    return donjon != null;
-  }
   static void storeDonjon(Donjon donjon)
   {
     Storage.donjon = donjon;
@@ -273,8 +283,7 @@ class Remote extends Storage
     print("Remote.saveUser.world.ok");
 
     //Donjon
-    if(Storage.donjon != null)
-      all["donjon"] = Storage.donjon!.toMap();
+    all["donjon"] = Storage.donjon.toMap();
     print("Remote.saveUser.donjon.ok");
 
     // Entities

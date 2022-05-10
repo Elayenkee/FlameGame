@@ -41,6 +41,7 @@ class StartScreen  extends AbstractScreen
 
   void start() async
   {
+    _txtConnexion.text = "Connexion...";
     await Future.delayed(const Duration(seconds: 1));
     String? uuid = await signInWithGoogle();
     print("StartScreen.signedIn.uuid $uuid");
@@ -50,35 +51,17 @@ class StartScreen  extends AbstractScreen
       await Storage.init(uuid);
       print("StartScreen.storage.init.ok");
       await Future.delayed(const Duration(seconds: 1));
-      if(Storage.hasDonjon())
-      {
-        gameRef.startDonjon();
-      }
-      else
-      {
-        step = 3;
-      }
     }  
-    else
-      step = 3;
+    step = 3;
   }
 
   @override
   bool onClick(Vector2 p) 
   {
-    if(_txtConnexion.text == "NOUVELLE PARTIE")
-    {
-      if(Storage.uuid == null)
-      {
-        _txtConnexion.text = "Connexion...";
-        start();
-      }
-      else
-      {
-        Storage.storeDonjon(Donjon.generate());
-        gameRef.startDonjon();
-      }
-    }
+    if(Storage.uuid != null)
+      gameRef.startDonjon();
+    else
+      start();
     return true;
   }
 
@@ -93,7 +76,12 @@ class StartScreen  extends AbstractScreen
       if(step == 2)
         _txtConnexion.text = "Chargement des données...";
       if(step == 3)
-        _txtConnexion.text = "NOUVELLE PARTIE";
+      {
+        if(Storage.isNewGame())
+          _txtConnexion.text = "NOUVELLE PARTIE";
+        else
+          _txtConnexion.text = "CONTINUER";
+      }
       step = -1; 
     }
   }
