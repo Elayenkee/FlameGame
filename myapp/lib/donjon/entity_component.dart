@@ -25,7 +25,6 @@ class EntityComponent extends PositionComponent implements EntityListener
     await super.onLoad();
     entityAnimationComponent = createEntityAnimationComponent();
     size = entityAnimationComponent.size;
-    await addChild(Shadow(Vector2(35, 10), Vector2(size.x / 2, size.y)));
     await addChild(entityAnimationComponent);
     anchor = Anchor.bottomCenter;
     onMove(force: true);
@@ -95,6 +94,8 @@ class PlayerAnimationComponent extends EntityAnimationComponent
     runSprites.addAll(row1);
     move = SpriteAnimation.spriteList(runSprites, stepTime: .06, loop: true);
     animation = idle;
+
+    await addChild(Shadow(Vector2(35, 10), Vector2(size.x / 2, size.y)));
   }
 }
 

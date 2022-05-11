@@ -54,13 +54,12 @@ class DonjonScreen extends AbstractScreen
 
     _player.onMove(force: true);
 
-    //TODO REMOVE
-    //startTutorielSettings();
     print("DonjonScreen.onLoad.end");
   }
 
   Vector2 getEntityPosition(Entity entity)
   {
+
     return donjon.entityPosition;
   }
 
