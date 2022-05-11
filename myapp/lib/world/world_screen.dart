@@ -29,7 +29,7 @@ class WorldScreen extends AbstractScreen
     _world.setWorldScreen(this);
     _world.setPlayerListener(_player);
 
-    Position entityPosition = _world.entityPosition;
+    Vector2 entityPosition = _world.entityPosition;
     _decor.position = Vector2(entityPosition.x, entityPosition.y)..multiply(Vector2.all(-50));
     print("WorldScreen.onLoaded");
   }
@@ -83,7 +83,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
   }
 }
 
-class Player extends SpriteAnimationComponent with HasGameRef<GameLayout> implements EntityListener 
+class Player extends SpriteAnimationComponent with HasGameRef<GameLayout> implements WorldEntityListener 
 {
   final WorldScreen _worldScreen;
   late final GameLayout gameRef;
@@ -129,7 +129,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<GameLayout> implem
   {
     if(moving)
     {
-      Position entityPosition = _worldScreen._world.entityPosition;
+      Vector2 entityPosition = _worldScreen._world.entityPosition;
       _worldScreen._decor.position = Vector2(entityPosition.x, entityPosition.y)..multiply(Vector2.all(-50));
     }
   }

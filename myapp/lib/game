@@ -1,3 +1,4 @@
+import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
+import 'package:myapp/utils/images.dart';
 
 class GameScreen extends StatelessWidget
 {
@@ -43,9 +45,9 @@ class GameLayout extends AbstractLayout
   {
     viewport = FixedResolutionViewport(Vector2(840, 500));
 
-    await images.load('entity_dead.png');
-    await images.load('entity_warrior.png');
-    await images.load('entity_orc.png');
+    await ImagesUtils.load('entity_dead.png');
+    await ImagesUtils.load('entity_warrior.png');
+    await ImagesUtils.load('entity_orc.png');
     loadAnimation('sword');
     loadAnimation('heal');
     loadAnimation('work_poison');
@@ -85,7 +87,7 @@ class GameLayout extends AbstractLayout
 
   Future<void> loadAnimation(String name) async
   {
-    await images.load("$name.png");
+    await ImagesUtils.load("$name.png");
     SpriteComponent sprite = SpriteComponent(sprite: Sprite(images.fromCache("$name.png")), priority: 1000);
     sprite.anchor = Anchor.bottomCenter;
     sprite.size = Vector2.all(60);

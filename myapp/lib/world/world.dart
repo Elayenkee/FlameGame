@@ -28,7 +28,7 @@ class World
 
   void entityGoTo(Vector2 target)
   {
-    Position newPosition = Position.fromVector2(target);
+    Vector2 newPosition = Vector2.copy(target);
     newPosition.x += _worldEntity._position.x;
     newPosition.y += _worldEntity._position.y;
     _worldEntity._goTo(newPosition);
@@ -40,7 +40,7 @@ class World
     _worldScreen.startFight();
   }
 
-  void setPlayerListener(EntityListener listener)
+  void setPlayerListener(WorldEntityListener listener)
   {
     _worldEntity.listener = listener;
   }
@@ -77,14 +77,14 @@ class WorldEntity
 {
   late World _world;
   Entity _entity;
-  Position _position = Position(0, 0);
-  Position? _target;
+  Vector2 _position = Vector2(0, 0);
+  Vector2? _target;
   final double _speed = 2.5;
   double _next = -1; 
 
   double timeDeplacement = 0;
 
-  EntityListener? listener;
+  WorldEntityListener? listener;
 
   WorldEntity(this._entity)
   {
@@ -96,7 +96,7 @@ class WorldEntity
     _next = 1 + World.Rand.nextDouble() * 2;
   }
 
-  void _goTo(Position p)
+  void _goTo(Vector2 p)
   {
     timeDeplacement = _world._time;
     _target = p;
@@ -110,7 +110,7 @@ class WorldEntity
     if(_target == null)
       return;
     
-    final d = _position.distance(_target!);
+    final d = _position.distanceTo(_target!);
     final max = _speed * dt;
     if(d < max)
     {
@@ -141,57 +141,29 @@ class WorldEntity
   Map<String, dynamic> toMap()
   {
     final map = Map<String, dynamic>();
-    map["position"] = _position.toMap();
+    map["position"] = Vector2ToMap(_position);
     return map;
   }
 
   WorldEntity.fromMap(this._entity, Map<String, dynamic> map)
   {
-    _position = Position.fromMap(map["position"]);
+    _position = Vector2FromMap(map["position"]);
     print("WorldEntity.fromMap : $_position");
   }
 }
 
-abstract class EntityListener
+abstract class WorldEntityListener
 {
   void onStartMove(double dir);
   void onStopMove();
 }
 
-class Position
+Map<String, dynamic> Vector2ToMap(Vector2 v)
 {
-  double x = 0;
-  double y = 0;
+  return {"x":v.x, "y":v.y};
+}
 
-  Position(this.x, this.y);
-
-  Map<String, dynamic> toMap()
-  {
-    return {"x":x, "y":y};
-  }
-
-  Position.fromMap(Map<String, dynamic> map)
-  {
-    x = map["x"];
-    y = map["y"];
-  }
-
-  Position.fromVector2(Vector2 v)
-  {
-    x = v.x;
-    y = v.y;
-  }
-
-  double distance(Position p)
-  {
-    final dx = p.x - x;
-    final dy = p.y - y;
-    return sqrt(pow(dx, 2) + pow(dy, 2));
-  }
-
-  @override
-  String toString()
-  {
-    return "[$x, $y]";
-  }
+Vector2 Vector2FromMap(Map<String, dynamic> map)
+{
+  return Vector2(map["x"], map["y"]);
 }

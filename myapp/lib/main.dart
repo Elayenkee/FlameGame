@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
@@ -15,6 +16,7 @@ import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/start/start_screen.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
+import 'package:myapp/utils/images.dart';
 import 'package:myapp/world/world_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -67,8 +69,8 @@ class GameLayout extends AbstractLayout with PanDetector
   {
     print("GameLayout.onLoad");
     await super.onLoad();
-
-    gui = SpriteSheet(image: await images.load("gui.png"), srcSize: Vector2.all(32));
+    ImagesUtils.init(Images());
+    gui = await ImagesUtils.loadGUI("gui.png");
 
     _startScreen = StartScreen(this, size);
     await add(_startScreen!);
@@ -300,26 +302,6 @@ class Background extends SpriteComponent
   void render(Canvas canvas) 
   {
     canvas.drawRect(rect, paint);
-    super.render(canvas);
-  }
-}
-
-class Shadow extends SpriteComponent 
-{
-  late final Rect rect;
-  late final Paint paint;
-
-  Shadow(Vector2 size, Vector2 position) : super(size: size) 
-  {
-    paint = Paint()..color = Color.fromARGB(178, 28, 26, 26);
-    rect = Rect.fromLTWH(position.x, position.y, size.x, size.y);
-    anchor = Anchor.bottomCenter;
-  }
-
-  @override
-  void render(Canvas canvas) 
-  {
-    canvas.drawOval(rect, paint);
     super.render(canvas);
   }
 }

@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:myapp/donjon/donjon_screen.dart';
+import 'package:myapp/donjon/entity_component.dart';
 import 'package:myapp/engine/entity.dart';
-import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world.dart';
 
@@ -27,7 +27,7 @@ class Donjon
 
   bool entityGoTo(Vector2 target, {int dir = -1})
   {
-    Position newPosition = Position.fromVector2(target);
+    Vector2 newPosition = Vector2.copy(target);
     return _donjonEntity._goTo(newPosition, dir: dir);
   }
 
@@ -45,16 +45,16 @@ class Donjon
 
     print("Donjon.changeSalle $salle");
     if(salle == currentSalle.w)
-      _donjonEntity._position = Position(6.5, .95);
+      _donjonEntity._position = Vector2(6.5, .95);
 
     if(salle == currentSalle.e)
-      _donjonEntity._position = Position(-6.5, .95);
+      _donjonEntity._position = Vector2(-6.5, .95);
 
     if(salle == currentSalle.n)
-      _donjonEntity._position = Position(0, 4.1);
+      _donjonEntity._position = Vector2(0, 4.1);
 
     if(salle == currentSalle.s)
-      _donjonEntity._position = Position(0, -2.2);
+      _donjonEntity._position = Vector2(0, -2.2);
 
     currentSalle = salle;
 
@@ -66,7 +66,7 @@ class Donjon
     _donjonEntity.listener = listener;
   }
 
-  get entityPosition => _donjonEntity._position;
+  Vector2 get entityPosition => _donjonEntity._position;
 
   Map<String, dynamic> toMap()
   {
@@ -135,8 +135,8 @@ class DonjonEntity
 {
   late Donjon _donjon;
   Entity _entity;
-  Position _position = Position(0, 4.3);
-  Position? _target;
+  Vector2 _position = Vector2(0, 4.3);
+  Vector2? _target;
   final double _speed = 3.4;
   double _next = -1;
   int nextDir = -1;
@@ -153,7 +153,7 @@ class DonjonEntity
       _next = 1 + World.Rand.nextDouble() * 2;
   }
 
-  bool _goTo(Position p, {int dir = -1})
+  bool _goTo(Vector2 p, {int dir = -1})
   {
     if(p.x > 7.5 || p.x < -7.5 || p.y > 4.25 || p.y < -2.95)
       return false;
@@ -175,7 +175,7 @@ class DonjonEntity
     if(_target == null)
       return;
     
-    final d = _position.distance(_target!);
+    final d = _position.distanceTo(_target!);
     final max = _speed * dt;
     if(d < max)
     {
@@ -221,13 +221,13 @@ class DonjonEntity
   Map<String, dynamic> toMap()
   {
     final map = Map<String, dynamic>();
-    map["position"] = _position.toMap();
+    map["position"] = Vector2ToMap(_position);
     return map;
   }
 
   DonjonEntity.fromMap(this._entity, Map<String, dynamic> map)
   {
-    _position = Position.fromMap(map["position"]);
+    _position = Vector2FromMap(map["position"]);
   }
 }
 

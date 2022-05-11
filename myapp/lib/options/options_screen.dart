@@ -8,6 +8,7 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
+import 'package:myapp/utils/images.dart';
 import 'package:myapp/works/work.dart';
 
 class OptionsScreen extends AbstractScreen
@@ -52,7 +53,7 @@ class OptionsScreen extends AbstractScreen
       await addChild(player);
     }
 
-    _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(cadre.size.x - 38, 0), size: Vector2.all(38));
+    _buttonClose = SpriteComponent(sprite: Sprite(await ImagesUtils.loadImage("button_close.png")), position: Vector2(cadre.size.x - 38, 0), size: Vector2.all(38));
     if(Storage.entity.nbCombat > 0)
       await cadre.addChild(_buttonClose);
 
@@ -198,7 +199,7 @@ class BuilderBehaviourItemComponent extends SpriteComponent
   {
     await super.onLoad();
 
-    Sprite spriteLeft = Sprite(await Images().load("cadre_1_left.png"));
+    Sprite spriteLeft = Sprite(await ImagesUtils.loadImage("cadre_1_left.png"));
     SpriteComponent left = SpriteComponent(sprite: spriteLeft);
     left.size = Vector2(size.y * .3, size.y);
     left.overridePaint = BasicPalette.white.paint();
@@ -213,15 +214,15 @@ class BuilderBehaviourItemComponent extends SpriteComponent
     paints.add(right.overridePaint!);
     await addChild(right);
 
-    SpriteComponent middle = SpriteComponent(sprite: Sprite(await Images().load("cadre_1_middle.png")));
+    SpriteComponent middle = SpriteComponent(sprite: Sprite(await ImagesUtils.loadImage("cadre_1_middle.png")));
     middle.size = Vector2(size.x - right.size.x * 2 + 5, size.y);
     middle.position = Vector2(left.size.x, 0);
     middle.overridePaint = BasicPalette.white.paint();
     paints.add(middle.overridePaint!);
     await addChild(middle);
 
-    torchActivated = Sprite(await Images().load("torch_activated.png"));
-    torchDesactivated = Sprite(await Images().load("torch_desactivated.png"));
+    torchActivated = Sprite(await ImagesUtils.loadImage("torch_activated.png"));
+    torchDesactivated = Sprite(await ImagesUtils.loadImage("torch_desactivated.png"));
 
     torch = SpriteComponent();
     torch.size = Vector2(17, 43);
@@ -229,7 +230,7 @@ class BuilderBehaviourItemComponent extends SpriteComponent
     torch.anchor = Anchor.center;
     await addChild(torch);
 
-    edit = SpriteComponent(sprite: Sprite(await Images().load("icon_edit.png")));
+    edit = SpriteComponent(sprite: Sprite(await ImagesUtils.loadImage("icon_edit.png")));
     edit.size = Vector2.all(30);
     edit.anchor = Anchor.center;
     edit.position = Vector2(size.x - 20, size.y / 2);
@@ -333,11 +334,11 @@ class PopupBuilderBehaviour extends SpriteComponent
     await super.onLoad();
 
     print("PopupBuilderBehaviour.onLoad.start");
-    sprite = Sprite(await Images().load("cadre_behaviour.png"));
+    sprite = Sprite(await ImagesUtils.loadImage("cadre_behaviour.png"));
     anchor = Anchor.center;
     position = gameRef.size / 2;
 
-    _buttonClose = SpriteComponent(sprite: Sprite(await Images().load("button_close.png")), position: Vector2(size.x - 32, -6), size: Vector2.all(38));
+    _buttonClose = SpriteComponent(sprite: Sprite(await ImagesUtils.loadImage("button_close.png")), position: Vector2(size.x - 32, -6), size: Vector2.all(38));
     await addChild(_buttonClose);
     
     await addChild(container);
@@ -470,7 +471,7 @@ class ButtonBuilderCondition extends PositionComponent
     if(builderCondition is isEnnemy)
     {
       button = SpriteAlphaComponent();
-      button.sprite = Sprite(await Images().load("button_ennemy.png"));
+      button.sprite = Sprite(await ImagesUtils.loadImage("button_ennemy.png"));
       button.size = size;
       TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
       textComponent = TextComponent("Ennemi", textRenderer: textPaint);
@@ -484,7 +485,7 @@ class ButtonBuilderCondition extends PositionComponent
     if(builderCondition is isMe)
     {
       button = SpriteAlphaComponent();
-      button.sprite = Sprite(await Images().load("button_me.png"));
+      button.sprite = Sprite(await ImagesUtils.loadImage("button_me.png"));
       button.size = size;
       TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
       textComponent = TextComponent("Moi", textRenderer: textPaint);
@@ -838,9 +839,9 @@ class ButtonWork extends PositionComponent
       return;
 
     inited = true;
-    spriteNone = Sprite(await Images().load("button_none.png"));
-    spriteAction = Sprite(await Images().load("button_work.png"));
-    spriteMagie = Sprite(await Images().load("button_magic.png"));
+    spriteNone = Sprite(await ImagesUtils.loadImage("button_none.png"));
+    spriteAction = Sprite(await ImagesUtils.loadImage("button_work.png"));
+    spriteMagie = Sprite(await ImagesUtils.loadImage("button_magic.png"));
   }
 }
 
@@ -915,7 +916,7 @@ class Player extends SpriteComponent
     //print("Player.onLoad");
     await super.onLoad();
     final SpriteComponent player = SpriteComponent();
-    player.sprite = Sprite(await Images().load("portrait.png"));
+    player.sprite = Sprite(await ImagesUtils.loadImage("portrait.png"));
     player.size = Vector2(72, 72);
     player.anchor = Anchor.bottomCenter;
     player.position = Vector2(size.x / 2, size.y);
@@ -923,7 +924,7 @@ class Player extends SpriteComponent
     playerPaint = player.overridePaint!;
     addChild(player);
 
-    sprite = Sprite(await Images().load("cadre_player.png"));
+    sprite = Sprite(await ImagesUtils.loadImage("cadre_player.png"));
     overridePaint = BasicPalette.white.paint();
     //print("Player.onLoaded");
   }

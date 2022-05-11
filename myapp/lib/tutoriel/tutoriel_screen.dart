@@ -7,6 +7,7 @@ import 'package:myapp/main.dart';
 import 'package:myapp/options/options_screen.dart';
 import 'package:flame/assets.dart';
 import 'package:myapp/utils.dart';
+import 'package:myapp/utils/images.dart';
 
 abstract class TutorielScreen extends AbstractScreen
 {
@@ -29,7 +30,7 @@ abstract class TutorielScreen extends AbstractScreen
     await addChild(cadre);
 
     SpriteComponent portrait = SpriteComponent();
-    portrait.sprite = Sprite(await Images().load("portrait.png"));
+    portrait.sprite = Sprite(await ImagesUtils.loadImage("portrait.png"));
     portrait.size = Vector2.all(150);
     await cadre.addChild(portrait);
   }
