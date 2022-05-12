@@ -1,6 +1,6 @@
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/dot.dart';
-import 'package:myapp/engine/work.dart';
+import 'package:myapp/engine/work';
 import 'package:myapp/utils.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/behaviour.dart';
@@ -93,7 +93,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
 
   void run(Server server, Story story) 
   {
-    Utils.logRun("Entity.run.start");
+    print("-- Entity.run.start $this : $behaviours");
     /*List<DOT> dots = getDots().dots;
     Utils.logRun("Entity.run dots : $dots");
     for(DOT dot in dots)
@@ -119,6 +119,8 @@ class Entity extends UUIDHolder implements ValueReader//, Param
           return;
         }
       }
+      else
+        print("Behaviour ${behaviour.name} not checked");
     }
 
     Utils.logRun("Entity.run.end Nothing to execute");

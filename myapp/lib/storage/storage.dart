@@ -24,12 +24,12 @@ abstract class Storage
 
   static Future<void> init(String uuid) async
   {
-    print("Storage.init.start $uuid");
+    //print("Storage.init.start $uuid");
     Storage.uuid = uuid;
     storage = Local();
-    print("Storage.init.start.init");
+    //print("Storage.init.start.init");
     await storage.start();
-    print("Storage.init.start.init.ok");
+    //print("Storage.init.start.init.ok");
 
     //Entities
     var pEntities = storage.getEntities();
@@ -64,7 +64,7 @@ abstract class Storage
     else
       newGame = false;
     
-    print("Storage.init.end");
+    //print("Storage.init.end");
   }
 
   Future<void> start() async{}
@@ -103,7 +103,7 @@ abstract class Storage
   static Entity _createEntity()
   {
     Map values = Map();
-    values[VALUE.NAME] = "Entity 1";
+    values[VALUE.NAME] = "Sydell";
     values[VALUE.HP_MAX] = 46;
     values[VALUE.ATK] = 23;
     values[VALUE.CLAN] = 1;
@@ -196,21 +196,21 @@ class Remote extends Storage
   @override
   Future<void> start() async
   {
-    print("Remote.start");
+    //print("Remote.start");
     try
     {
       userCollection = FirebaseFirestore.instance.collection("users");
-      print("Remote.start.1");
+      //print("Remote.start.1");
       DocumentSnapshot<Map<String, dynamic>> snapshot = await userCollection!.doc(Storage.uuid).get();
-      print("Remote.start.2");
+      //print("Remote.start.2");
       all = snapshot.data();
-      print("Remote.start.3");
+      //print("Remote.start.3");
     }
     catch(e)
     {
       print(e);
     }
-    print("Remote.start.end");
+    //print("Remote.start.end");
   }
 
   @override
@@ -233,13 +233,13 @@ class Remote extends Storage
   @override
   World? getWorld()
   {
-    print("Remote.getWorld.start");
+    //print("Remote.getWorld.start");
     if(all != null && all!.containsKey("world"))
     {
       World world = World.fromMap(all!["world"]);
       return world;
     }
-    print("Remote.getWorld.null.end");
+    //print("Remote.getWorld.null.end");
     return null;
   }
 
@@ -252,7 +252,7 @@ class Remote extends Storage
   @override
   List<Entity>? getEntities()
   {
-    print("Remote.getEntities");
+    //print("Remote.getEntities");
     if(all != null && all!.containsKey("entities"))
     {
       List<Entity> entities = [];
@@ -260,10 +260,10 @@ class Remote extends Storage
       liste.forEach((element) {
         entities.add(Entity.fromJson(element));
       });
-      print("Remote.getEntities.end");
+      //print("Remote.getEntities.end");
       return entities;
     }
-    print("Remote.getEntities.null.end");
+    //print("Remote.getEntities.null.end");
     return null;
   }
 
@@ -275,22 +275,22 @@ class Remote extends Storage
 
   void saveUser() async 
   {
-    print("Remote.saveUser.start");
+    //print("Remote.saveUser.start");
     Map<String, dynamic> all = {};
 
     // World
     all["world"] = Storage.world.toMap();
-    print("Remote.saveUser.world.ok");
+    //print("Remote.saveUser.world.ok");
 
     //Donjon
     all["donjon"] = Storage.donjon.toMap();
-    print("Remote.saveUser.donjon.ok");
+    //print("Remote.saveUser.donjon.ok");
 
     // Entities
     List liste = [];
     Storage.entities.forEach((element) {liste.add(element.toMap());});
     all["entities"] = liste;
-    print("Remote.saveUser.entities.ok");
+    //print("Remote.saveUser.entities.ok");
 
     try
     {
@@ -300,7 +300,7 @@ class Remote extends Storage
     {
       print(e);
     }
-    print("Remote.saveUser.end");
+    //print("Remote.saveUser.end");
   }
 }
 
@@ -311,9 +311,9 @@ class Local extends Storage
   @override
   Future<void> start() async
   {
-    print("Local.start");
+    //print("Local.start");
     prefs = await SharedPreferences.getInstance();
-    print("Local.start.end");
+    //print("Local.start.end");
   }
 
   @override
@@ -353,17 +353,17 @@ class Local extends Storage
   @override
   World? getWorld()
   {
-    print("Local.getWorld.start");
+    //print("Local.getWorld.start");
     String? json = prefs.getString('world');
-    print("Local.getWorld.start.json = $json");
+    //print("Local.getWorld.start.json = $json");
     if(json != null)
     {
       Map<String, dynamic> map = jsonDecode(json);
       World world = World.fromMap(map);
-      print("Local.getWorld.fromMap.end");
+      //print("Local.getWorld.fromMap.end");
       return world;
     }
-    print("Local.getWorld.fromNull.end");
+    //print("Local.getWorld.fromNull.end");
     return null;
   }
 
@@ -386,7 +386,7 @@ class Local extends Storage
   List<Entity>? getEntities()
   {
     String? json = prefs.getString('entities');
-    print(json);
+    //print(json);
     if(json != null)
     {
       List<Entity> entities = [];
@@ -400,12 +400,12 @@ class Local extends Storage
         catch(e)
         {
           print(e);
-          Utils.log("Storage.getEntity.end.ko");
+          //Utils.log("Storage.getEntity.end.ko");
         }
       });
       return entities;
     }
-    Utils.log("Storage.getEntities null");
+    //Utils.log("Storage.getEntities null");
     return null;
   }
 
@@ -416,6 +416,6 @@ class Local extends Storage
     entities.forEach((element) {liste.add(element.toMap());});
     final json = jsonEncode(liste);
     prefs.setString('entities', json);
-    print(json);
+    //print(json);
   }
 }

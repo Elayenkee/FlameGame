@@ -20,7 +20,7 @@ class StartScreen  extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    print("StartScreen.onLoad");
+    //print("StartScreen.onLoad");
     await super.onLoad();
 
     gameRef.setBackgroundColor(Colors.black);
@@ -36,7 +36,7 @@ class StartScreen  extends AbstractScreen
     _txtConnexion.anchor = Anchor.center;
     await add(_txtConnexion);
 
-    print("StartScreen.onLoaded");
+    //print("StartScreen.onLoaded");
   }
 
   void start() async
@@ -44,12 +44,12 @@ class StartScreen  extends AbstractScreen
     _txtConnexion.text = "Connexion...";
     await Future.delayed(const Duration(seconds: 1));
     String? uuid = await signInWithGoogle();
-    print("StartScreen.signedIn.uuid $uuid");
+    //print("StartScreen.signedIn.uuid $uuid");
     if(uuid != null)
     {
       step = 2;
       await Storage.init(uuid);
-      print("StartScreen.storage.init.ok");
+      //print("StartScreen.storage.init.ok");
       await Future.delayed(const Duration(seconds: 1));
     }  
     step = 3;

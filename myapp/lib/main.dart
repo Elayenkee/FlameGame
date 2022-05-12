@@ -30,8 +30,6 @@ Future<void> main() async
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
   await Firebase.initializeApp();
-
-  print("Firebase.init.ok");
   runApp(MaterialApp(theme: ThemeData(fontFamily: 'Disco'),home: GameScreen()));
 }
 
@@ -67,7 +65,7 @@ class GameLayout extends AbstractLayout with PanDetector
   @override
   Future<void> onLoad() async 
   {
-    print("GameLayout.onLoad");
+    //print("GameLayout.onLoad");
     await super.onLoad();
     ImagesUtils.init(Images());
     gui = await ImagesUtils.loadGUI("gui.png");
@@ -75,12 +73,12 @@ class GameLayout extends AbstractLayout with PanDetector
     _startScreen = StartScreen(this, size);
     await add(_startScreen!);
 
-    print("GameLayout.onLoaded");
+    //print("GameLayout.onLoaded");
   }
 
   void startWorld() async
   {
-    print("GameLayout.startWorld");
+    //print("GameLayout.startWorld");
     _fightScreen?.remove();
     _fightScreen = null;
     _donjonScreen?.remove();
@@ -91,7 +89,7 @@ class GameLayout extends AbstractLayout with PanDetector
 
   void startFight()
   {
-    print("GameLayout.startFight");
+    //print("GameLayout.startFight");
     /*_worldScreen?.remove();
     _worldScreen = null;
     _donjonScreen?.remove();
@@ -102,7 +100,7 @@ class GameLayout extends AbstractLayout with PanDetector
 
   void startDonjon() async 
   {
-    print("GameLayout.startDonjon");
+    //print("GameLayout.startDonjon");
     _startScreen?.remove();
     _startScreen = null;
     _worldScreen?.remove();
@@ -115,14 +113,14 @@ class GameLayout extends AbstractLayout with PanDetector
 
   void startTutoriel(TutorielScreen screen) async
   {
-    print("GameLayout.startTutoriel");
+    //print("GameLayout.startTutoriel");
     tutorielScreen = screen;
     await add(tutorielScreen!);
   }
 
   void stopTutoriel()
   {
-    print("GameLayout.stopTutoriel");
+    //print("GameLayout.stopTutoriel");
     tutorielScreen?.remove();
     tutorielScreen = null;
   }
@@ -135,7 +133,7 @@ class GameLayout extends AbstractLayout with PanDetector
 
   void closeOptions()
   {
-    print("GameLayout.closeOptions");
+    //print("GameLayout.closeOptions");
     optionsScreen?.remove();
     optionsScreen = null;
   }
@@ -202,7 +200,7 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   @override
   Future<void> onLoad() async 
   {
-    print("AbstractScreen.onLoad");
+    //print("AbstractScreen.onLoad");
     await super.onLoad();
     addChild(layout);
     addChild(hud);
@@ -210,7 +208,7 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
     final title = TextComponent(_title);
     //debug.addChild(title);
     addChild(debug);
-    print("AbstractScreen.onLoaded");
+    //print("AbstractScreen.onLoaded");
   }
 
   Future<void> add(Component c) async

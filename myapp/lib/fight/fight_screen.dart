@@ -24,16 +24,16 @@ class FightScreen extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    print("FightScreen.onLoad");
+    //print("FightScreen.onLoad");
     await super.onLoad();
 
     BuilderServer builder = BuilderServer();
     Storage.entities.forEach((element) {builder.addEntity(e:element);});
     addRandomEnemmy(builder);
 
-    print("FightScreen.onLoad.build");
+    //print("FightScreen.onLoad.build");
     Server server = builder.build();
-    print("FightScreen.onLoad.builded");
+    //print("FightScreen.onLoad.builded");
 
     Story? story;
     do{
@@ -64,7 +64,7 @@ class FightScreen extends AbstractScreen
       add(ennemy);
       mapComponents[entity.uuid] = ennemy;
     }
-    print("FightScreen.onLoaded : ${stories.length} stories");
+    //print("FightScreen.onLoaded : ${stories.length} stories");
   }
 
   @override
@@ -123,8 +123,8 @@ class FightScreen extends AbstractScreen
   double _waitAndFinish = 1;
   void waitAndFinish(double dt)
   {
-    if(_waitAndFinish == 1)
-      print("FightScreen.waitAndFinish");
+    //if(_waitAndFinish == 1)
+    //  print("FightScreen.waitAndFinish");
     _waitAndFinish -= dt;
     if(_waitAndFinish <= 0 && _waitAndFinish > -1)
     {

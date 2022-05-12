@@ -78,12 +78,12 @@ class TutorielSettings extends TutorielScreen
   @override
   Future<void> onLoad() async 
   {
-    print("TutorielSettings.onLoad.start");
+    //print("TutorielSettings.onLoad.start");
     await super.onLoad();
 
     startPhrase("Attention !\nUn monstre m'attaque ! Je ferais mieux de réviser ma stratégie de combat.");
     txtPhrase?.onEnd = onStepOne;
-    print("TutorielSettings.onLoad.end");
+    //print("TutorielSettings.onLoad.end");
   }
 
   void onStepOne()
@@ -129,8 +129,9 @@ class TutorielSettings extends TutorielScreen
       startPhrase("Plusieurs choix sont possibles,\nmais je vais laisser comme ça pour l'instant.");
       step = 4;
     }
-    else if(step == 4 && event == EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR)
+    else if((step == 3 || step == 4) && event == EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR)
     {
+      removePointers();
       gameRef.stopTutoriel();
       Future.delayed(Duration(milliseconds: 200), gameRef.closeOptions);
       Future.delayed(Duration(milliseconds: 500), onEnd);
@@ -172,7 +173,7 @@ class Pointer extends PositionComponent
   @override
   Future<void> onLoad() async 
   {
-    print("Pointer.onLoad.start");
+    //print("Pointer.onLoad.start");
     await super.onLoad();
     paint = Paint()..color = Color.fromARGB(255, 224, 255, 21);
 
@@ -213,7 +214,7 @@ class Pointer extends PositionComponent
 
     txtInitialPosition = Vector2.copy(txt.position);
     size = Vector2(width, height);
-    print("Pointer.onLoad.end");
+    //print("Pointer.onLoad.end");
   }
 
   @override

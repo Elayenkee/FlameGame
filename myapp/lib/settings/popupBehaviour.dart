@@ -323,11 +323,7 @@ class BuilderConditionComponent extends PositionComponent
           Bouton boutonParam = Bouton(layout, (){}, txtParam, Vector2(130, 40), Vector2(10 + (i * 140), btnY));
           boutonParam.onTap = (){
             //TODO
-            print("ICI");
-            print("ICI");
-            print("ICI");
-            print("ICI");
-            print("ICI");
+            
           };
           boutons.add(boutonParam); 
           addChild(boutonParam, gameRef: layout);

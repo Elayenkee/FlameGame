@@ -61,13 +61,12 @@ class Attaquer extends Work
     int dmg = atk - def;
     target.addHP(-dmg);
 
-    event.set("work", "ATTACK");
-    event.set("source", "sword");
+    event.set("work", name);
     event.setCaller(caller);
     event.setTarget(target);
     event.set("damage", -dmg);
-    event.log = "$caller used ATTACK [$dmg] on $target";
-
+    event.log = "$caller used $name [$dmg] on $target";
+    print(event.log);
     story.addStoryEvent(event);
 
     return true;

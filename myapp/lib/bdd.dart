@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:myapp/engine/condition.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/engine/trifunction.dart';
-import 'package:myapp/engine/work.dart';
+import 'package:myapp/engine/work';
 
 /*enum Works { ATTACK, HEAL, POISON, BLEED }
 
@@ -166,7 +166,8 @@ extension TriFunctionsExtension on TriFunctions
       if(name == w.name)
         return w;
     }
-    logRun("TriFunction.get NULL");
+    if(name.length > 0)
+      logRun("TriFunction.get NULL on $name");
     return null;
   }
 }

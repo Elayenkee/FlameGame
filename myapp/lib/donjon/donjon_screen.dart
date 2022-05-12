@@ -21,65 +21,67 @@ class DonjonScreen extends AbstractScreen
 
   late final SpriteComponent _buttonSettings;
 
+  Fight? fight;
+  final Map<String, EntityInfos> infos = {};
+
   DonjonScreen(GameLayout gameRef, Vector2 size):super(gameRef, "D", size);
 
   @override
   Future<void> onLoad() async 
   {
-    print("DonjonScreen.onLoad.start");
+    //print("DonjonScreen.onLoad.start");
     await super.onLoad();
 
-    print("DonjonScreen.onLoad.gameRef");
+    //print("DonjonScreen.onLoad.gameRef");
 
     gameRef.setBackgroundColor(Colors.black);
-    print("DonjonScreen.onLoad.background.ok");
+    //print("DonjonScreen.onLoad.background.ok");
 
     donjon = Storage.donjon;
-    print("DonjonScreen.onLoad.donjon.ok");
+    //print("DonjonScreen.onLoad.donjon.ok");
     
     _decor = Decor(gameRef, donjon);
     await add(_decor);
-    print("DonjonScreen.onLoad.decor.ok");
+    //print("DonjonScreen.onLoad.decor.ok");
 
     _player = EntityComponent(gameRef, Storage.entity, getEntityPosition);
     await add(_player);
-    print("DonjonScreen.onLoad.player.ok");
+    //print("DonjonScreen.onLoad.player.ok");
     
     donjon.setScreen(this);
-    donjon.setPlayerListener(_player);
+    donjon.setPlayerListener(_player); 
 
     _buttonSettings = SpriteComponent(size: Vector2.all(32), sprite: Sprite(await ImagesUtils.loadImage("button_settings.png")));
     _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 32, 5) : Vector2(-1000, 0); 
-    hud.addChild(_buttonSettings);
+    await hud.addChild(_buttonSettings);
 
+    for(int i = 0; i < Storage.entities.length; i++)
+    {
+      Entity e = Storage.entities[i];
+      EntityInfos entityInfos = EntityInfos(Storage.entity);
+      entityInfos.position = Vector2(60 + (i * (entityInfos.size.x = 5)), 20);
+      infos[e.uuid] = entityInfos;
+      await hud.addChild(entityInfos);
+      entityInfos.updateBars(e);
+    }
+    
     _player.onMove(force: true);
 
-    print("DonjonScreen.onLoad.end");
+    //print("DonjonScreen.onLoad.end");
   }
 
   Vector2 getEntityPosition(Entity entity)
   {
-
+    if(fight != null)
+      return fight!.getEntityPosition(entity);
     return donjon.entityPosition;
   }
 
   void startFight() async
   {
-    print("DonjonScreen.startFight");
-    BuilderServer builder = BuilderServer();
-    Storage.entities.forEach((element) {builder.addEntity(e:element);});
-    addRandomEnemmy(builder);
-    Server server = builder.build();
-    if(Storage.entity.nbCombat <= 0)
-      startTutorielSettings();
-  }
-
-  void startTutorielSettings()
-  {
-    if(gameRef.tutorielScreen == null)
-    {
-      gameRef.startTutoriel(TutorielSettings(gameRef, _buttonSettings, gameRef.startFight));
-    }
+    //print("DonjonScreen.startFight.start");
+    fight = Fight(this)..start();
+    //print("DonjonScreen.startFight.end");
   }
 
   void changeSalle()
@@ -92,7 +94,6 @@ class DonjonScreen extends AbstractScreen
       _player.onMove(force: true);
     });
     _decor.changeSalle();
-    
   }
 
   @override
@@ -100,13 +101,15 @@ class DonjonScreen extends AbstractScreen
   {
     super.update(dt);
     donjon.update(dt);
-    if(!shouldRemove)
-      _player.onMove();
+    fight?.update(dt);
   }
 
   @override
   bool onClick(Vector2 p) 
   {
+    if(fight != null && gameRef.tutorielScreen == null)
+      return true;
+
     if(gameRef.tutorielScreen != null && gameRef.tutorielScreen!.onClick(p))
       return true;
 
@@ -162,7 +165,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
   @override
   Future<void> onLoad() async 
   {
-    print("Decor.onLoad");
+    //print("Decor.onLoad");
     await super.onLoad();
 
     sprite = Sprite(await ImagesUtils.loadImage("salle.png"));
@@ -171,7 +174,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
 
     await changeSalle();
 
-    print("Decor.onLoaded");
+    //print("Decor.onLoaded");
   }
 
   Future<void> changeSalle() async
@@ -179,7 +182,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     children.clear();
     if(donjon.currentSalle == donjon.start || donjon.currentSalle.s != null)
     {
-      print("Decor.addPorteSud.start");
+      //print("Decor.addPorteSud.start");
       final porteSud = SpriteComponent();
       porteSud.sprite = Sprite(await ImagesUtils.loadImage("porte_sud.png"));
       porteSud.size = Vector2(130, 28);
@@ -197,12 +200,12 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
         arrowSud!.renderFlipY = true;
         await addChild(arrowSud!, gameRef: gameRef);
       }
-      print("Decor.addPorteSud.end");
+      //print("Decor.addPorteSud.end");
     }
 
     if(donjon.currentSalle.n != null)
     {
-      print("Decor.addPorteNord.start");
+      //print("Decor.addPorteNord.start");
       final porteNord = SpriteComponent();
       porteNord.sprite = Sprite(await ImagesUtils.loadImage("porte_nord.png"));
       porteNord.size = Vector2(130, 95);
@@ -216,12 +219,12 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
       arrowNord!.anchor = Anchor.topCenter;
       arrowNord!.position = Vector2(size.x / 2, -15);
       await addChild(arrowNord!, gameRef: gameRef);
-      print("Decor.addPorteNord.end");
+      //print("Decor.addPorteNord.end");
     }
 
     if(donjon.currentSalle.w != null)
     {
-      print("Decor.addPorteOuest.start");
+      //print("Decor.addPorteOuest.start");
       final porteOuest = SpriteComponent();
       porteOuest.sprite = Sprite(await ImagesUtils.loadImage("porte_ouest.png"));
       porteOuest.size = Vector2(43, 130);
@@ -237,12 +240,12 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
       arrowOuest!.renderFlipX = true;
       arrowOuest!.angle = degrees2Radians * 270;
       await addChild(arrowOuest!, gameRef: gameRef);
-      print("Decor.addPorteOuest.end");
+      //print("Decor.addPorteOuest.end");
     }
 
     if(donjon.currentSalle.e != null)
     {
-      print("Decor.addPorteEst.start");
+      //print("Decor.addPorteEst.start");
       final porteEst = SpriteComponent();
       porteEst.sprite = Sprite(await ImagesUtils.loadImage("porte_ouest.png"));
       porteEst.size = Vector2(43, 130);
@@ -257,7 +260,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
       arrowEst!.position = Vector2(size.x + 50, size.y / 2 - 15);
       arrowEst!.angle = degrees2Radians * 90;
       await addChild(arrowEst!, gameRef: gameRef);
-      print("Decor.addPorteEst.end");
+      //print("Decor.addPorteEst.end");
     }
   }
 
@@ -282,37 +285,411 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
   }
 }
 
-void addRandomEnemmy(BuilderServer builder)
+class Fight
 {
-  Map values = {};
-  values[VALUE.HP_MAX] = 100;
-  values[VALUE.MP_MAX] = 0;
-  values[VALUE.ATK] = 5;
-  values[VALUE.NAME] = "Client 3";
-  values[VALUE.CLAN] = 0;
-  BuilderEntity entity3 = builder.addEntity();
-  entity3.setValues(values);
-  BuilderTotal builder3 = entity3.builderTotal;
-  BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
-  builderBehaviour4.builderWork.work = Work.attaquer;
+  final DonjonScreen container;
+  late final Server server;
 
-  BuilderConditionGroup builderConditionGroup4 = builderBehaviour4.builderTargetSelector.builderConditionGroup;
-  BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
-  builderCondition5.setCondition(Conditions.NOT_EQUALS);
-  builderCondition5.setParam(1, entity3);
-  builderCondition5.setParam(2, VALUE.CLAN);
+  bool started = false;
+  final List<Story> stories = [];
+  StoryAnimation? storyAnimation;
 
-  BuilderTriFunction builderTriFunction4 = builderBehaviour4.builderTargetSelector.builderTriFunction;
-  builderTriFunction4.tri = TriFunctions.LOWEST;
-  builderTriFunction4.value = VALUE.HP;
+  final Map<String, EntityFight> entities = {};
+
+  Fight(this.container);
+
+  void start() async
+  {
+    print("Fight.start.start");
+    EntityFight player = EntityFight(Storage.entity, container._player, container.infos[Storage.entity.uuid]!, container.donjon.entityPosition);
+    entities[Storage.entity.uuid] = player;
+
+    BuilderServer builder = BuilderServer();
+    Storage.entities.forEach((element) {builder.addEntity(e:element);});
+    addEnnemies(builder);
+    server = builder.build();
+    server.entities.forEach((element) async{ 
+      if(element.getClan() != Storage.entity.getClan())
+      {
+        EntityComponent ennemy = EntityComponent(container.gameRef, element, getEntityPosition);
+        EntityInfos infos = EntityInfos(element);
+        entities[element.uuid] = EntityFight(element, ennemy, infos, Vector2.all(0));
+        ennemy.face(player.position.x - entities[element.uuid]!.position.x);
+        await container.addWithGameRef(ennemy);
+        infos.updateBars(element);
+        //TODO POSITION
+        
+      }  
+    });
+    
+    await Future.delayed(const Duration(milliseconds: 100));
+    if(false && Storage.entity.nbCombat <= 0)
+    {
+      startTutorielSettings();
+    }
+    else
+    {
+      onEndTutoriel();
+    }
+    print("Fight.start.end");
+  }
+
+  void onEndTutoriel()
+  {
+    print("Fight.onEndTutoriel.start");
+    Story? story;
+    do{
+      story = server.next();
+      if(story != null)
+        stories.add(story);  
+    } while (story != null && stories.length < 100);
+    started = true;
+    print("Fight.onEndTutoriel.end");
+  }
+
+  Vector2 getEntityPosition(Entity entity)
+  {
+    Vector2 result = entities[entity.uuid]!.position;
+    if(entity != Storage.entity)
+      print(result);
+    return result;
+  }
+
+  void update(double dt) 
+  {
+    entities.values.forEach((element) { 
+      element.update(dt);
+      container.gameRef.changePriorities({
+        element.component: element.component.position.y.toInt()
+      });
+    });
+
+    if(!started)
+      return;
+
+    if(storyAnimation != null)
+    {
+      storyAnimation!.update(dt);
+      if(storyAnimation!.isFinished)
+        storyAnimation = null;
+      return;
+    }
+
+    if(stories.length > 0)
+    {
+      Story story = stories.removeAt(0);
+      storyAnimation = StoryAnimation(this, story);
+    }
+    else
+    {
+      finish();
+    }
+  }
+
+  void finish()
+  {
+    print("Fight.finish");
+  }
+
+  void addEnnemies(BuilderServer builder)
+  {
+    Map values = {};
+    values[VALUE.HP_MAX] = 100;
+    values[VALUE.MP_MAX] = 0;
+    values[VALUE.ATK] = 5;
+    values[VALUE.NAME] = "Client 3";
+    values[VALUE.CLAN] = 0;
+    BuilderEntity entity3 = builder.addEntity();
+    entity3.setValues(values);
+    BuilderTotal builder3 = entity3.builderTotal;
+    BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
+    builderBehaviour4.builderWork.work = Work.attaquer;
+
+    BuilderConditionGroup builderConditionGroup4 = builderBehaviour4.builderTargetSelector.builderConditionGroup;
+    BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
+    builderCondition5.setCondition(Conditions.NOT_EQUALS);
+    builderCondition5.setParam(1, entity3);
+    builderCondition5.setParam(2, VALUE.CLAN);
+
+    BuilderTriFunction builderTriFunction4 = builderBehaviour4.builderTargetSelector.builderTriFunction;
+    builderTriFunction4.tri = TriFunctions.LOWEST;
+    builderTriFunction4.value = VALUE.HP;
+    builderBehaviour4.activated = true;
+  }
+
+  void startTutorielSettings()
+  {
+    if(container.gameRef.tutorielScreen == null)
+    {
+      container.gameRef.startTutoriel(TutorielSettings(container.gameRef, container._buttonSettings, onEndTutoriel));
+    }
+  }
 }
 
-class FightComponent extends PositionComponent
+class StoryAnimation
 {
-  @override
-  Future<void> onLoad() async 
+  final Fight fight;
+  final Story story;
+  bool isFinished = false;
+
+  int indexCurrentEvent = -1;
+  EventAnimation? eventAnimation;
+
+  StoryAnimation(this.fight, this.story);
+
+  void update(double dt)
   {
-    //print("Player.onLoad");
-    await super.onLoad();
+    if(eventAnimation == null)
+    {
+      indexCurrentEvent++;
+      if(story.events.length <= indexCurrentEvent)
+      {
+        isFinished = true;
+      }
+      else
+      {
+        eventAnimation = EventAnimation(fight, story.events[indexCurrentEvent]);
+        eventAnimation!.start();
+      }
+    }
+    else
+    {
+      if(eventAnimation!.isFinished)
+      {
+        eventAnimation = null;
+      }
+      else
+      {
+        eventAnimation!.update(dt);
+      }
+    }
   }
+}
+
+class EventAnimation
+{
+  final Fight fight;
+  final StoryEvent event;
+  bool isFinished = false;
+
+  List<Step> steps = [];
+  Step? currentStep;
+  double waiter = 0;
+
+  EventAnimation(this.fight, this.event);
+
+  void start()
+  {
+    print("EventAnimation.start.start ${event.log}");
+    EntityFight callerComponent = getEntityFight("caller")!;
+    EntityFight? targetComponent = getEntityFight("target");
+
+    steps.add(new Step((){callerComponent.stepForward(targetComponent);}, () => callerComponent.targetPosition == null));
+    wait(.05);
+    
+    List<PositionComponent> toReset = [];
+    if(event.values.containsKey("work"))
+    {
+      steps.add(new Step((){
+        WorkAnimation workAnimation = callerComponent.component.work(Work.getFromName(event.values["work"]));
+        workAnimation.start();
+      }, () => callerComponent.component.workAnimation == null || callerComponent.component.workAnimation!.isFinished));
+    }
+
+    if(event.values.containsKey("type"))
+    {
+      steps.add(new StepTrue(()
+      {
+        /*SpriteComponent sprite = game.mapAnimations[event.get("source") as String];
+        sprite.position = targetComponent!.position - Vector2(0, 150);
+        toReset.add(sprite);*/
+      }));
+    }
+
+    if(targetComponent != null)
+    {
+      steps.add(new StepTrue(()
+      {
+        /*if(event.has("damage"))
+        {
+          int value = event.get("damage") as int;
+          game.damage.position = targetComponent.position - Vector2(0, 120);
+          game.damage.text = "$value";
+          game.damage.textRenderer = TextPaint(config: TextPaintConfig(color: value < 0 ? Colors.red : Colors.green));
+          toReset.add(game.damage);
+        }*/
+
+        //targetComponent.setHP();
+      }));
+    }
+
+    // Reset positions
+    //wait(.5);
+    steps.add(new StepTrue(()
+    {
+      for(PositionComponent c in toReset)
+        c.position = Vector2.all(-100);
+    }));
+
+    if(callerComponent != null)
+    {
+      wait(.02);
+      steps.add(new Step((){callerComponent.moveToInitialPosition();}, () => callerComponent.targetPosition == null));
+    }
+
+    wait(1);
+
+    next();
+
+    print("EventAnimation.start.end ${event.log}");
+  }
+
+  void wait(double s)
+  {
+    steps.add(new Step((){waiter = s;}, () => waiter <= 0));
+  }
+
+  void update(double dt)
+  {
+    if(waiter > 0)
+    {
+      waiter -= dt;
+      if(waiter < 0)
+        waiter = 0;
+    }
+
+    if(currentStep?.stopCondition())
+      next();
+  }
+
+  void next()
+  {
+    if(!steps.isEmpty)
+    {
+      currentStep = steps.removeAt(0);
+      currentStep!.action();    
+    }
+    else
+    {
+      isFinished = true;
+    }
+  }
+
+  EntityFight? getEntityFight(String type)
+  {
+    try
+    {
+      Map caller = event.get(type) as Map;
+      if(caller.containsKey("uuid"))
+      {
+        String uuidCaller = caller["uuid"];
+        EntityFight callerComponent = fight.entities[uuidCaller]!;
+        callerComponent.setStatus(caller);
+        return callerComponent;
+      }
+    }
+    catch(e)
+    {
+      print("Fight.getEntityFight.exception $e");
+    }
+    return null;
+  }
+}
+
+class EntityFight
+{
+  final Entity entity;
+  final EntityComponent component;
+  final EntityInfos infos;
+  final Vector2 initialPosition;
+
+  late Vector2 position;
+  Vector2? targetPosition;
+
+  int faceForwarded = 1;
+  Vector2? forwarded;
+
+  final double _speed = 5;
+
+  EntityFight(this.entity, this.component, this.infos, this.initialPosition)
+  {
+    print("EntityFight.init.start");
+    position = Vector2.copy(initialPosition);
+    print("EntityFight.init.end");
+  }
+
+  void setStatus(Map status)
+  {
+    this.infos.setStatus(status);
+  }
+
+  void stepForward(EntityFight? target)
+  {
+    if(target != null && target.entity != entity)
+    {
+      targetPosition = Vector2.copy(target.position);
+      Vector2 direction = (targetPosition! - position)..normalize();
+      targetPosition = targetPosition! - direction * .9;
+      component.onStartMove(targetPosition!.x - position.x);
+      faceForwarded = 1;
+      forwarded = Vector2.copy(targetPosition!);
+      print("EntityFight.stepFoward $entity $forwarded");
+    }
+  }
+
+  void moveToInitialPosition()
+  {
+    print("EntityFight.moveToInitialPosition $entity");
+    targetPosition = Vector2.copy(initialPosition);
+    component.onStartMove(targetPosition!.x - position.x);
+  }
+
+  void update(double dt)
+  {
+    if(targetPosition == null)
+      return;
+    
+    final d = position.distanceTo(targetPosition!);
+    final max = _speed * dt;
+    if(d < max)
+    {
+      position = targetPosition!;
+      targetPosition = null;
+      component.onStopMove();
+      if(forwarded != null)
+      {
+        if(faceForwarded == 1)
+        {
+          faceForwarded = 0;
+        }
+        else
+        {
+          component.face(forwarded!.x - position.x);
+          forwarded = null;
+        }
+      }
+      else
+      {
+        print("Forwarded null");
+      }
+      return;
+    }
+    
+    final v = Vector2(targetPosition!.x - position.x, targetPosition!.y - position.y)..normalize()..multiply(Vector2.all(max));
+    position.x += v.x;
+    position.y += v.y;
+  }
+}
+
+class Step 
+{
+  final Function action;
+  final Function stopCondition;
+
+  Step(this.action, this.stopCondition);
+}
+
+class StepTrue extends Step
+{
+  StepTrue(Function action):super(action, () => true);
 }

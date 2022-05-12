@@ -4,7 +4,7 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/targerselector.dart';
 import 'package:myapp/engine/trifunction.dart';
-import 'package:myapp/engine/work.dart';
+import 'package:myapp/engine/work';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/utils.dart';
 import 'package:myapp/bdd.dart';
@@ -160,8 +160,6 @@ class BuilderServer extends Builder<Server>
   {
     if(myTeamEntities().length == builderEntities.length)
     {
-      if(validator.log)
-        print("No ennemies");
       return false;
     }
 
@@ -644,7 +642,6 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
     if(param is Entity)
       return {"type":"uuid", "value":param.getUUID()};
 
-    print("LA >> " + param.toString());
     return param;
   }
 
@@ -691,7 +688,6 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
       case "BuilderCount":return BuilderCount.fromJson(p, uuids);
       case "VALUE": return ValueExtension.get(p["name"]);
     }
-    print("ICIIIII");
     return null;
   }
 }
@@ -720,11 +716,9 @@ class isEnnemy extends PredefinedBuilderCondition
 {
   isEnnemy(BuilderEntity builderEntity):super()
   {
-    print("isEnnemy.init.start $builderEntity");
     setCondition(Conditions.NOT_EQUALS);
     setParam(1, builderEntity);
     setParam(2, VALUE.CLAN);
-    print("isEnnemy.init.end");
   }
 
   isEnnemy.fromMap();
@@ -736,11 +730,9 @@ class isMe extends PredefinedBuilderCondition
 {
   isMe(BuilderEntity builderEntity):super()
   {
-    print("isMe.init.start $builderEntity");
     setCondition(Conditions.EQUALS);
     setParam(1, builderEntity);
     setParam(2, VALUE.NAME);
-    print("isMe.init.end");
   }
 
   isMe.fromMap();
@@ -988,7 +980,6 @@ class BuilderCount extends Builder<Count> implements TargetSelectorChild
     else
     {
       map["target"] = target?.toString();
-      print("ICI >> " + map["target"]);
     }
     
     map["value"] = value != null ? value!.name : "";

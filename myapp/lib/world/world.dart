@@ -36,7 +36,7 @@ class World
 
   void _startFight()
   {
-    print("World.startFight");
+    //print("World.startFight");
     _worldScreen.startFight();
   }
 
@@ -56,20 +56,20 @@ class World
 
   World.fromMap(Map<String, dynamic>? map)
   {
-    print("World.fromMap.start");
+    //print("World.fromMap.start");
     if(map != null)
     {
-      print("World.fromMap.map");
+      //print("World.fromMap.map");
       _worldEntity = WorldEntity.fromMap(Storage.entity, map["entity"]);
     }
     else
     {
-      print("World.fromMap.null ${Storage.entity}");
+      //print("World.fromMap.null ${Storage.entity}");
       _worldEntity = WorldEntity(Storage.entity);
     }
     _worldEntity._world = this;
     _worldEntity._resetNext();
-    print("World.fromMap.end");
+    //print("World.fromMap.end");
   }
 }
 
@@ -101,7 +101,7 @@ class WorldEntity
     timeDeplacement = _world._time;
     _target = p;
     double diffX = _target!.x - _position.x;
-    print("WorldEntity.goTo $p from $_position $diffX");
+    //print("WorldEntity.goTo $p from $_position $diffX");
     listener?.onStartMove(diffX);
   }
 
@@ -114,7 +114,7 @@ class WorldEntity
     final max = _speed * dt;
     if(d < max)
     {
-      print("WorldEntity arrived at target $_target in ${_world._time - timeDeplacement}");
+      //print("WorldEntity arrived at target $_target in ${_world._time - timeDeplacement}");
       _position = _target!;
       _target = null;
       listener?.onStopMove();
@@ -148,7 +148,7 @@ class WorldEntity
   WorldEntity.fromMap(this._entity, Map<String, dynamic> map)
   {
     _position = Vector2FromMap(map["position"]);
-    print("WorldEntity.fromMap : $_position");
+    //print("WorldEntity.fromMap : $_position");
   }
 }
 

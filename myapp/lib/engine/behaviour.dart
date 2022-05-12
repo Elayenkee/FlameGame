@@ -4,7 +4,7 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/server.dart';
 import 'package:myapp/engine/targerselector.dart';
 import 'package:myapp/engine/valuesolver.dart';
-import 'package:myapp/engine/work.dart';
+import 'package:myapp/engine/work';
 import 'package:myapp/works/work.dart';
 
 class Behaviour implements ValueReader 

@@ -20,11 +20,11 @@ class ImagesUtils
     {
       if(!loaded.contains(fileName))
       {
-        print("ImagesUtils : add $fileName");
+        //print("ImagesUtils : add $fileName");
         loaded.add(fileName);
         return await images.load(fileName);
       }
-      print("ImagesUtils : get $fileName");
+      //print("ImagesUtils : get $fileName");
       return images.fromCache(fileName);
     }
     catch(e)
@@ -36,7 +36,10 @@ class ImagesUtils
 
   static Map<String, Vector2> sizes = {
     "gui.png": Vector2.all(32),
-    "hero_knight.png": Vector2(100, 55)
+    "hero_knight.png": Vector2(100, 55),
+    "smoke_2.png": Vector2(64, 64),
+    "bat_idle.png": Vector2(150, 75),
+    "bat_attack.png": Vector2(150, 75)
   };
   static Map<String, SpriteSheet> guis = {};
   static Future<SpriteSheet> loadGUI(String fileName) async

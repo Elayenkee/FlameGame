@@ -7,7 +7,7 @@ class Utils
 
   static void log(String message)
   {
-    print(message);
+    //print(message);
   }
 
   static String generateUUID() 
@@ -50,11 +50,11 @@ class Utils
 
   static logFromJson(String message)
   {
-    print(message);
+    //print(message);
   }
 
   static logToMap(String message)
   {
-    print(message);
+    //print(message);
   }
 }

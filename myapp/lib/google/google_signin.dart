@@ -4,29 +4,29 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 Future<String?> signInWithGoogle() async 
 {
-  print("SignInWithGoogle");
+  //print("SignInWithGoogle");
   //TODO REMOVE
   return "m7of9fTW0CMjEUNQPUhi3mGKWzd2";
   
-  print("NotSignedIn");
+  //print("NotSignedIn");
   final FirebaseAuth _auth = FirebaseAuth.instance;
   try 
   {
-    print("SignInWithGoogle.web.1 ${GoogleAuthProvider.PROVIDER_ID}");
+    //print("SignInWithGoogle.web.1 ${GoogleAuthProvider.PROVIDER_ID}");
     final GoogleAuthProvider _authProvider = GoogleAuthProvider();
     
-    print("SignInWithGoogle.web.2 ${_authProvider.scopes} - ${_authProvider.parameters}");
+    //print("SignInWithGoogle.web.2 ${_authProvider.scopes} - ${_authProvider.parameters}");
     final UserCredential userCredential = await _auth.signInWithPopup(_authProvider);
 
-    print("SignInWithGoogle.web.3");
+    //print("SignInWithGoogle.web.3");
     if(userCredential.user != null)
     {
-      print(userCredential.user!.displayName);
+      //print(userCredential.user!.displayName);
       return userCredential.user!.uid;
     }
     else
     {
-      print("Web.noUser");
+      //print("Web.noUser");
       return null;
     }
   } 

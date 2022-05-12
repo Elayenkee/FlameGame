@@ -43,7 +43,7 @@ class Donjon
     if(salle == null)
       return;
 
-    print("Donjon.changeSalle $salle");
+    //print("Donjon.changeSalle $salle");
     if(salle == currentSalle.w)
       _donjonEntity._position = Vector2(6.5, .95);
 
@@ -312,7 +312,7 @@ bool _isLeaf(Salle? salle)
 {
   if(salle == null)
   {
-    print("_isLeaf null");
+    //print("_isLeaf null");
     return false;
   }
 

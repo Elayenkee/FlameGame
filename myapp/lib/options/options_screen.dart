@@ -31,7 +31,7 @@ class OptionsScreen extends AbstractScreen
   @override
   Future<void> onLoad() async 
   {
-    print("OptionsScreen.onLoad");
+    //print("OptionsScreen.onLoad");
     await super.onLoad();
 
     selectedEntity = Storage.entity;
@@ -59,7 +59,7 @@ class OptionsScreen extends AbstractScreen
 
     updateSelectedPlayer();
     
-    print("OptionsScreen.onLoaded");
+    //print("OptionsScreen.onLoaded");
   }
 
   void updateSelectedPlayer()
@@ -160,13 +160,11 @@ class OptionsScreen extends AbstractScreen
 
   void onPanUpdate(DragUpdateInfo info)
   {
-    print("onPanUpdate");
     onBehaviourDragging(info);
   }
 
   void onPanEnd()
   {
-    print("onPanEnd");
     draggingBehaviour?.targetPosition = draggingBehaviour?.initialPosition;
     draggingBehaviour = null;
   }
@@ -333,7 +331,7 @@ class PopupBuilderBehaviour extends SpriteComponent
   {
     await super.onLoad();
 
-    print("PopupBuilderBehaviour.onLoad.start");
+    //print("PopupBuilderBehaviour.onLoad.start");
     sprite = Sprite(await ImagesUtils.loadImage("cadre_behaviour.png"));
     anchor = Anchor.center;
     position = gameRef.size / 2;
@@ -344,7 +342,7 @@ class PopupBuilderBehaviour extends SpriteComponent
     await addChild(container);
     container.invalidate();
 
-    print("PopupBuilderBehaviour.onLoad.end");
+    //print("PopupBuilderBehaviour.onLoad.end");
   }
 
   bool onClick(Vector2 p) 
@@ -558,7 +556,6 @@ class CibleComponent extends VerticalContainer
       conditionsComponents.add(conditionComponent);
       add(conditionComponent);
     }
-    print("CIBLE COMPONENT SIZE $size");
   }
 
   void setCible(int index, BuilderCondition builderCondition)
@@ -582,7 +579,6 @@ class CibleComponent extends VerticalContainer
   {
     await super.onLoad();
     invalidate();
-    print("CIBLE COMPONENT ONLOADED SIZE $size");
   }
 }
 
@@ -754,10 +750,10 @@ class PopupChoose extends PositionComponent
       return;
 
     inited = true;
-    print("Popup.init.start");
+    //print("Popup.init.start");
     try
     {
-      print("Popup.init.sheet.ok");
+      //print("Popup.init.sheet.ok");
       _cornerTopLeft = GameLayout.gui.getSprite(0, 0);
       _cornerTopRight = GameLayout.gui.getSprite(0, 2);
       _cornerBottomLeft = GameLayout.gui.getSprite(2, 0);
@@ -772,7 +768,7 @@ class PopupChoose extends PositionComponent
     {
       print(e);
     }
-    print("Popup.init.end");
+    //print("Popup.init.end");
   }
 }
 
@@ -892,7 +888,6 @@ class LineComponent extends PositionComponent
   {
     super.position = p;
     rect = Rect.fromLTWH(0, 0, size.x, size.y);
-    print(rect);
   }
 
   @override
@@ -956,10 +951,10 @@ class Popup extends SpriteComponent
       return;
 
     inited = true;
-    print("Popup.init.start");
+    //print("Popup.init.start");
     try
     {
-      print("Popup.init.sheet.ok");
+      //print("Popup.init.sheet.ok");
       _cornerTopLeft = GameLayout.gui.getSprite(7, 0);
       _cornerTopRight = GameLayout.gui.getSprite(7, 3);
       _cornerBottomLeft = GameLayout.gui.getSprite(10, 0);
@@ -972,7 +967,7 @@ class Popup extends SpriteComponent
     {
       print(e);
     }
-    print("Popup.init.end");
+    //print("Popup.init.end");
   }
 
   Popup(Vector2 size):super(size: size);
@@ -980,7 +975,7 @@ class Popup extends SpriteComponent
   @override
   Future<void> onLoad() async 
   {
-    print("Popup.onLoad.start");
+    //print("Popup.onLoad.start");
     await init();
     await super.onLoad();
 
@@ -1001,7 +996,7 @@ class Popup extends SpriteComponent
     addChild(SpriteComponent(sprite: _cornerBottomLeft, size: Vector2.all(square), position: size - Vector2(size.x, square)));
     addChild(SpriteComponent(sprite: _cornerBottomRight, size: Vector2.all(square), position: size - Vector2(square, square)));
     addChild(SpriteComponent(sprite: _center, size: size - Vector2.all(square2), position: Vector2(square, square)));
-    print("Popup.onLoad.end");
+    //print("Popup.onLoad.end");
   }
 }
 
@@ -1033,7 +1028,6 @@ class VerticalContainer extends PositionComponent
       PositionComponent last = items[i - 1];
       PositionComponent current = items[i];
       current.position = Vector2(0, last.position.y + last.size.y + marginBottom);
-      print("${last.runtimeType} ${last.size}");
     }
   }
 
