@@ -350,8 +350,6 @@ class Fight
   Vector2 getEntityPosition(Entity entity)
   {
     Vector2 result = entities[entity.uuid]!.position;
-    if(entity != Storage.entity)
-      print(result);
     return result;
   }
 
@@ -492,6 +490,13 @@ class EventAnimation
     {
       steps.add(new Step((){
         WorkAnimation workAnimation = callerComponent.component.work(Work.getFromName(event.values["work"]));
+        workAnimation.onEvent = (WorkEvent workEvent){
+          if(workEvent == WorkEvent.HIT)
+          {
+            Map target = event.get("target") as Map;
+            targetComponent?.setStatus(target);
+          }
+        };
         workAnimation.start();
       }, () => callerComponent.component.workAnimation == null || callerComponent.component.workAnimation!.isFinished));
     }
@@ -584,7 +589,6 @@ class EventAnimation
       {
         String uuidCaller = caller["uuid"];
         EntityFight callerComponent = fight.entities[uuidCaller]!;
-        callerComponent.setStatus(caller);
         return callerComponent;
       }
     }

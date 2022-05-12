@@ -204,6 +204,8 @@ class WorkAnimation
   final EntityComponent entityComponent;
   final Work work;
 
+  Function? onEvent;
+
   bool isFinished = false;
 
   WorkAnimation(this.entityComponent, this.work);
@@ -221,12 +223,48 @@ class WorkAnimation
 
   void update()
   {
-    if(entityComponent.entityAnimationComponent.animation!.isLastFrame)
+    SpriteAnimation animation = entityComponent.entityAnimationComponent.animation!; 
+    if(animation.isLastFrame)
     {
       entityComponent.entityAnimationComponent.animation = entityComponent.entityAnimationComponent.idle;
       isFinished = true;
     }
+    else if(onEvent != null)
+    {
+      if(work == Work.attaquer)
+      {
+        if(animation is AttackAnimation)
+        {
+          if(animation.currentIndex == animation.frameHit)
+          {
+            print("HIT !!!!!!!!!!!!");
+            onEvent!.call(WorkEvent.HIT);
+          }
+          else
+          {
+            print("frame ${animation.currentFrame} is not ${animation.frameHit}");
+          }
+        }
+        else
+        {
+          print("animation is not AttackAnimation");
+        }
+      }
+      else
+      {
+        print("work is not attaquer");
+      }
+    }
+    else
+    {
+      print("onEvent null");
+    }
   }
+}
+
+enum WorkEvent
+{
+  HIT
 }
 
 abstract class EntityListener
@@ -268,7 +306,7 @@ class EntityInfos extends SpriteComponent
 {
   late final TextComponent txtName;
   late final Bar healthBar;
-  late final Bar manaBar;
+  Bar? manaBar = null;
 
   EntityInfos(Entity entity)
   {
@@ -278,8 +316,12 @@ class EntityInfos extends SpriteComponent
     txtName.anchor = Anchor.topCenter;
     healthBar = Bar("health.png");
     healthBar.position = Vector2(5, 15);
-    manaBar = Bar("mana.png");
-    manaBar.position = Vector2(5, 25);
+
+    if(entity.getMPMax() > 0)
+    {
+      manaBar = Bar("mana.png");
+      manaBar!.position = Vector2(5, 25);
+    }
   }
 
   @override
@@ -289,7 +331,8 @@ class EntityInfos extends SpriteComponent
     //sprite = Sprite(await ImagesUtils.loadImage("cadre_player.png"))..paint = BasicPalette.white.withAlpha(200).paint();
     await addChild(txtName);
     await addChild(healthBar);
-    await addChild(manaBar);
+    if(manaBar != null)
+      await addChild(manaBar!);
   }
 
   void updateBars(Entity entity)
@@ -298,12 +341,8 @@ class EntityInfos extends SpriteComponent
     int hpMax = entity.getHPMax();
     int mp = entity.getMP();
     int mpMax = entity.getMPMax();
-    print("EntityInfos.updateBars.start $hp $hpMax $mp $mpMax");
     healthBar.setValue(hp.toDouble(), hpMax.toDouble());
-    if(mpMax > 0)
-      manaBar.setValue(mp.toDouble(), mpMax.toDouble());
-    else
-      manaBar.setValue(0, 1);
+    manaBar?.setValue(mp.toDouble(), mpMax.toDouble());
     print("EntityInfos.updateBars.end $entity");
   }
 
@@ -314,10 +353,7 @@ class EntityInfos extends SpriteComponent
     int mp = status[VALUE.MP];
     int mpMax = status[VALUE.MP_MAX];
     healthBar.setValue(hp.toDouble(), hpMax.toDouble());
-    if(mpMax > 0)
-      manaBar.setValue(mp.toDouble(), mpMax.toDouble());
-    else
-      manaBar.setValue(0, 1);
+    manaBar?.setValue(mp.toDouble(), mpMax.toDouble());
   }
 }
 
