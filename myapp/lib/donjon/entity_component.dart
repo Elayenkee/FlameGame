@@ -166,7 +166,7 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
     move = idle;
 
     SpriteSheet sheetAttack = await ImagesUtils.loadGUI("bat_attack.png");
-    List<Sprite> sprites = List<int>.generate(10, (i) => 0 + i).map((e) => sheetAttack.getSprite(0, e)).toList();
+    List<Sprite> sprites = List<int>.generate(9, (i) => 0 + i).map((e) => sheetAttack.getSprite(0, e)).toList();
     attack = AttackAnimation.spriteList(sprites, .06, 6);
 
     animation = idle;
