@@ -20,6 +20,16 @@ import 'package:myapp/utils/images.dart';
 import 'package:myapp/world/world_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+final TextComponent txtDebug = TextComponent("", textRenderer: TextPaint(config:TextPaintConfig(color: Colors.red)));
+void logDebug(String message)
+{
+  if(txtDebug.text.length > 300)
+  {
+    txtDebug.text = "";
+  }
+  txtDebug.text += "$message\n"; 
+}
+
 final TextPaint textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco"));
 late final SpriteSheet gui;
 
@@ -72,7 +82,7 @@ class GameLayout extends AbstractLayout with PanDetector
 
     _startScreen = StartScreen(this, size);
     await add(_startScreen!);
-
+    //await add(txtDebug);
     //print("GameLayout.onLoaded");
   }
 
@@ -206,7 +216,8 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
     addChild(hud);
 
     final title = TextComponent(_title);
-    //debug.addChild(title);
+    
+    //debug.addChild(txtDebug);
     addChild(debug);
     //print("AbstractScreen.onLoaded");
   }

@@ -118,7 +118,7 @@ class WorldEntity
       _position = _target!;
       _target = null;
       listener?.onStopMove();
-      Storage.storeWorld(_world);
+      //Storage.storeWorld(_world);
       return;
     }
     
@@ -131,7 +131,7 @@ class WorldEntity
     if(_next <= 0)
     {
       listener?.onStopMove();
-      Storage.storeWorld(_world);
+      //Storage.storeWorld(_world);
       _resetNext();
       _target = null;
       _world._startFight();

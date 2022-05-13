@@ -42,13 +42,16 @@ class StartScreen  extends AbstractScreen
   void start() async
   {
     _txtConnexion.text = "Connexion...";
+    logDebug("Connexion..");
     await Future.delayed(const Duration(seconds: 1));
     String? uuid = await signInWithGoogle();
     //print("StartScreen.signedIn.uuid $uuid");
     if(uuid != null)
     {
       step = 2;
+      logDebug("Storage.init..");
       await Storage.init(uuid);
+      logDebug("OK");
       //print("StartScreen.storage.init.ok");
       await Future.delayed(const Duration(seconds: 1));
     }  
@@ -77,10 +80,10 @@ class StartScreen  extends AbstractScreen
         _txtConnexion.text = "Chargement des données...";
       if(step == 3)
       {
-        if(Storage.isNewGame())
+        //if(Storage.isNewGame())
           _txtConnexion.text = "NOUVELLE PARTIE";
-        else
-          _txtConnexion.text = "CONTINUER";
+        //else
+        //  _txtConnexion.text = "CONTINUER";
       }
       step = -1; 
     }

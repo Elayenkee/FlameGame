@@ -6,6 +6,7 @@ import 'package:myapp/builder.dart';
 import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/main.dart';
 import 'package:myapp/utils.dart';
 import 'package:myapp/works/work.dart';
 import 'package:myapp/world/world.dart';
@@ -24,37 +25,41 @@ abstract class Storage
 
   static Future<void> init(String uuid) async
   {
-    //print("Storage.init.start $uuid");
+    logDebug("Storage.init.start $uuid");
     Storage.uuid = uuid;
     storage = Local();
-    //print("Storage.init.start.init");
+    logDebug("Starting..");
     await storage.start();
-    //print("Storage.init.start.init.ok");
+    logDebug("OK");
 
     //Entities
+    logDebug("Get entities..");
     var pEntities = storage.getEntities();
     if(pEntities == null)
       entities = [Storage._createEntity()];
     else 
       entities = pEntities;
     entity = entities[0];
+    logDebug("OK");
 
     //World
-    var pWorld = storage.getWorld();
+    /*var pWorld = storage.getWorld();
     if(pWorld == null)
       world = World.fromMap(null);
     else 
-      world = pWorld;
+      world = pWorld;*/
 
     //Donjon
+    logDebug("Get donjon..");
     var pDonjon = storage.getDonjon();
     if(pDonjon == null)
       donjon = Donjon.generate();
     else
       donjon = pDonjon;
+    logDebug("OK");
 
-    if(pWorld == null)
-      storeWorld(world);
+    //if(pWorld == null)
+    //  storeWorld(world);
 
     if(pEntities == null)
       storeEntities();
@@ -64,7 +69,7 @@ abstract class Storage
     else
       newGame = false;
     
-    //print("Storage.init.end");
+    logDebug("Storage.init.end");
   }
 
   Future<void> start() async{}
@@ -84,13 +89,13 @@ abstract class Storage
   }
 
   // World
-  World? getWorld();
+  /*World? getWorld();
   void setWorld(World world);
   static void storeWorld(World world)
   {
     Storage.world = world;
     storage.setWorld(world);
-  }
+  }*/
 
   // Entities
   List<Entity>? getEntities();
@@ -230,7 +235,7 @@ class Remote extends Storage
     saveUser();
   }
 
-  @override
+  /*@override
   World? getWorld()
   {
     //print("Remote.getWorld.start");
@@ -247,7 +252,7 @@ class Remote extends Storage
   void setWorld(World world)
   {
     saveUser();
-  }
+  }*/
 
   @override
   List<Entity>? getEntities()
@@ -320,7 +325,7 @@ class Local extends Storage
   Donjon? getDonjon()
   {
     String? json = prefs.getString('donjon');
-    if(json != null)
+    /*if(json != null)
     {
       Map<String, dynamic> map = jsonDecode(json);
       try
@@ -330,8 +335,9 @@ class Local extends Storage
       catch(e)
       {
         print(e);
+        logDebug(e.toString());
       }
-    }    
+    }*/  
     return null;
   }
 
@@ -350,7 +356,7 @@ class Local extends Storage
     }
   }
 
-  @override
+  /*@override
   World? getWorld()
   {
     //print("Local.getWorld.start");
@@ -380,14 +386,13 @@ class Local extends Storage
     {
       print(e);
     }
-  }
+  }*/
 
   @override
   List<Entity>? getEntities()
   {
     String? json = prefs.getString('entities');
-    //print(json);
-    if(json != null)
+    /*if(json != null)
     {
       List<Entity> entities = [];
       List liste = jsonDecode(json);
@@ -400,12 +405,11 @@ class Local extends Storage
         catch(e)
         {
           print(e);
-          //Utils.log("Storage.getEntity.end.ko");
+          logDebug(e.toString());
         }
       });
       return entities;
-    }
-    //Utils.log("Storage.getEntities null");
+    }*/
     return null;
   }
 
@@ -416,6 +420,5 @@ class Local extends Storage
     entities.forEach((element) {liste.add(element.toMap());});
     final json = jsonEncode(liste);
     prefs.setString('entities', json);
-    //print(json);
   }
 }
