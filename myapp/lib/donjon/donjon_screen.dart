@@ -308,22 +308,23 @@ class Fight
     Storage.entities.forEach((element) {builder.addEntity(e:element);});
     addEnnemies(builder);
     server = builder.build();
+    int indexEnnemy = 1;
     server.entities.forEach((element) async{ 
       if(element.getClan() != Storage.entity.getClan())
       {
         EntityComponent ennemy = EntityComponent(container.gameRef, element, getEntityPosition);
         EntityInfos infos = EntityInfos(element);
+        infos.position = Vector2(container.gameRef.size.x - 60 -(indexEnnemy * (infos.size.x + 5)), 20);
+        container.infos[element.uuid] = infos;
         entities[element.uuid] = EntityFight(element, ennemy, infos, Vector2.all(0));
         ennemy.face(player.position.x - entities[element.uuid]!.position.x);
         await container.addWithGameRef(ennemy);
-        infos.updateBars(element);
         //TODO POSITION
-        
       }  
     });
-    
+
     await Future.delayed(const Duration(milliseconds: 100));
-    if(false && Storage.entity.nbCombat <= 0)
+    if(Storage.entity.nbCombat <= 0)
     {
       startTutorielSettings();
     }
@@ -337,6 +338,15 @@ class Fight
   void onEndTutoriel()
   {
     print("Fight.onEndTutoriel.start");
+    server.entities.forEach((element) async{ 
+      if(element.getClan() != Storage.entity.getClan())
+      {
+        EntityInfos infos = container.infos[element.uuid]!;
+        container.hud.addChild(infos, gameRef: container.gameRef);
+        infos.updateBars(element);
+      }  
+    });
+    
     Story? story;
     do{
       story = server.next();
@@ -378,24 +388,30 @@ class Fight
       Story story = stories.removeAt(0);
       storyAnimation = StoryAnimation(this, story);
     }
-    else
+    else if(!finished)
     {
       finish();
     }
   }
 
+  bool finished = false;
   void finish()
   {
+    finished = true;
+    TextComponent txtFin = TextComponent("FIN DU DEV EN COURS ! MERCI !", textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
+    txtFin.anchor = Anchor.center;
+    txtFin.position = container.gameRef.size / 2;
+    container.hud.addChild(txtFin, gameRef: container.gameRef);
     print("Fight.finish");
   }
 
   void addEnnemies(BuilderServer builder)
   {
     Map values = {};
-    values[VALUE.HP_MAX] = 100;
+    values[VALUE.HP_MAX] = 22;
     values[VALUE.MP_MAX] = 0;
-    values[VALUE.ATK] = 5;
-    values[VALUE.NAME] = "Client 3";
+    values[VALUE.ATK] = 8;
+    values[VALUE.NAME] = "DemonBat";
     values[VALUE.CLAN] = 0;
     BuilderEntity entity3 = builder.addEntity();
     entity3.setValues(values);

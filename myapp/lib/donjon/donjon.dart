@@ -148,7 +148,7 @@ class DonjonEntity
   void _resetNext()
   {
     if(Storage.entity.nbCombat == 0)
-      _next = 1;
+      _next = 2;
     else
       _next = 1 + World.Rand.nextDouble() * 2;
   }

@@ -105,7 +105,7 @@ abstract class Storage
     Map values = Map();
     values[VALUE.NAME] = "Sydell";
     values[VALUE.HP_MAX] = 46;
-    values[VALUE.ATK] = 23;
+    values[VALUE.ATK] = 15;
     values[VALUE.CLAN] = 1;
 
     Entity entity = Entity(values);
