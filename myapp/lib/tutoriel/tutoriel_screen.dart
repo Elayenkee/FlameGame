@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:myapp/graphics/my_text_box_component.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/options/options_screen.dart';
-import 'package:flame/assets.dart';
 import 'package:myapp/utils.dart';
 import 'package:myapp/utils/images.dart';
 
@@ -35,9 +35,9 @@ abstract class TutorielScreen extends AbstractScreen
     await cadre.addChild(portrait);
   }
 
-  void startPhrase(String phrase)
+  void startPhrase(dynamic phrase)
   {
-    this.phrase = phrase;
+    this.phrase = phrase.toString();
 
     txtPhrase?.remove();
     txtPhrase = null;
@@ -78,18 +78,18 @@ class TutorielSettings extends TutorielScreen
   @override
   Future<void> onLoad() async 
   {
-    //print("TutorielSettings.onLoad.start");
+    print("TutorielSettings.onLoad.start");
     await super.onLoad();
 
-    startPhrase("Attention !\nUn monstre m'attaque ! Je ferais mieux de réviser ma stratégie de combat.");
+    startPhrase(Language.tutoriel1_phrase1);
     txtPhrase?.onEnd = onStepOne;
-    //print("TutorielSettings.onLoad.end");
+    print("TutorielSettings.onLoad.end");
   }
 
   void onStepOne()
   {
     buttonSettings.position = Vector2(gameRef.size.x - 80, 5);
-    pointers.add(Pointer("Voir ma stratégie", 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
+    pointers.add(Pointer(Language.tutoriel1_pointer1.str, 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
     addChild(pointers.last!);
   }
 
@@ -99,10 +99,10 @@ class TutorielSettings extends TutorielScreen
     if(step == 1 && event == EVENT_CLICK_OPEN_SETTINGS)
     {
       removePointers();
-      startPhrase("Pour l'instant, ma stratégie est plutôt simple :\nJ'ATTAQUE LE MONSTRE !");
+      startPhrase(Language.tutoriel1_phrase2);
       txtPhrase?.onEnd = (){
         Vector2 editPosition = gameRef.optionsScreen!.behaviours[0].edit.absolutePosition - Vector2(25, 80);
-        pointers.add(Pointer("Voir le détail", 1, Vector2(editPosition.x - 10, editPosition.y + 60)));
+        pointers.add(Pointer(Language.tutoriel1_pointer2.str, 1, Vector2(editPosition.x - 10, editPosition.y + 60)));
         addChild(pointers.last!);
       };
       step = 2;

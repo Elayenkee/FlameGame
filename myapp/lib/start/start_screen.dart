@@ -1,13 +1,10 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/google/google_signin.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:flame/assets.dart';
-import 'package:flame/components.dart';
-import 'package:flame/gestures.dart';
-import 'package:flame/sprite.dart';
 
 class StartScreen  extends AbstractScreen
 {
@@ -31,7 +28,7 @@ class StartScreen  extends AbstractScreen
     add(start);
 
     TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
-    _txtConnexion = TextComponent("Connexion...", textRenderer: textPaint);
+    _txtConnexion = TextComponent("", textRenderer: textPaint);
     _txtConnexion.position = Vector2(gameRef.size.x / 2, gameRef.size.y - 50);
     _txtConnexion.anchor = Anchor.center;
     await add(_txtConnexion);
@@ -41,7 +38,7 @@ class StartScreen  extends AbstractScreen
 
   void start() async
   {
-    _txtConnexion.text = "Connexion...";
+    _txtConnexion.text = "${Language.connexion}...";
     logDebug("Connexion..");
     await Future.delayed(const Duration(seconds: 1));
     String? uuid = await signInWithGoogle();
@@ -52,7 +49,6 @@ class StartScreen  extends AbstractScreen
       logDebug("Storage.init..");
       await Storage.init(uuid);
       logDebug("OK");
-      //print("StartScreen.storage.init.ok");
       await Future.delayed(const Duration(seconds: 1));
     }  
     step = 3;
@@ -77,13 +73,13 @@ class StartScreen  extends AbstractScreen
       if(step == 1)
         start();
       if(step == 2)
-        _txtConnexion.text = "Chargement des données...";
+        _txtConnexion.text = "${Language.chargementDonnees}...";
       if(step == 3)
       {
-        //if(Storage.isNewGame())
-          _txtConnexion.text = "NOUVELLE PARTIE";
-        //else
-        //  _txtConnexion.text = "CONTINUER";
+        if(Storage.isNewGame())
+          _txtConnexion.text = Language.nouvellePartie.str;
+        else
+          _txtConnexion.text = Language.continuer.str;
       }
       step = -1; 
     }
