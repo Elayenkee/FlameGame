@@ -39,7 +39,8 @@ class ImagesUtils
     "hero_knight.png": Vector2(100, 55),
     "smoke_2.png": Vector2(64, 64),
     "bat_idle.png": Vector2(150, 75),
-    "bat_attack.png": Vector2(150, 75)
+    "bat_attack.png": Vector2(150, 75),
+    "bat_hit.png": Vector2(150, 75)
   };
   static Map<String, SpriteSheet> guis = {};
   static Future<SpriteSheet> loadGUI(String fileName) async

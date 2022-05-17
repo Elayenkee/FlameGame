@@ -72,6 +72,11 @@ class EntityComponent extends PositionComponent implements EntityListener
     }
   }
 
+  void onHit()
+  {
+    entityAnimationComponent.animation = entityAnimationComponent.hit;
+  }
+
   @override
   void update(double dt)
   {
@@ -104,16 +109,25 @@ class EntityAnimationComponent extends SpriteAnimationComponent
   late final SpriteAnimation idle;
   late final SpriteAnimation move;
   late final SpriteAnimation attack;
+  late final SpriteAnimation hit;
+  late final SpriteAnimation death;
 
   EntityAnimationComponent(this.gameRef,  size):super(size: size);
+
+  @override
+  void update(double dt)
+  {
+    super.update(dt);
+    if(animation == hit && animation!.currentIndex >= hit.frames.length - 1)
+    {
+      hit.reset();
+      animation = idle;
+    }  
+  }
 }
 
 class PlayerAnimationComponent extends EntityAnimationComponent
 {
-  late final SpriteAnimation idle;
-  late final SpriteAnimation move;
-  late final SpriteAnimation jump;
-  
   PlayerAnimationComponent(GameLayout gameRef):super(gameRef, Vector2(160, 95));
   
   @override
@@ -136,6 +150,8 @@ class PlayerAnimationComponent extends EntityAnimationComponent
     final List<Sprite> aRow1 = List<int>.generate(4, (i) => 0 + i).map((e) => spriteSheet.getSprite(2, e)).toList();
     attackSprites.addAll(aRow1);
     attack = AttackAnimation.spriteList(attackSprites, .06, 2);
+
+    hit = spriteSheet.createAnimation(row: 4, stepTime: .12, from: 5, to: 8);
 
     animation = idle;
 
@@ -168,6 +184,9 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
     SpriteSheet sheetAttack = await ImagesUtils.loadGUI("bat_attack.png");
     List<Sprite> sprites = List<int>.generate(9, (i) => 0 + i).map((e) => sheetAttack.getSprite(0, e)).toList();
     attack = AttackAnimation.spriteList(sprites, .06, 6);
+
+    SpriteSheet sheetHit = await ImagesUtils.loadGUI("bat_hit.png");
+    hit = sheetHit.createAnimation(row: 0, stepTime: .1, from: 0, to: 4);
 
     animation = idle;
     apparition();
@@ -237,27 +256,10 @@ class WorkAnimation
         {
           if(animation.currentIndex == animation.frameHit)
           {
-            print("HIT !!!!!!!!!!!!");
             onEvent!.call(WorkEvent.HIT);
           }
-          else
-          {
-            print("frame ${animation.currentFrame} is not ${animation.frameHit}");
-          }
-        }
-        else
-        {
-          print("animation is not AttackAnimation");
         }
       }
-      else
-      {
-        print("work is not attaquer");
-      }
-    }
-    else
-    {
-      print("onEvent null");
     }
   }
 }

@@ -1,6 +1,6 @@
 class Language
 {
-  static String locale = "en";
+  static String locale = "fr";
 
   // StartScreen
   static Text connexion = Text("Connexion", "Connecting");

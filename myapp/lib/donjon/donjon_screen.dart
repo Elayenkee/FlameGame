@@ -324,14 +324,14 @@ class Fight
     });
 
     await Future.delayed(const Duration(milliseconds: 100));
-    if(Storage.entity.nbCombat <= 0)
-    {
-      startTutorielSettings();
-    }
-    else
-    {
+    //if(Storage.entity.nbCombat <= 0)
+    //{
+    //  startTutorielSettings();
+    //}
+    //else
+    //{
       onEndTutoriel();
-    }
+    //}
     print("Fight.start.end");
   }
 
@@ -511,6 +511,7 @@ class EventAnimation
           {
             Map target = event.get("target") as Map;
             targetComponent?.setStatus(target);
+            targetComponent?.component.onHit();
           }
         };
         workAnimation.start();

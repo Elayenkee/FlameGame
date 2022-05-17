@@ -37,15 +37,17 @@ abstract class TutorielScreen extends AbstractScreen
 
   void startPhrase(dynamic phrase)
   {
+    print("startPhrase.start");
     this.phrase = phrase.toString();
 
     txtPhrase?.remove();
     txtPhrase = null;
 
-    txtPhrase = MyTextBoxComponent(phrase, textRenderer: textPaint, priority: 2500, boxConfig: TextBoxConfig(maxWidth: cadre.size.x - 200, timePerChar: .02));
+    txtPhrase = MyTextBoxComponent(this.phrase, textRenderer: textPaint, priority: 2500, boxConfig: TextBoxConfig(maxWidth: cadre.size.x - 200, timePerChar: .02));
     txtPhrase!.position = Vector2(150, 25);
     txtPhrase!.size = Vector2(1000, 1000);
     cadre.addChild(txtPhrase!, gameRef: gameRef);
+    print("startPhrase.end");
   }
 
   @override
