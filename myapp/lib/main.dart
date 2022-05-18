@@ -62,8 +62,6 @@ class GameScreen extends StatelessWidget
 
 class GameLayout extends AbstractLayout with PanDetector
 {
-  static late final SpriteSheet gui;
-
   StartScreen? _startScreen;
   WorldScreen? _worldScreen;
   FightScreen? _fightScreen;
@@ -73,18 +71,20 @@ class GameLayout extends AbstractLayout with PanDetector
   
   GameLayout():super();
 
+  Images createImages()
+  {
+    return Images();
+  }
+
   @override
   Future<void> onLoad() async 
   {
-    //print("GameLayout.onLoad");
+    print("GameLayout.onLoad");
     await super.onLoad();
-    ImagesUtils.init(Images());
-    gui = await ImagesUtils.loadGUI("gui.png");
-
     _startScreen = StartScreen(this, size);
     await add(_startScreen!);
     //await add(txtDebug);
-    //print("GameLayout.onLoaded");
+    print("GameLayout.onLoaded");
   }
 
   void startWorld() async

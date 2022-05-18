@@ -58,10 +58,12 @@ class StartScreen  extends AbstractScreen
       step = 2;
       logDebug("Storage.init..");
       await Storage.init(uuid);
-      logDebug("OK");
+      await ImagesUtils.init(gameRef.createImages(), () async{
+        logDebug("OK");
+        step = 3;
+      });
       await Future.delayed(const Duration(seconds: 1));
-    }  
-    step = 3;
+    }
   }
 
   @override
@@ -128,8 +130,8 @@ class LanguageChooser extends HorizontalContainer
   {
     print("LanguageChooser.onLoad.start");
     await super.onLoad();
-    (francais as SpriteComponent).sprite = Sprite(await ImagesUtils.loadImage("flag_fr.png"));
-    (anglais as SpriteComponent).sprite = Sprite(await ImagesUtils.loadImage("flag_en.png"));
+    (francais as SpriteComponent).sprite = Sprite(await Images().load("flag_fr.png"));
+    (anglais as SpriteComponent).sprite = Sprite(await Images().load("flag_en.png"));
     print("LanguageChooser.onLoad.end");
   }
 

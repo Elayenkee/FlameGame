@@ -148,7 +148,7 @@ class PlayerAnimationComponent extends EntityAnimationComponent
   Future<void> onLoad() async 
   {
     await super.onLoad();
-    final spriteSheet = await ImagesUtils.loadGUI("hero_knight.png");
+    final spriteSheet = ImagesUtils.getGUI("hero_knight.png");
     idle = spriteSheet.createAnimation(row: 0, stepTime: .1, from: 0, to: 6);
 
     final List<Sprite> runSprites = [];
@@ -187,22 +187,22 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
   {
     //print("EnnemyAnimationComponent.onLoad.start");
     await super.onLoad();
-    SpriteSheet sheetApparition = await ImagesUtils.loadGUI("smoke_2.png");
+    SpriteSheet sheetApparition = ImagesUtils.getGUI("smoke_2.png");
     animApparition = SpriteAnimationComponent();
     animApparition!.size = Vector2.all(size.y / 2);
     animApparition!.anchor = Anchor.center;
     animApparition!.position = size / 2;
     animApparition!.animation =sheetApparition.createAnimation(row: 0, stepTime: .078, from: 0, to: 9);
     
-    SpriteSheet sheetIdle = await ImagesUtils.loadGUI("bat_idle.png");
+    SpriteSheet sheetIdle = ImagesUtils.getGUI("bat_idle.png");
     idle = sheetIdle.createAnimation(row: 0, stepTime: .08, from: 0, to: 8);
     move = idle;
 
-    SpriteSheet sheetAttack = await ImagesUtils.loadGUI("bat_attack.png");
+    SpriteSheet sheetAttack = ImagesUtils.getGUI("bat_attack.png");
     List<Sprite> sprites = List<int>.generate(9, (i) => 0 + i).map((e) => sheetAttack.getSprite(0, e)).toList();
     attack = AttackAnimation.spriteList(sprites, .06, 6);
 
-    SpriteSheet sheetHit = await ImagesUtils.loadGUI("bat_hit.png");
+    SpriteSheet sheetHit = ImagesUtils.getGUI("bat_hit.png");
     hit = sheetHit.createAnimation(row: 0, stepTime: .1, from: 0, to: 4);
 
     death = sheetIdle.createAnimation(row: 0, stepTime: .08, from: 0, to: 8);
@@ -309,10 +309,10 @@ class Bar extends SpriteComponent
   Future<void> onLoad() async 
   {
     await super.onLoad();
-    sprite = Sprite(await ImagesUtils.loadImage("bar.png"));
+    sprite = Sprite(ImagesUtils.getImage("bar.png"));
     size = Vector2(90, 9);
 
-    content.sprite = Sprite(await ImagesUtils.loadImage(type));
+    content.sprite = Sprite(ImagesUtils.getImage(type));
     content.position = Vector2(2.5, 2);
     await addChild(content);
   }

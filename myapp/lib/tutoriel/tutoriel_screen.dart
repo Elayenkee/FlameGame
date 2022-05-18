@@ -30,7 +30,7 @@ abstract class TutorielScreen extends AbstractScreen
     await addChild(cadre);
 
     SpriteComponent portrait = SpriteComponent();
-    portrait.sprite = Sprite(await ImagesUtils.loadImage("portrait.png"));
+    portrait.sprite = Sprite(ImagesUtils.getImage("portrait.png"));
     portrait.size = Vector2.all(150);
     await cadre.addChild(portrait);
   }
