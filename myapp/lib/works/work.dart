@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/server.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/utils.dart';
 
 abstract class Work
@@ -44,7 +45,7 @@ abstract class MagicWork extends Work
 
 class Attaquer extends Work
 {
-  String get name => "Attaquer";
+  String get name => Language.work_attaquer.str;
 
   @override
   bool execute(Entity caller, Entity target, Story story) 
@@ -75,7 +76,7 @@ class Attaquer extends Work
 
 class Bandage extends Work
 {
-  String get name => "Bandage";
+  String get name => Language.work_bandage.str;
 
   @override
   bool execute(Entity caller, Entity target, Story story) 
@@ -99,7 +100,7 @@ class Bandage extends Work
 
 class Soin extends MagicWork
 {
-  String get name => "Soin ${mp}mp";
+  String get name => Language.work_soin.format(mp);
   int get mp => 5;
 
   @override
@@ -155,7 +156,7 @@ class Soin extends MagicWork
 
 class Aucun extends Work
 {
-  String get name => "Aucun";
+  String get name => Language.work_aucun.str;
 
   @override
   bool execute(Entity caller, Entity target, Story story) 

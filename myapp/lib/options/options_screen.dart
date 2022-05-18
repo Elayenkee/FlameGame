@@ -1046,6 +1046,52 @@ class VerticalContainer extends PositionComponent
   }
 }
 
+class HorizontalContainer extends PositionComponent
+{
+  final GameLayout gameRef;
+  final List<PositionComponent> items = [];
+  int divider = 0;
+
+  HorizontalContainer(this.gameRef, {this.divider = 0});
+
+  void add(PositionComponent component)
+  {
+    items.add(component);
+    invalidate();
+  }
+
+  @override
+  Future<void> onLoad() async 
+  {
+    await super.onLoad();
+    items.forEach((element) async{await addChild(element, gameRef: gameRef);});
+  }
+
+  void invalidate()
+  {
+    for(int i = 1; i < items.length; i++)
+    {
+      PositionComponent last = items[i - 1];
+      PositionComponent current = items[i];
+      current.position = Vector2(last.position.x + last.size.x + divider, 0);
+    }
+  }
+
+  @override
+  Vector2 get size
+  {
+    if(items.isEmpty)
+      return Vector2.all(0);
+
+    double maxH = 0;
+    items.forEach((element) { 
+      if(element.size.y > maxH)
+        maxH = element.size.y;
+    });
+    return Vector2(items.last.position.x + items.last.size.x, maxH);
+  }
+}
+
 class TextSizedComponent extends TextComponent
 {
   TextSizedComponent(String text, {TextRenderer? textRenderer}):super(text, textRenderer: textRenderer)

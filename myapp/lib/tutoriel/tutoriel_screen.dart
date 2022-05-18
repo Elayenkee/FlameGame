@@ -112,23 +112,23 @@ class TutorielSettings extends TutorielScreen
     else if(step == 2 && event == EVENT_CLICK_OPEN_DETAILS)
     {
       removePointers();
-      startPhrase("En détail : \nMa cible, c'est <Ennemi>\nEt l'action, c'est <Attaquer>");
+      startPhrase(Language.tutoriel1_phrase3);
       step = 3;
 
       PositionComponent cibleComponent = gameRef.optionsScreen!.popupBuilderBehaviour!.container.items[0]; 
       Vector2 positionPointerCible = Vector2(cibleComponent.absolutePosition.x + cibleComponent.size.x / 2, cibleComponent.absoluteCenter.y) + Vector2(200, 65);
-      pointers.add(Pointer("Description de la cible", 2, positionPointerCible));
+      pointers.add(Pointer(Language.tutoriel1_pointer3_1.str, 2, positionPointerCible));
       addChild(pointers.last!);
 
       PositionComponent workComponent = gameRef.optionsScreen!.popupBuilderBehaviour!.container.items[2]; 
       Vector2 positionPointerWork = Vector2(workComponent.absolutePosition.x + workComponent.size.x / 2, workComponent.absoluteCenter.y) + Vector2(200, 65);
-      pointers.add(Pointer("Action à effectuer sur la cible", 2, positionPointerWork));
+      pointers.add(Pointer(Language.tutoriel1_pointer3_2.str, 2, positionPointerWork));
       addChild(pointers.last!);
     }
     else if(step == 3 && event == EVENT_CLICK_BEHAVIOUR_PARAM)
     {
       removePointers();
-      startPhrase("Plusieurs choix sont possibles,\nmais je vais laisser comme ça pour l'instant.");
+      startPhrase(Language.tutoriel1_phrase4);
       step = 4;
     }
     else if((step == 3 || step == 4) && event == EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR)

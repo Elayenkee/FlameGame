@@ -39,7 +39,8 @@ Future<void> main() async
   WidgetsFlutterBinding.ensureInitialized();
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
-  await Firebase.initializeApp();
+  //await Firebase.initializeApp();
+  print("Settings.ok");
   runApp(MaterialApp(theme: ThemeData(fontFamily: 'Disco'),home: GameScreen()));
 }
 

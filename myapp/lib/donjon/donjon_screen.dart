@@ -6,6 +6,7 @@ import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/donjon/entity_component.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
@@ -324,14 +325,14 @@ class Fight
     });
 
     await Future.delayed(const Duration(milliseconds: 100));
-    //if(Storage.entity.nbCombat <= 0)
-    //{
-    //  startTutorielSettings();
-    //}
-    //else
-    //{
+    if(Storage.entity.nbCombat <= 0)
+    {
+      startTutorielSettings();
+    }
+    else
+    {
       onEndTutoriel();
-    //}
+    }
     print("Fight.start.end");
   }
 
@@ -398,7 +399,7 @@ class Fight
   void finish()
   {
     finished = true;
-    TextComponent txtFin = TextComponent("FIN DU DEV EN COURS ! MERCI !", textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
+    TextComponent txtFin = TextComponent(Language.finDev.str, textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
     txtFin.anchor = Anchor.center;
     txtFin.position = container.gameRef.size / 2;
     container.hud.addChild(txtFin, gameRef: container.gameRef);
@@ -642,6 +643,7 @@ class EntityFight
   void setStatus(Map status)
   {
     this.infos.setStatus(status);
+    this.component.setStatus(status);
   }
 
   void stepForward(EntityFight? target)

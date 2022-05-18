@@ -74,7 +74,19 @@ class EntityComponent extends PositionComponent implements EntityListener
 
   void onHit()
   {
-    entityAnimationComponent.animation = entityAnimationComponent.hit;
+    if(entityAnimationComponent.animation != entityAnimationComponent.death)
+      entityAnimationComponent.animation = entityAnimationComponent.hit;
+  }
+
+  void setStatus(Map status)
+  {
+    int hp = status[VALUE.HP];
+    if(hp <= 0 && entityAnimationComponent.animation != entityAnimationComponent.death)
+    {
+      entityAnimationComponent.death.reset();
+      entityAnimationComponent.previous = entityAnimationComponent.death;
+      entityAnimationComponent.animation = entityAnimationComponent.death;
+    }
   }
 
   @override
@@ -112,6 +124,8 @@ class EntityAnimationComponent extends SpriteAnimationComponent
   late final SpriteAnimation hit;
   late final SpriteAnimation death;
 
+  SpriteAnimation? previous;
+
   EntityAnimationComponent(this.gameRef,  size):super(size: size);
 
   @override
@@ -121,7 +135,7 @@ class EntityAnimationComponent extends SpriteAnimationComponent
     if(animation == hit && animation!.currentIndex >= hit.frames.length - 1)
     {
       hit.reset();
-      animation = idle;
+      animation = previous ?? idle;
     }  
   }
 }
@@ -152,6 +166,9 @@ class PlayerAnimationComponent extends EntityAnimationComponent
     attack = AttackAnimation.spriteList(attackSprites, .06, 2);
 
     hit = spriteSheet.createAnimation(row: 4, stepTime: .12, from: 5, to: 8);
+
+    death = spriteSheet.createAnimation(row: 0, stepTime: .1, from: 0, to: 6);
+    death.loop = false;
 
     animation = idle;
 
@@ -187,6 +204,9 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
 
     SpriteSheet sheetHit = await ImagesUtils.loadGUI("bat_hit.png");
     hit = sheetHit.createAnimation(row: 0, stepTime: .1, from: 0, to: 4);
+
+    death = sheetIdle.createAnimation(row: 0, stepTime: .08, from: 0, to: 8);
+    death.loop = false;
 
     animation = idle;
     apparition();
