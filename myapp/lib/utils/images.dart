@@ -40,6 +40,7 @@ class ImagesUtils
     "smoke_2.png": Vector2(64, 64),
     "bat_idle.png": Vector2(150, 75),
     "bat_attack.png": Vector2(150, 75),
+    "bat_death.png": Vector2(150, 75),
     "bat_hit.png": Vector2(150, 75)
   };
   static Map<String, SpriteSheet> guis = {};
