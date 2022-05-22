@@ -6,6 +6,7 @@ import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/donjon/entity_component.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
@@ -51,7 +52,7 @@ class DonjonScreen extends AbstractScreen
     donjon.setScreen(this);
     donjon.setPlayerListener(_player); 
 
-    _buttonSettings = SpriteComponent(size: Vector2.all(32), sprite: Sprite(await ImagesUtils.loadImage("button_settings.png")));
+    _buttonSettings = SpriteComponent(size: Vector2.all(32), sprite: Sprite(ImagesUtils.getImage("button_settings.png")));
     _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 32, 5) : Vector2(-1000, 0); 
     await hud.addChild(_buttonSettings);
 
@@ -168,7 +169,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     //print("Decor.onLoad");
     await super.onLoad();
 
-    sprite = Sprite(await ImagesUtils.loadImage("salle.png"));
+    sprite = Sprite(ImagesUtils.getImage("salle.png"));
     size = gameRef.size - Vector2(100, 70);
     position = Vector2(50, 35);
 
@@ -184,7 +185,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     {
       //print("Decor.addPorteSud.start");
       final porteSud = SpriteComponent();
-      porteSud.sprite = Sprite(await ImagesUtils.loadImage("porte_sud.png"));
+      porteSud.sprite = Sprite(ImagesUtils.getImage("porte_sud.png"));
       porteSud.size = Vector2(130, 28);
       porteSud.anchor = Anchor.bottomCenter;
       porteSud.position = Vector2(size.x /2, size.y);
@@ -193,7 +194,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
       if(donjon.currentSalle.s != null)
       {
         arrowSud = SpriteComponent();
-        arrowSud!.sprite = Sprite(await ImagesUtils.loadImage('arrow.png'));
+        arrowSud!.sprite = Sprite(ImagesUtils.getImage('arrow.png'));
         arrowSud!.size = Vector2(50, 30);
         arrowSud!.anchor = Anchor.bottomCenter;
         arrowSud!.position = Vector2(size.x /2, size.y + 35);
@@ -207,14 +208,14 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     {
       //print("Decor.addPorteNord.start");
       final porteNord = SpriteComponent();
-      porteNord.sprite = Sprite(await ImagesUtils.loadImage("porte_nord.png"));
+      porteNord.sprite = Sprite(ImagesUtils.getImage("porte_nord.png"));
       porteNord.size = Vector2(130, 95);
       porteNord.anchor = Anchor.topCenter;
       porteNord.position = Vector2(size.x / 2, 0);
       await addChild(porteNord, gameRef: gameRef);
 
       arrowNord = SpriteComponent();
-      arrowNord!.sprite = Sprite(await ImagesUtils.loadImage('arrow.png'));
+      arrowNord!.sprite = Sprite(ImagesUtils.getImage('arrow.png'));
       arrowNord!.size = Vector2(50, 30);
       arrowNord!.anchor = Anchor.topCenter;
       arrowNord!.position = Vector2(size.x / 2, -15);
@@ -226,14 +227,14 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     {
       //print("Decor.addPorteOuest.start");
       final porteOuest = SpriteComponent();
-      porteOuest.sprite = Sprite(await ImagesUtils.loadImage("porte_ouest.png"));
+      porteOuest.sprite = Sprite(ImagesUtils.getImage("porte_ouest.png"));
       porteOuest.size = Vector2(43, 130);
       porteOuest.anchor = Anchor.centerLeft;
       porteOuest.position = Vector2(0, size.y / 2);
       await addChild(porteOuest, gameRef: gameRef);
 
       arrowOuest = SpriteComponent();
-      arrowOuest!.sprite = Sprite(await ImagesUtils.loadImage('arrow.png'));
+      arrowOuest!.sprite = Sprite(ImagesUtils.getImage('arrow.png'));
       arrowOuest!.size = Vector2(50, 35);
       arrowOuest!.anchor = Anchor.centerLeft;
       arrowOuest!.position = Vector2(-35, size.y / 2 + 35);
@@ -247,7 +248,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
     {
       //print("Decor.addPorteEst.start");
       final porteEst = SpriteComponent();
-      porteEst.sprite = Sprite(await ImagesUtils.loadImage("porte_ouest.png"));
+      porteEst.sprite = Sprite(ImagesUtils.getImage("porte_ouest.png"));
       porteEst.size = Vector2(43, 130);
       porteEst.anchor = Anchor.centerRight;
       porteEst.renderFlipX = true;
@@ -255,7 +256,7 @@ class Decor extends SpriteComponent with HasGameRef<GameLayout>
       await addChild(porteEst, gameRef: gameRef);
 
       arrowEst = SpriteComponent();
-      arrowEst!.sprite = Sprite(await ImagesUtils.loadImage('arrow.png'));
+      arrowEst!.sprite = Sprite(ImagesUtils.getImage('arrow.png'));
       arrowEst!.size = Vector2(50, 35);
       arrowEst!.position = Vector2(size.x + 50, size.y / 2 - 15);
       arrowEst!.angle = degrees2Radians * 90;
@@ -324,14 +325,14 @@ class Fight
     });
 
     await Future.delayed(const Duration(milliseconds: 100));
-    //if(Storage.entity.nbCombat <= 0)
-    //{
-    //  startTutorielSettings();
-    //}
-    //else
-    //{
+    if(Storage.entity.nbCombat <= 0)
+    {
+      startTutorielSettings();
+    }
+    else
+    {
       onEndTutoriel();
-    //}
+    }
     print("Fight.start.end");
   }
 
@@ -398,7 +399,7 @@ class Fight
   void finish()
   {
     finished = true;
-    TextComponent txtFin = TextComponent("FIN DU DEV EN COURS ! MERCI !", textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
+    TextComponent txtFin = TextComponent(Language.finDev.str, textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
     txtFin.anchor = Anchor.center;
     txtFin.position = container.gameRef.size / 2;
     container.hud.addChild(txtFin, gameRef: container.gameRef);
@@ -642,6 +643,7 @@ class EntityFight
   void setStatus(Map status)
   {
     this.infos.setStatus(status);
+    this.component.setStatus(status);
   }
 
   void stepForward(EntityFight? target)

@@ -6,35 +6,35 @@ import 'package:flame/sprite.dart';
 
 class ImagesUtils
 {
-  static late final Images images;
+  static late final Images _images;
 
-  static void init(Images images)
+  static Future<void> init(Images images, VoidCallback onEnd) async
   {
-    ImagesUtils.images = images;
+    print("ImagesUtils.init");
+    ImagesUtils._images = images;
+    await loadGUI("gui.png");
+    await loadGUI("hero_knight.png");
+    await loadGUI("smoke_2.png");
+    await loadGUI("bat_idle.png");
+    await loadGUI("bat_attack.png");
+    await loadGUI("bat_hit.png");
+    final List<String> liste = ["flag_fr.png", "flag_en.png", "button_settings.png", "salle.png", "arrow.png", "porte_sud.png", "porte_nord.png", 
+    "porte_ouest.png", "porte_est.png", "bar.png", "health.png", "mana.png", "button_close.png", "cadre_1_left.png", "cadre_1_middle.png", 
+    "torch_activated.png", "torch_desactivated.png", "icon_edit.png", "cadre_behaviour.png", "button_ennemy.png", "button_me.png", "button_none.png", 
+    "button_work.png", "button_magic.png", "portrait.png", "cadre_player.png"];
+    liste.forEach((element) async{
+      await images.load(element);
+      print("Loaded $element");
+    });
+    onEnd();
   }
 
-  static List<String> loaded = [];
-  static Future<Image> loadImage(String fileName) async
+  static Image getImage(String fileName)
   {
-    try
-    {
-      if(!loaded.contains(fileName))
-      {
-        //print("ImagesUtils : add $fileName");
-        loaded.add(fileName);
-        return await images.load(fileName);
-      }
-      //print("ImagesUtils : get $fileName");
-      return images.fromCache(fileName);
-    }
-    catch(e)
-    {
-      print("ImagesUtils.loadImage.Exception $e");
-    }
-    return await images.load(fileName);
+    return _images.fromCache(fileName);
   }
 
-  static Map<String, Vector2> sizes = {
+  static Map<String, Vector2> _sizes = {
     "gui.png": Vector2.all(32),
     "hero_knight.png": Vector2(100, 55),
     "smoke_2.png": Vector2(64, 64),
@@ -43,27 +43,20 @@ class ImagesUtils
     "bat_death.png": Vector2(150, 75),
     "bat_hit.png": Vector2(150, 75)
   };
-  static Map<String, SpriteSheet> guis = {};
-  static Future<SpriteSheet> loadGUI(String fileName) async
+  static Map<String, SpriteSheet> _guis = {};
+  static Future<void> loadGUI(String fileName) async
   {
-    try
-    {
-      if(!guis.containsKey(fileName))
-      {
-        SpriteSheet spriteSheet = SpriteSheet(image: await loadImage(fileName), srcSize: sizes[fileName]!);
-        guis[fileName] = spriteSheet;
-      }
-    }
-    catch(e)
-    {
-      print("ImagesUtils.loadGUI.Exception $e");
-    }
-    SpriteSheet? result = guis[fileName];
-    if(result == null)
-    {
-      print("ImagesUtils.loadGUI.Error no $fileName");
-      throw Exception("No $fileName");
-    }
-    return result;
+    if(_guis.containsKey(fileName))
+      return;
+    print("ImagesUtils._loadGUI $fileName");
+    await _images.load(fileName);
+    SpriteSheet spriteSheet = SpriteSheet(image: getImage(fileName), srcSize: _sizes[fileName]!);
+    _guis[fileName] = spriteSheet;
+  }
+
+  static SpriteSheet getGUI(String fileName)
+  {
+    print("ImagesUtils.getGUI $fileName");
+    return _guis[fileName]!;
   }
 }
