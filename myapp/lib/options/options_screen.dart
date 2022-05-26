@@ -6,6 +6,7 @@ import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/builder.dart';
 import 'package:myapp/engine/entity.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
@@ -487,7 +488,7 @@ class ButtonBuilderCondition extends PositionComponent
       button.sprite = Sprite(ImagesUtils.getImage("button_me.png"));
       button.size = size;
       TextRenderer textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
-      textComponent = TextComponent("Moi", textRenderer: textPaint);
+      textComponent = TextComponent(Language.moi.str, textRenderer: textPaint);
       textComponent.anchor = Anchor.center;
       textComponent.position = size / 2;
       await button.addChild(textComponent);
@@ -549,7 +550,7 @@ class CibleComponent extends VerticalContainer
 
   CibleComponent(GameLayout gameRef, this.builderBehaviour):super(gameRef)
   {
-    add(TextSizedComponent("Cible", textRenderer: textPaint));
+    add(TextSizedComponent(Language.target.str, textRenderer: textPaint));
     for(int i = 0; i < builderBehaviour.builderTargetSelector.builderConditionGroup.conditions.length; i++)
     {
       BuilderCondition builderCondition = builderBehaviour.builderTargetSelector.builderConditionGroup.conditions[i];
@@ -590,7 +591,7 @@ class WorkComponent extends VerticalContainer
 
   WorkComponent(GameLayout gameRef, this.builderBehaviour):super(gameRef)
   {
-    add(TextSizedComponent("Action", textRenderer: textPaint));
+    add(TextSizedComponent(Language.action.str, textRenderer: textPaint));
     BuilderWork builderWork = builderBehaviour.builderWork;
     builderWorkComponent = BuilderWorkComponent(gameRef, builderWork);
     add(builderWorkComponent);
@@ -614,7 +615,7 @@ class PopupChooseCible extends PopupChoose
   final Function onChooseCible;
   final List<Function> callbacks = [];
 
-  PopupChooseCible(this.gameRef, this.entity, this.onChooseCible):super("Cibles");
+  PopupChooseCible(this.gameRef, this.entity, this.onChooseCible):super(Language.targets.str);
 
   @override
   Future<void> onLoad() async 
@@ -652,7 +653,7 @@ class PopupChooseWork extends PopupChoose
   final Function onChooseWork;
   final List<Function> callbacks = [];
 
-  PopupChooseWork(this.gameRef, this.entity, this.onChooseWork):super("Actions");
+  PopupChooseWork(this.gameRef, this.entity, this.onChooseWork):super(Language.actions.str);
 
   @override
   Future<void> onLoad() async 

@@ -18,8 +18,9 @@ class ImagesUtils
     await loadGUI("bat_idle.png");
     await loadGUI("bat_attack.png");
     await loadGUI("bat_hit.png");
+    await loadGUI("bat_death.png");
     final List<String> liste = ["flag_fr.png", "flag_en.png", "button_settings.png", "salle.png", "arrow.png", "porte_sud.png", "porte_nord.png", 
-    "porte_ouest.png", "porte_est.png", "bar.png", "health.png", "mana.png", "button_close.png", "cadre_1_left.png", "cadre_1_middle.png", 
+    "porte_ouest.png", "bar.png", "health.png", "mana.png", "button_close.png", "cadre_1_left.png", "cadre_1_middle.png", 
     "torch_activated.png", "torch_desactivated.png", "icon_edit.png", "cadre_behaviour.png", "button_ennemy.png", "button_me.png", "button_none.png", 
     "button_work.png", "button_magic.png", "portrait.png", "cadre_player.png"];
     liste.forEach((element) async{

@@ -6,6 +6,7 @@ import 'package:myapp/builder.dart';
 import 'package:myapp/donjon/donjon.dart';
 import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
+import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/utils.dart';
 import 'package:myapp/works/work.dart';
@@ -169,7 +170,7 @@ abstract class Storage
     builderCondition3.setParam(2, VALUE.CLAN);*/
 
     // Attack lowest HP
-    BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: "Attaquer monstre");
+    BuilderBehaviour builderBehaviour2 = builder.addBehaviour(name: Language.attaquer_monstre.str);
     builderBehaviour2.activated = true;
     builderBehaviour2.builderWork.work = Work.attaquer;
     BuilderConditionGroup builderConditionGroup2 = builderBehaviour2.builderTargetSelector.builderConditionGroup;

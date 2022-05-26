@@ -133,6 +133,13 @@ class Donjon
 
 class DonjonEntity
 {
+  static final double maxX = 6.5;
+  static final double minX = -6.5;
+  static final double minY = -2.2;
+  static final double maxY = 4.1;
+  static final double Width = maxX - minX;
+  static final double Height = maxY - minY;
+
   late Donjon _donjon;
   Entity _entity;
   Vector2 _position = Vector2(0, 4.3);
@@ -147,8 +154,8 @@ class DonjonEntity
 
   void _resetNext()
   {
-    if(Storage.entity.nbCombat == 0)
-      _next = 1.3;
+    if(Storage.entity.nbCombat < 2)
+      _next = .8;
     else
       _next = 1 + World.Rand.nextDouble() * 2;
   }
@@ -161,10 +168,10 @@ class DonjonEntity
     nextDir = dir;
 
     _target = p;
-    _target!.y = min(4.1, _target!.y);
-    _target!.y = max(-2.2, _target!.y);
-    _target!.x = max(-6.5, _target!.x);
-    _target!.x = min(6.5, _target!.x);
+    _target!.y = min(maxY, _target!.y);
+    _target!.y = max(minY, _target!.y);
+    _target!.x = max(minX, _target!.x);
+    _target!.x = min(maxX, _target!.x);
     double diffX = _target!.x - _position.x;
     listener?.onStartMove(diffX);
     return true;

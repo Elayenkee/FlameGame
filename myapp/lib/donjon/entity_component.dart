@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
@@ -97,6 +98,16 @@ class EntityComponent extends PositionComponent implements EntityListener
     workAnimation?.update();
     if(workAnimation != null && workAnimation!.isFinished)
       workAnimation = null;
+    if(entityAnimationComponent.animation == entityAnimationComponent.death)
+    {
+      int index = entityAnimationComponent.animation!.currentIndex + 1;
+      int length = entityAnimationComponent.animation!.frames.length; 
+      int a = index * 255;
+      int alpha = 255 - a ~/ length;
+      entityAnimationComponent.alpha = alpha;
+      if(alpha <= 0)
+        entityAnimationComponent.animation = null;
+    }
   }
 
   WorkAnimation work(Work work)
@@ -137,6 +148,11 @@ class EntityAnimationComponent extends SpriteAnimationComponent
       hit.reset();
       animation = previous ?? idle;
     }  
+  }
+
+  set alpha(int alpha)
+  {
+    overridePaint = BasicPalette.white.withAlpha(alpha).paint();
   }
 }
 
@@ -179,6 +195,7 @@ class PlayerAnimationComponent extends EntityAnimationComponent
 class EnnemyAnimationComponent extends EntityAnimationComponent
 {
   late SpriteAnimationComponent? animApparition;
+  late final Shadow shadow;
 
   EnnemyAnimationComponent(GameLayout gameRef):super(gameRef, Vector2(180, 90));
 
@@ -196,6 +213,7 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
     
     SpriteSheet sheetIdle = ImagesUtils.getGUI("bat_idle.png");
     idle = sheetIdle.createAnimation(row: 0, stepTime: .08, from: 0, to: 8);
+    idle.currentIndex = Random().nextInt(idle.frames.length);
     move = idle;
 
     SpriteSheet sheetAttack = ImagesUtils.getGUI("bat_attack.png");
@@ -205,7 +223,8 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
     SpriteSheet sheetHit = ImagesUtils.getGUI("bat_hit.png");
     hit = sheetHit.createAnimation(row: 0, stepTime: .1, from: 0, to: 4);
 
-    death = sheetIdle.createAnimation(row: 0, stepTime: .08, from: 0, to: 8);
+    SpriteSheet sheetDeath = ImagesUtils.getGUI("bat_death.png");
+    death = sheetDeath.createAnimation(row: 0, stepTime: .08, from: 0, to: 4);
     death.loop = false;
 
     animation = idle;
@@ -226,8 +245,15 @@ class EnnemyAnimationComponent extends EntityAnimationComponent
     {
       animApparition!.remove();
       animApparition = null;
-      addChild(Shadow(Vector2(35, 10), Vector2(size.x / 2, size.y)), gameRef: gameRef);
+      shadow = Shadow(Vector2(35, 10), Vector2(size.x / 2, size.y - 10));
+      addChild(shadow, gameRef: gameRef);
     }  
+  }
+
+  set alpha(int alpha)
+  {
+    shadow.alpha = alpha;
+    overridePaint = BasicPalette.white.withAlpha(alpha).paint();
   }
 }
 
@@ -330,8 +356,11 @@ class EntityInfos extends SpriteComponent
   late final Bar healthBar;
   Bar? manaBar = null;
 
+  late final String imageCadre;
+
   EntityInfos(Entity entity)
   {
+    imageCadre = entity.getClan() == 1 ? "button_work.png" : "button_ennemy.png";
     size = Vector2(100, 35);
     txtName = TextComponent(entity.getName(), textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white, fontSize: 20)));
     txtName.position = Vector2(size.x / 2, -5);
@@ -350,7 +379,11 @@ class EntityInfos extends SpriteComponent
   Future<void> onLoad() async 
   {
     await super.onLoad();
-    //sprite = Sprite(await ImagesUtils.loadImage("cadre_player.png"))..paint = BasicPalette.white.withAlpha(200).paint();
+    Sprite spriteCadre = Sprite(ImagesUtils.getImage(imageCadre));
+    spriteCadre.paint = BasicPalette.blue.withAlpha(200).paint(); 
+    SpriteComponent cadre = SpriteComponent(sprite: spriteCadre);
+    cadre.size = Vector2(100, 35);
+    await addChild(cadre);
     await addChild(txtName);
     await addChild(healthBar);
     if(manaBar != null)
@@ -382,7 +415,7 @@ class EntityInfos extends SpriteComponent
 class Shadow extends PositionComponent 
 {
   late final Rect rect;
-  late final Paint paint;
+  late Paint paint;
 
   Shadow(Vector2 size, Vector2 position) : super(size: size) 
   {
@@ -395,5 +428,10 @@ class Shadow extends PositionComponent
   {
     canvas.drawOval(rect, paint);
     super.render(canvas);
+  }
+
+  set alpha(int alpha)
+  {
+    paint = Paint()..color = Color.fromARGB(alpha, 28, 26, 26);
   }
 }

@@ -22,7 +22,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
   List<Work> _availablesWorks = [];
   List<PredefinedBuilderCondition> _availablesBuilderConditions = [];
 
-  int nbCombat = 0;
+  int nbCombat = 1;
 
   Entity(Map map) 
   {
@@ -229,6 +229,9 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     final uuids = Map<String, dynamic>();
     uuids[uuid] = this;
     nbCombat = map["nbCombat"]??0;
+
+    print("NB COMBAT $nbCombat");
+
     final Map k = map["values"];
     k.keys.forEach((key) {
       VALUE? value = ValueExtension.get(key);
@@ -270,6 +273,7 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     });
     map["builder"] = builder.toMap();
     map["nbCombat"] = nbCombat;
+    print(">> NB COMBAT $nbCombat");
   }
 
   @override

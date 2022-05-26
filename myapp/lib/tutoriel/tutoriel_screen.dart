@@ -2,10 +2,12 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:myapp/builder.dart';
 import 'package:myapp/graphics/my_text_box_component.dart';
 import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/options/options_screen.dart';
+import 'package:myapp/storage/storage.dart';
 import 'package:myapp/utils.dart';
 import 'package:myapp/utils/images.dart';
 
@@ -16,6 +18,7 @@ abstract class TutorielScreen extends AbstractScreen
   MyTextBoxComponent? txtPhrase = null;
   String phrase = "";
 
+  List<Pointer?> pointers = [];
   VoidCallback? onEnd;
 
   TutorielScreen(GameLayout gameRef, Vector2 size, this.onEnd):super(gameRef, "T", size, priority: 6500);
@@ -56,6 +59,12 @@ abstract class TutorielScreen extends AbstractScreen
     return false;
   }
 
+  void removePointers()
+  {
+    pointers.forEach((element) {element?.remove();});
+    pointers.clear();
+  }
+
   void onEvent(String event, {dynamic param})
   {
 
@@ -71,8 +80,6 @@ class TutorielSettings extends TutorielScreen
   
   final SpriteComponent buttonSettings;
 
-  List<Pointer?> pointers = [];
-
   int step = 1;
 
   TutorielSettings(GameLayout gameRef, this.buttonSettings, VoidCallback onEnd):super(gameRef, gameRef.size, onEnd);
@@ -84,15 +91,12 @@ class TutorielSettings extends TutorielScreen
     await super.onLoad();
 
     startPhrase(Language.tutoriel1_phrase1);
-    txtPhrase?.onEnd = onStepOne;
+    txtPhrase?.onEnd = (){
+      buttonSettings.position = Vector2(gameRef.size.x - 80, 5);
+      pointers.add(Pointer(Language.tutoriel1_pointer1.str, 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
+      addChild(pointers.last!);
+    };
     print("TutorielSettings.onLoad.end");
-  }
-
-  void onStepOne()
-  {
-    buttonSettings.position = Vector2(gameRef.size.x - 80, 5);
-    pointers.add(Pointer(Language.tutoriel1_pointer1.str, 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
-    addChild(pointers.last!);
   }
 
   @override
@@ -139,17 +143,45 @@ class TutorielSettings extends TutorielScreen
       Future.delayed(Duration(milliseconds: 500), onEnd);
     }
   }
+}
 
-  void removePointers()
+class TutorielManyEnnemies extends TutorielScreen
+{
+  final SpriteComponent buttonSettings;
+
+  int step = 1;
+
+  TutorielManyEnnemies(GameLayout gameRef, this.buttonSettings, VoidCallback onEnd):super(gameRef, gameRef.size, onEnd);
+
+  @override
+  Future<void> onLoad() async 
   {
-    pointers.forEach((element) {element?.remove();});
-    pointers.clear();
+    BuilderEntity builder = Storage.entity.builder;
+    builder.builderTotal.addBehaviour();
+
+    await super.onLoad();
+    startPhrase(Language.tutoriel2_phrase1);
+    txtPhrase?.onEnd = (){
+      buttonSettings.position = Vector2(gameRef.size.x - 80, 5);
+      pointers.add(Pointer(Language.tutoriel1_pointer1.str, 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
+      addChild(pointers.last!);
+    };
   }
 
   @override
-  bool onClick(Vector2 p)
+  void onEvent(String event, {dynamic param})
   {
-    return false;
+    if(step == 1 && event == TutorielSettings.EVENT_CLICK_OPEN_SETTINGS)
+    {
+      removePointers();
+      startPhrase(Language.tutoriel2_phrase2);
+      /*txtPhrase?.onEnd = (){
+        Vector2 editPosition = gameRef.optionsScreen!.behaviours[0].edit.absolutePosition - Vector2(25, 80);
+        pointers.add(Pointer(Language.tutoriel1_pointer2.str, 1, Vector2(editPosition.x - 10, editPosition.y + 60)));
+        addChild(pointers.last!);
+      };*/
+      step = 2;
+    }
   }
 }
 

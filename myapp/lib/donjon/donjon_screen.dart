@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/bdd.dart';
@@ -310,43 +312,93 @@ class Fight
     addEnnemies(builder);
     server = builder.build();
     int indexEnnemy = 1;
-    server.entities.forEach((element) async{ 
-      if(element.getClan() != Storage.entity.getClan())
+    List<Vector2> already = [];
+    for(Entity e in server.entities)
+    {
+      if(e.getClan() != Storage.entity.getClan())
       {
-        EntityComponent ennemy = EntityComponent(container.gameRef, element, getEntityPosition);
-        EntityInfos infos = EntityInfos(element);
+        EntityComponent ennemy = EntityComponent(container.gameRef, e, getEntityPosition);
+        EntityInfos infos = EntityInfos(e);
         infos.position = Vector2(container.gameRef.size.x - 60 -(indexEnnemy * (infos.size.x + 5)), 20);
-        container.infos[element.uuid] = infos;
-        entities[element.uuid] = EntityFight(element, ennemy, infos, Vector2.all(0));
-        ennemy.face(player.position.x - entities[element.uuid]!.position.x);
+        print("createbar ${infos.position} $indexEnnemy");
+        container.infos[e.uuid] = infos;
+        Vector2 newPosition = randomEnnemyPosition(already);
+        already.add(newPosition);
+        EntityFight ennemyF = EntityFight(e, ennemy, infos, newPosition);
+        entities[e.uuid] = ennemyF;
+        ennemy.face(player.position.x - ennemyF.position.x);
+        if(indexEnnemy == 1)
+        {
+          entities.values.forEach((element) { 
+            if(element.entity.getClan() == 1)
+              element.component.face(-player.position.x + ennemyF.position.x);
+          });
+        }
         await container.addWithGameRef(ennemy);
-        //TODO POSITION
-      }  
-    });
+        
+        indexEnnemy++;
+      } 
+    }
 
     await Future.delayed(const Duration(milliseconds: 100));
     if(Storage.entity.nbCombat <= 0)
     {
       startTutorielSettings();
     }
+    else if(Storage.entity.nbCombat == 1)
+    {
+      startTutorielManyEnnemies();
+    }
     else
     {
       onEndTutoriel();
     }
+    //onEndTutoriel();
     print("Fight.start.end");
   }
 
-  void onEndTutoriel()
+  Vector2 randomEnnemyPosition(List<Vector2> already)
+  {
+    int nbW = 10;
+    double w = DonjonEntity.Width / nbW;
+
+    int nbH = 6;
+    double h = DonjonEntity.Height / nbH;
+
+    Vector2 p = Vector2.copy(container.donjon.entityPosition) - Vector2(DonjonEntity.minX, DonjonEntity.minY);
+    int i = p.x ~/ w;
+    int j = p.y ~/ h;
+    int eI = -1;
+    int eJ = -1;
+    int marge = 4;
+    print("POSITION $i $j");
+    while(eI < 0 || eI > nbW - 1)
+      eI = i + Random().nextInt(2 * marge) - marge;
+    print("POSITION EI $eI");
+    int diff = (marge - (eI - i).abs()) ~/ 2;
+    print("POSITION DIFF $diff");
+    while(eJ < 0 || eJ > nbH - 1)
+      eJ = j + diff * (Random().nextBool() ? -1 : 1); 
+    print("POSITION EJ $eJ");
+    Vector2 result = Vector2(eI * w + DonjonEntity.minX, eJ * h + DonjonEntity.minY);
+    if(already.contains(result))
+      return randomEnnemyPosition(already);
+    return result;
+  }
+
+  void onEndTutoriel() async
   {
     print("Fight.onEndTutoriel.start");
-    server.entities.forEach((element) async{ 
-      if(element.getClan() != Storage.entity.getClan())
+    for(Entity e in server.entities)
+    {
+      if(e.getClan() != Storage.entity.getClan())
       {
-        EntityInfos infos = container.infos[element.uuid]!;
-        container.hud.addChild(infos, gameRef: container.gameRef);
-        infos.updateBars(element);
-      }  
-    });
+        print("updatebar ");
+        EntityInfos infos = container.infos[e.uuid]!;
+        await container.hud.addChild(infos, gameRef: container.gameRef);
+        infos.updateBars(e);
+      }
+    }
     
     Story? story;
     do{
@@ -399,37 +451,58 @@ class Fight
   void finish()
   {
     finished = true;
-    TextComponent txtFin = TextComponent(Language.finDev.str, textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
+    /*TextComponent txtFin = TextComponent(Language.finDev.str, textRenderer: TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.red, fontSize: 40)));
     txtFin.anchor = Anchor.center;
     txtFin.position = container.gameRef.size / 2;
-    container.hud.addChild(txtFin, gameRef: container.gameRef);
+    container.hud.addChild(txtFin, gameRef: container.gameRef);*/
     print("Fight.finish");
+
+    // Remove les cadres des ennemis
+    server.entities.forEach((element) { 
+      if(element.getClan() != 1)
+        container.infos[element.uuid]?.remove();
+    });
+  
+    Storage.entity.nbCombat++;
+    Storage.storeEntities();
   }
 
   void addEnnemies(BuilderServer builder)
   {
-    Map values = {};
-    values[VALUE.HP_MAX] = 22;
-    values[VALUE.MP_MAX] = 0;
-    values[VALUE.ATK] = 8;
-    values[VALUE.NAME] = "DemonBat";
-    values[VALUE.CLAN] = 0;
-    BuilderEntity entity3 = builder.addEntity();
-    entity3.setValues(values);
-    BuilderTotal builder3 = entity3.builderTotal;
-    BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
-    builderBehaviour4.builderWork.work = Work.attaquer;
+    Function hp = (){
+      return Storage.entity.nbCombat == 0 ? 22 : 28;
+    };
 
-    BuilderConditionGroup builderConditionGroup4 = builderBehaviour4.builderTargetSelector.builderConditionGroup;
-    BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
-    builderCondition5.setCondition(Conditions.NOT_EQUALS);
-    builderCondition5.setParam(1, entity3);
-    builderCondition5.setParam(2, VALUE.CLAN);
+    Function atk = (){
+      return Storage.entity.nbCombat == 0 ? 8 : 8;
+    };
 
-    BuilderTriFunction builderTriFunction4 = builderBehaviour4.builderTargetSelector.builderTriFunction;
-    builderTriFunction4.tri = TriFunctions.LOWEST;
-    builderTriFunction4.value = VALUE.HP;
-    builderBehaviour4.activated = true;
+    int nbEnnemies = min(3, 1 + Storage.entity.nbCombat);
+    for(int i = 0; i < nbEnnemies; i++)
+    {
+      Map values = {};
+      values[VALUE.HP_MAX] = hp();
+      values[VALUE.MP_MAX] = 0;
+      values[VALUE.ATK] = atk();
+      values[VALUE.NAME] = "DemonBat";
+      values[VALUE.CLAN] = 0;
+      BuilderEntity entity3 = builder.addEntity();
+      entity3.setValues(values);
+      BuilderTotal builder3 = entity3.builderTotal;
+      BuilderBehaviour builderBehaviour4 = builder3.addBehaviour();
+      builderBehaviour4.builderWork.work = Work.attaquer;
+
+      BuilderConditionGroup builderConditionGroup4 = builderBehaviour4.builderTargetSelector.builderConditionGroup;
+      BuilderCondition builderCondition5 = builderConditionGroup4.addCondition();
+      builderCondition5.setCondition(Conditions.NOT_EQUALS);
+      builderCondition5.setParam(1, entity3);
+      builderCondition5.setParam(2, VALUE.CLAN);
+
+      BuilderTriFunction builderTriFunction4 = builderBehaviour4.builderTargetSelector.builderTriFunction;
+      builderTriFunction4.tri = TriFunctions.LOWEST;
+      builderTriFunction4.value = VALUE.HP;
+      builderBehaviour4.activated = true;
+    }
   }
 
   void startTutorielSettings()
@@ -437,6 +510,14 @@ class Fight
     if(container.gameRef.tutorielScreen == null)
     {
       container.gameRef.startTutoriel(TutorielSettings(container.gameRef, container._buttonSettings, onEndTutoriel));
+    }
+  }
+
+  void startTutorielManyEnnemies()
+  {
+    if(container.gameRef.tutorielScreen == null)
+    {
+      container.gameRef.startTutoriel(TutorielManyEnnemies(container.gameRef, container._buttonSettings, onEndTutoriel));
     }
   }
 }
@@ -502,7 +583,6 @@ class EventAnimation
     steps.add(new Step((){callerComponent.stepForward(targetComponent);}, () => callerComponent.targetPosition == null));
     wait(.05);
     
-    List<PositionComponent> toReset = [];
     if(event.values.containsKey("work"))
     {
       steps.add(new Step((){
@@ -519,48 +599,8 @@ class EventAnimation
       }, () => callerComponent.component.workAnimation == null || callerComponent.component.workAnimation!.isFinished));
     }
 
-    if(event.values.containsKey("type"))
-    {
-      steps.add(new StepTrue(()
-      {
-        /*SpriteComponent sprite = game.mapAnimations[event.get("source") as String];
-        sprite.position = targetComponent!.position - Vector2(0, 150);
-        toReset.add(sprite);*/
-      }));
-    }
-
-    if(targetComponent != null)
-    {
-      steps.add(new StepTrue(()
-      {
-        /*if(event.has("damage"))
-        {
-          int value = event.get("damage") as int;
-          game.damage.position = targetComponent.position - Vector2(0, 120);
-          game.damage.text = "$value";
-          game.damage.textRenderer = TextPaint(config: TextPaintConfig(color: value < 0 ? Colors.red : Colors.green));
-          toReset.add(game.damage);
-        }*/
-
-        //targetComponent.setHP();
-      }));
-    }
-
-    // Reset positions
-    //wait(.5);
-    steps.add(new StepTrue(()
-    {
-      for(PositionComponent c in toReset)
-        c.position = Vector2.all(-100);
-    }));
-
-    if(callerComponent != null)
-    {
-      wait(.02);
+    wait(.02);
       steps.add(new Step((){callerComponent.moveToInitialPosition();}, () => callerComponent.targetPosition == null));
-    }
-
-    wait(1);
 
     next();
 

@@ -8,6 +8,12 @@ class Language
   static Text nouvellePartie = Text("NOUVELLE PARTIE", "NEW GAME");
   static Text continuer = Text("CONTINUER", "CONTINUE");
 
+  // OptionsScreen
+  static Text action = Text("Action", "Action");
+  static Text actions = Text("Action", "Actions");
+  static Text target = Text("Cible", "Target");
+  static Text targets = Text("Cibles", "Targets");
+
   // Works
   static Text work_aucun = Text("Aucun", "None");
   static Text work_attaquer = Text("Attaquer", "Attack");
@@ -23,6 +29,14 @@ class Language
   static Text tutoriel1_pointer3_1 = Text("Configuration de la cible", "Target configuration");
   static Text tutoriel1_pointer3_2 = Text("Configuration de l'action à effectuer sur la cible", "Action configuration");
   static Text tutoriel1_phrase4 = Text("Plusieurs choix sont possibles,\nmais je vais laisser comme ça pour l'instant.", "There are many choices,\nbut let's keep all this way for now.");
+
+  // Tutoriel 2
+  static Text tutoriel2_phrase1 = Text("Ho non !\nCette fois-ci il y a 2 monstres ! Je vais adapter ma stratégie.", "Ho no !\nThere are 2 monsters now ! I will change my strategy.");
+  static Text tutoriel2_phrase2 = Text("Déjà, il faut que je pense à me soigner si mes points de vie sont faibles.", "First of all, I need to heal myself if my heath is low.");
+
+  // Behaviours
+  static Text attaquer_monstre = Text("Attaquer monstre", "Attack foe");
+  static Text moi = Text("Moi", "Self");
 
   static Text finDev = Text("FIN DU DEV EN COURS ! MERCI !", "END OF DEVELOPMENT ! THANK YOU !");
 }
