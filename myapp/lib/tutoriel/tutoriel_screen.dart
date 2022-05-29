@@ -14,6 +14,7 @@ import 'package:myapp/utils/images.dart';
 abstract class TutorielScreen extends AbstractScreen
 {
   late final Popup cadre;
+  late final SpriteComponent portrait;
 
   MyTextBoxComponent? txtPhrase = null;
   String phrase = "";
@@ -32,14 +33,19 @@ abstract class TutorielScreen extends AbstractScreen
     cadre.position = Vector2(0, gameRef.size.y - cadre.size.y);
     await addChild(cadre);
 
-    SpriteComponent portrait = SpriteComponent();
+    portrait = SpriteComponent();
     portrait.sprite = Sprite(ImagesUtils.getImage("portrait.png"));
     portrait.size = Vector2.all(150);
     await cadre.addChild(portrait);
   }
 
-  void startPhrase(dynamic phrase)
+  void startPhrase(dynamic phrase) async
   {
+    if(cadre.parent == null)
+      await addWithGameRef(cadre);
+    if(portrait.parent == null)
+      await addWithGameRef(portrait);
+
     print("startPhrase.start");
     this.phrase = phrase.toString();
 
@@ -54,9 +60,9 @@ abstract class TutorielScreen extends AbstractScreen
   }
 
   @override
-  bool onClick(Vector2 p) 
+  List<ObjectClicked> onClick(Vector2 p) 
   {
-    return false;
+    return [];
   }
 
   void removePointers()
@@ -65,9 +71,9 @@ abstract class TutorielScreen extends AbstractScreen
     pointers.clear();
   }
 
-  void onEvent(String event, {dynamic param})
+  bool onEvent(String event, {dynamic param})
   {
-
+    return false;
   }
 }
 
@@ -100,7 +106,7 @@ class TutorielSettings extends TutorielScreen
   }
 
   @override
-  void onEvent(String event, {dynamic param})
+  bool onEvent(String event, {dynamic param})
   {
     if(step == 1 && event == EVENT_CLICK_OPEN_SETTINGS)
     {
@@ -112,6 +118,7 @@ class TutorielSettings extends TutorielScreen
         addChild(pointers.last!);
       };
       step = 2;
+      return true;
     }
     else if(step == 2 && event == EVENT_CLICK_OPEN_DETAILS)
     {
@@ -128,12 +135,14 @@ class TutorielSettings extends TutorielScreen
       Vector2 positionPointerWork = Vector2(workComponent.absolutePosition.x + workComponent.size.x / 2, workComponent.absoluteCenter.y) + Vector2(200, 65);
       pointers.add(Pointer(Language.tutoriel1_pointer3_2.str, 2, positionPointerWork));
       addChild(pointers.last!);
+      return true;
     }
     else if(step == 3 && event == EVENT_CLICK_BEHAVIOUR_PARAM)
     {
       removePointers();
       startPhrase(Language.tutoriel1_phrase4);
       step = 4;
+      return true;
     }
     else if((step == 3 || step == 4) && event == EVENT_CLICK_CLOSE_POPUP_BEHAVIOUR)
     {
@@ -141,12 +150,17 @@ class TutorielSettings extends TutorielScreen
       gameRef.stopTutoriel();
       Future.delayed(Duration(milliseconds: 200), gameRef.closeOptions);
       Future.delayed(Duration(milliseconds: 500), onEnd);
+      return true;
     }
+    return false;
   }
 }
 
 class TutorielManyEnnemies extends TutorielScreen
 {
+  static final String EVENT_CLICK_CONDITIONS_PLUS = Utils.generateUUID();
+  static final String EVENT_CLICK_CONDITIONS_NOUVEAU = Utils.generateUUID();
+
   final SpriteComponent buttonSettings;
 
   int step = 1;
@@ -156,32 +170,65 @@ class TutorielManyEnnemies extends TutorielScreen
   @override
   Future<void> onLoad() async 
   {
-    BuilderEntity builder = Storage.entity.builder;
-    builder.builderTotal.addBehaviour();
+    Storage.entity.builder.builderTotal.addBehaviour(name: Language.nouveau.str);
 
     await super.onLoad();
     startPhrase(Language.tutoriel2_phrase1);
-    txtPhrase?.onEnd = (){
-      buttonSettings.position = Vector2(gameRef.size.x - 80, 5);
-      pointers.add(Pointer(Language.tutoriel1_pointer1.str, 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
-      addChild(pointers.last!);
-    };
+    buttonSettings.position = Vector2(gameRef.size.x - 80, 5);
+    pointers.add(Pointer(Language.tutoriel1_pointer1.str, 1, Vector2(buttonSettings.position.x - 10, buttonSettings.position.y)));
+    addChild(pointers.last!, gameRef: gameRef);
   }
 
   @override
-  void onEvent(String event, {dynamic param})
+  bool onEvent(String event, {dynamic param})
   {
     if(step == 1 && event == TutorielSettings.EVENT_CLICK_OPEN_SETTINGS)
     {
       removePointers();
       startPhrase(Language.tutoriel2_phrase2);
-      /*txtPhrase?.onEnd = (){
-        Vector2 editPosition = gameRef.optionsScreen!.behaviours[0].edit.absolutePosition - Vector2(25, 80);
+      txtPhrase!.onEnd = (){
+        Vector2 editPosition = gameRef.optionsScreen!.behaviours[1].edit.absolutePosition - Vector2(25, 80);
         pointers.add(Pointer(Language.tutoriel1_pointer2.str, 1, Vector2(editPosition.x - 10, editPosition.y + 60)));
-        addChild(pointers.last!);
-      };*/
+        addChild(pointers.last!, gameRef: gameRef);
+      };
       step = 2;
+      return true;
     }
+    else if(step == 2 && event == TutorielSettings.EVENT_CLICK_OPEN_DETAILS)
+    {
+      if(param == 1)
+      {
+        Storage.addCondition = true;
+        removePointers();
+        startPhrase(Language.tutoriel2_phrase3);
+        step = 3;
+        return true;
+      }
+    }
+    else if(step == 3 && event == EVENT_CLICK_CONDITIONS_PLUS && (param as List).length == 0)
+    {
+      step = 4;
+      return true;
+    }
+    else if(step == 4 && param is isMe)
+    {
+      step = 5;
+      Storage.buildButton = true;
+      return true;
+    }
+    else if(step == 5 && event == EVENT_CLICK_CONDITIONS_PLUS)
+    {
+      step = 6;
+      return true;
+    }
+    else if(step == 6 && event == EVENT_CLICK_CONDITIONS_NOUVEAU)
+    {
+      step = 7;
+      cadre.remove();
+      portrait.remove();
+      return true;
+    }
+    return false;
   }
 }
 

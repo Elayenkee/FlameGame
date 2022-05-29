@@ -67,19 +67,22 @@ class StartScreen  extends AbstractScreen
   }
 
   @override
-  bool onClick(Vector2 p) 
+  List<ObjectClicked> onClick(Vector2 p) 
   {
     if(step == 0)
     {
-      languageChooser?.onClick(p);
-      return true;
+      Function call = (){languageChooser?.onClick(p);};
+      return [ObjectClicked("StartScreen.LanguageChooser", "", call, null)];
     }
 
     if(Storage.uuid != null)
-      gameRef.startDonjon();
-    else
-      start();
-    return true;
+    {
+      Function call = (){gameRef.startDonjon();};
+      return [ObjectClicked("StartScreen.StartDonjon", "", call, null)];
+    }
+    
+    Function call = (){start();};
+    return [ObjectClicked("StartScreen.Start", "", call, null)];
   }
 
   @override

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
@@ -9,14 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/components.dart' as draggable;
 import 'package:myapp/donjon/donjon_screen.dart';
-import 'package:myapp/engine/entity.dart';
 import 'package:myapp/fight/fight_screen.dart';
-import 'package:myapp/google/google_signin.dart';
 import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/start/start_screen.dart';
-import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
-import 'package:myapp/utils/images.dart';
 import 'package:myapp/world/world_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -31,6 +26,7 @@ void logDebug(String message)
 }
 
 final TextPaint textPaint = TextPaint(config:TextPaintConfig(fontFamily: "Disco"));
+final TextPaint textPaintWhite = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white));
 late final SpriteSheet gui;
 
 Future<void> main() async
@@ -160,26 +156,48 @@ class GameLayout extends AbstractLayout with PanDetector
   {
     super.onPanDown(info);
 
-    if(tutorielScreen != null)
-    {
-      if(tutorielScreen!.onClick(info.eventPosition.game))
-        return;
-    }
-
     if(_startScreen != null)
     {
-      _startScreen?.onClick(info.eventPosition.game);
+      List<ObjectClicked>? objects = _startScreen?.onClick(info.eventPosition.game);
+      checkObjectsClicked(objects);
       return;
     }
 
     if(optionsScreen != null)
     {
-      optionsScreen?.onClick(info.eventPosition.game);
+      List<ObjectClicked>? objects = optionsScreen?.onClick(info.eventPosition.game);
+      checkObjectsClicked(objects);
       return;
     }
     
-    _worldScreen?.onClick(info.eventPosition.game);
-    _donjonScreen?.onClick(info.eventPosition.game);
+    
+    List<ObjectClicked>? objects = _donjonScreen?.onClick(info.eventPosition.game);
+    checkObjectsClicked(objects);
+  }
+
+  void checkObjectsClicked(List<ObjectClicked>? objects)
+  {
+    print("checkObjectsClicked $objects");
+    if(objects == null)
+      return;
+
+    for(ObjectClicked object in objects)
+    {
+      if(tutorielScreen == null)
+      {
+        object.call?.call();
+        return;
+      }
+
+      if(tutorielScreen != null)
+      {
+        if(tutorielScreen!.onEvent(object.event, param: object.params))
+        {
+          object.call?.call();
+          return;
+        }
+      }
+    }
   }
 
   @override
@@ -202,8 +220,8 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   final GameLayout gameRef;
   late final String _title;
 
-  final BaseComponent layout = Layer();
-  final BaseComponent hud = Layer();
+  final BaseComponent _layout = Layer();
+  final BaseComponent _hud = Layer();
   final BaseComponent debug = Layer();
 
   AbstractScreen(this.gameRef, this._title, Vector2 size, {int priority = 0}):super(priority: priority);
@@ -213,27 +231,31 @@ abstract class AbstractScreen extends BaseComponent with HasGameRef<GameLayout>
   {
     //print("AbstractScreen.onLoad");
     await super.onLoad();
-    addChild(layout);
-    addChild(hud);
-
-    final title = TextComponent(_title);
-    
-    //debug.addChild(txtDebug);
-    addChild(debug);
-    //print("AbstractScreen.onLoaded");
+    super.addChild(_layout);
+    super.addChild(_hud);
   }
 
-  Future<void> add(Component c) async
+  Future<void> addChild(Component child, {BaseGame? gameRef}) 
   {
-    await layout.addChild(c);
+    return add(child, gameRef: gameRef);
+  }
+
+  Future<void> add(Component c, {BaseGame? gameRef}) async
+  {
+    await _layout.addChild(c, gameRef: gameRef);
   }
 
   Future<void> addWithGameRef(Component c) async
   {
-    await layout.addChild(c, gameRef: gameRef);
+    await _layout.addChild(c, gameRef: gameRef);
   }
 
-  bool onClick(Vector2 p);
+  Future<void> addToHud(Component c, {BaseGame? gameRef}) async
+  {
+    await _hud.addChild(c, gameRef: gameRef);
+  }
+
+  List<ObjectClicked> onClick(Vector2 p);
 
   get isWeb => kIsWeb;
 }
@@ -671,4 +693,17 @@ class AdvancedTextComponent extends TextComponent with Tappable {
   bool onTapUp(TapUpInfo info) {
     return false;
   }
+}
+
+class ObjectClicked
+{
+  String name;
+  String event;
+  dynamic params;
+  Function? call;
+
+  ObjectClicked(this.name, this.event, this.call, this.params);
+
+  @override
+  String toString() => name;
 }

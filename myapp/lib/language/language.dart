@@ -32,10 +32,13 @@ class Language
 
   // Tutoriel 2
   static Text tutoriel2_phrase1 = Text("Ho non !\nCette fois-ci il y a 2 monstres ! Je vais adapter ma stratégie.", "Ho no !\nThere are 2 monsters now ! I will change my strategy.");
-  static Text tutoriel2_phrase2 = Text("Déjà, il faut que je pense à me soigner si mes points de vie sont faibles.", "First of all, I need to heal myself if my heath is low.");
+  static Text tutoriel2_phrase2 = Text("Déjà, il faut que je pense à me soigner si mes points de vie sont faibles.\nJ'ajoute donc une nouvelle étape à ma stratégie.", "First of all, I need to heal myself if my heath is low.\nTo do that, I add a new step to my strategy.");
+  static Text tutoriel2_phrase3 = Text("", "");
 
   // Behaviours
   static Text attaquer_monstre = Text("Attaquer monstre", "Attack foe");
+  static Text nouveau = Text("Nouveau", "New");
+  static Text ennemi = Text("Ennemi", "Foe");
   static Text moi = Text("Moi", "Self");
 
   static Text finDev = Text("FIN DU DEV EN COURS ! MERCI !", "END OF DEVELOPMENT ! THANK YOU !");

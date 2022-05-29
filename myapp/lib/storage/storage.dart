@@ -8,7 +8,6 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
-import 'package:myapp/utils.dart';
 import 'package:myapp/works/work.dart';
 import 'package:myapp/world/world.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class Storage 
 {
   static late Storage storage;
+  static bool addCondition = false;
+  static bool buildButton = false;
 
   static late String? uuid = null;
   static late World world;
@@ -41,6 +42,7 @@ abstract class Storage
     else 
       entities = pEntities;
     entity = entities[0];
+    addCondition = entity.nbCombat > 1;
     logDebug("OK");
 
     //World

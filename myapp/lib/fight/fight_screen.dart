@@ -134,9 +134,9 @@ class FightScreen extends AbstractScreen
   }
 
   @override
-  bool onClick(Vector2 p) 
+  List<ObjectClicked> onClick(Vector2 p) 
   {
-    return true;
+    return [ObjectClicked("FightScreen", "", null, null)];
   }
 }
 

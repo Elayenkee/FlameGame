@@ -10,6 +10,7 @@ import 'package:myapp/engine/entity.dart';
 import 'package:myapp/engine/valuesolver.dart';
 import 'package:myapp/language/language.dart';
 import 'package:myapp/main.dart';
+import 'package:myapp/options/options_screen.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/tutoriel/tutoriel_screen.dart';
 import 'package:myapp/utils/images.dart';
@@ -55,8 +56,8 @@ class DonjonScreen extends AbstractScreen
     donjon.setPlayerListener(_player); 
 
     _buttonSettings = SpriteComponent(size: Vector2.all(32), sprite: Sprite(ImagesUtils.getImage("button_settings.png")));
-    _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 32, 5) : Vector2(-1000, 0); 
-    await hud.addChild(_buttonSettings);
+    _buttonSettings.position = Storage.entity.nbCombat > 0 ? Vector2(gameRef.size.x - 80, 5) : Vector2(-1000, 0); 
+    await addToHud(_buttonSettings);
 
     for(int i = 0; i < Storage.entities.length; i++)
     {
@@ -64,7 +65,7 @@ class DonjonScreen extends AbstractScreen
       EntityInfos entityInfos = EntityInfos(Storage.entity);
       entityInfos.position = Vector2(60 + (i * (entityInfos.size.x = 5)), 20);
       infos[e.uuid] = entityInfos;
-      await hud.addChild(entityInfos);
+      await addToHud(entityInfos);
       entityInfos.updateBars(e);
     }
     
@@ -108,41 +109,55 @@ class DonjonScreen extends AbstractScreen
   }
 
   @override
-  bool onClick(Vector2 p) 
+  List<ObjectClicked> onClick(Vector2 p) 
   {
-    if(fight != null && gameRef.tutorielScreen == null)
-      return true;
-
-    if(gameRef.tutorielScreen != null && gameRef.tutorielScreen!.onClick(p))
-      return true;
+    List<ObjectClicked> objects = [];
 
     if(_buttonSettings.containsPoint(p))
     {
-      gameRef.tutorielScreen?.onEvent(TutorielSettings.EVENT_CLICK_OPEN_SETTINGS);
-      gameRef.startOptions();
-      return true;
+      Function call = (){
+        gameRef.startOptions();
+      };
+      ObjectClicked object = ObjectClicked("DonjonScreen.Settings", TutorielSettings.EVENT_CLICK_OPEN_SETTINGS, call, null);
+      objects.add(object);
     }
-
-    if(gameRef.tutorielScreen != null)
-      return true;
 
     final eClick = Vector2(p.x, p.y) - gameRef.size / 2;
     final click = eClick..divide(Vector2(50, 50));
-    if(!donjon.entityGoTo(click))
+
+    ObjectClicked? entityGoTo = donjon.entityGoTo(click);
+    if(entityGoTo != null)
+    {
+      objects.add(entityGoTo);
+    } 
+    else
     {
       if(_decor.clickedEst(p))
-        donjon.entityGoTo(Vector2(6.5, 0.96), dir: 1);
+      {
+        Function call = (){donjon.entityGoTo(Vector2(6.5, 0.96), dir: 1);};
+        objects.add(ObjectClicked("DonjonScreen.DoorEast", "", call, null));
+      }
+      
+      else if(_decor.clickedNord(p))
+      {
+        Function call = (){donjon.entityGoTo(Vector2(0, -2.2), dir: 0);};
+        objects.add(ObjectClicked("DonjonScreen.DoorNorth", "", call, null));
+      }
+      
+      else if(_decor.clickedSud(p))
+      {
+        Function call = (){donjon.entityGoTo(Vector2(0, 4.1), dir: 2);};
+        objects.add(ObjectClicked("DonjonScreen.DoorSouth", "", call, null));
+      }  
 
-      if(_decor.clickedNord(p))
-        donjon.entityGoTo(Vector2(0, -2.2), dir: 0);
-
-      if(_decor.clickedSud(p))
-        donjon.entityGoTo(Vector2(0, 4.1), dir: 2);
-
-      if(_decor.clickedOuest(p))
-        donjon.entityGoTo(Vector2(-6.5, .96), dir: 3);
+      else if(_decor.clickedOuest(p))
+      {
+        Function call = (){donjon.entityGoTo(Vector2(-6.5, .96), dir: 3);};
+        objects.add(ObjectClicked("DonjonScreen.DoorWest", "", call, null));
+      }
     }
-    return true;
+
+    return objects;
   }
 
   @override
@@ -395,7 +410,7 @@ class Fight
       {
         print("updatebar ");
         EntityInfos infos = container.infos[e.uuid]!;
-        await container.hud.addChild(infos, gameRef: container.gameRef);
+        await container.addToHud(infos, gameRef: container.gameRef);
         infos.updateBars(e);
       }
     }

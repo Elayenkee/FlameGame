@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:myapp/donjon/donjon_screen.dart';
 import 'package:myapp/donjon/entity_component.dart';
 import 'package:myapp/engine/entity.dart';
+import 'package:myapp/main.dart';
 import 'package:myapp/storage/storage.dart';
 import 'package:myapp/world/world.dart';
 
@@ -25,8 +26,9 @@ class Donjon
     _donjonEntity._update(dt);
   }
 
-  bool entityGoTo(Vector2 target, {int dir = -1})
+  ObjectClicked? entityGoTo(Vector2 target, {int dir = -1})
   {
+    print("Donjon.entityGoTo $target");
     Vector2 newPosition = Vector2.copy(target);
     return _donjonEntity._goTo(newPosition, dir: dir);
   }
@@ -160,21 +162,26 @@ class DonjonEntity
       _next = 1 + World.Rand.nextDouble() * 2;
   }
 
-  bool _goTo(Vector2 p, {int dir = -1})
+  ObjectClicked? _goTo(Vector2 p, {int dir = -1})
   {
     if(p.x > 7.5 || p.x < -7.5 || p.y > 4.25 || p.y < -2.95)
-      return false;
+    {
+      return null;
+    }
 
-    nextDir = dir;
-
-    _target = p;
-    _target!.y = min(maxY, _target!.y);
-    _target!.y = max(minY, _target!.y);
-    _target!.x = max(minX, _target!.x);
-    _target!.x = min(maxX, _target!.x);
-    double diffX = _target!.x - _position.x;
-    listener?.onStartMove(diffX);
-    return true;
+    Function call = (){
+      print("_goTo.call");
+      nextDir = dir;
+      _target = p;
+      _target!.y = min(maxY, _target!.y);
+      _target!.y = max(minY, _target!.y);
+      _target!.x = max(minX, _target!.x);
+      _target!.x = min(maxX, _target!.x);
+      double diffX = _target!.x - _position.x;
+      listener?.onStartMove(diffX);
+    };
+    
+    return ObjectClicked("Donjon.EntityGoTo", "", call, null);
   }
 
   void _update(double dt)
