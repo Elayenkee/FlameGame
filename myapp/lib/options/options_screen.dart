@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/gestures.dart';
@@ -313,16 +315,25 @@ class PopupBuilderBehaviour extends SpriteComponent
   late final SpriteComponent _buttonClose;
 
   late final CibleComponent cibleComponent;
+  PopupChooseCible? popupChooseCible;
 
   late final WorkComponent workComponent;
-  PopupChooseCible? popupChooseCible;
   PopupChooseWork? popupChooseWork;
+
+  TriComponent? triComponent;
 
   PopupBuilderBehaviour(this.screen, this.entity, this.builderBehaviour):super(size: Vector2(730, 400), priority: 900)
   {
     screen.gameRef.optionsScreen!.popupBuilderBehaviour = this;
-    container = VerticalContainer(screen.gameRef, marginBottom: 20);
+    container = VerticalContainer(screen.gameRef, divider: 20);
     container.position = Vector2(30, 23);
+
+    if(Storage.entity.addTri)
+    {
+      triComponent = TriComponent(screen.gameRef, builderBehaviour.builderTargetSelector);
+      container.add(triComponent!);
+      container.add(LineComponent(Vector2(size.x - 60, 4)));
+    }
 
     cibleComponent = CibleComponent(screen.gameRef, builderBehaviour);
     container.add(cibleComponent);
@@ -441,6 +452,24 @@ class PopupBuilderBehaviour extends SpriteComponent
   }
 }
 
+class TriComponent extends VerticalContainer
+{
+  final GameLayout gameRef;
+  final BuilderTargetSelector targetSelector;
+  late final HorizontalContainer container;
+
+  TriComponent(this.gameRef, this.targetSelector):super(gameRef, divider: 8)
+  {
+    add(TextSizedComponent(Language.tri.str, textRenderer: textPaint));
+    container = HorizontalContainer(gameRef, divider: 10);
+
+    PopupBuildItemComponent item = PopupBuildItemComponent(gameRef, 35, targetSelector.builderTriFunction.value);
+    container.add(item);
+
+    add(container);
+  }
+}
+
 class ButtonBuilderCondition extends PositionComponent
 {
   final GameLayout gameRef;
@@ -448,6 +477,7 @@ class ButtonBuilderCondition extends PositionComponent
   BuilderCondition builderCondition;
   TextComponent? textComponent;
   SpriteAlphaComponent? button;
+  bool editable = false;
 
   ButtonBuilderCondition(this.gameRef, this.builderCondition)
   {
@@ -488,12 +518,16 @@ class ButtonBuilderCondition extends PositionComponent
       size = Vector2(150, 40);
       return;
     }
+
+    size = Vector2(150, 40);
   }
 
   Future<void> _updateButton() async
   {
     print("_updateButton $builderCondition");
     
+    editable = false;
+
     if(button != null)
     {
       if(button!.parent != null)
@@ -535,10 +569,33 @@ class ButtonBuilderCondition extends PositionComponent
       await addChild(button!, gameRef: gameRef);
       return;
     }
+
+    editable = true;
+
+    button = SpriteAlphaComponent();
+    button!.sprite = Sprite(ImagesUtils.getImage("button_large.png"));
+    button!.size = size;
+    await addChild(button!, gameRef: gameRef);
+
+    HorizontalContainer container = HorizontalContainer(gameRef, divider: 8);
+    container.anchor = Anchor.center;
+    container.position = button!.size / 2;
+    await button!.addChild(container, gameRef: gameRef);
+
+    PopupBuildItemComponent item0 = PopupBuildItemComponent(gameRef, 35, builderCondition.params[2]);
+    container.add(item0);
+    
+    PopupBuildItemComponent itemCond = PopupBuildItemComponent(gameRef, 35, builderCondition.cond);
+    container.add(itemCond);
+
+    PopupBuildItemComponent item2 = PopupBuildItemComponent(gameRef, 35, builderCondition.params[1]);
+    container.add(item2);
+
+    await container.loadChildren();
   }
 }
 
-class BuilderConditionComponent extends PositionComponent
+class BuilderConditionComponent extends HorizontalContainer
 {
   final GameLayout gameRef;
   final int index;
@@ -546,9 +603,10 @@ class BuilderConditionComponent extends PositionComponent
   final List<ClickableObject> objects = [];
   late final ButtonBuilderCondition buttonBuilderCondition;
 
-  BuilderConditionComponent(this.gameRef, this.index, this.builderCondition)
+  BuilderConditionComponent(this.gameRef, this.index, this.builderCondition):super(gameRef)
   {
     buttonBuilderCondition = ButtonBuilderCondition(gameRef, builderCondition);
+    add(buttonBuilderCondition);
     size = buttonBuilderCondition.size;
   }
 
@@ -556,13 +614,13 @@ class BuilderConditionComponent extends PositionComponent
   {
     buttonBuilderCondition.setBuilderCondition(builderCondition);
     size = buttonBuilderCondition.size;
+    invalidate();
   }
 
   @override
   Future<void> onLoad() async 
   {
     await super.onLoad();
-    await addChild(buttonBuilderCondition);
     ConditionClicked objectClicked = ConditionClicked(index, "Options.Condition.${builderCondition.toMap()}", TutorielSettings.EVENT_CLICK_BEHAVIOUR_PARAM, null, 0);
     ClickableObject object = ClickableObject(objectClicked, buttonBuilderCondition);
     objects.add(object);
@@ -625,7 +683,7 @@ class CibleComponent extends VerticalContainer
   void updateButtonPlus()
   {
     int nbConditions = builderBehaviour.builderTargetSelector.builderConditionGroup.conditions.length;
-    if(nbConditions < 4 && Storage.addCondition)
+    if(nbConditions < 4 && Storage.entity.addCondition)
     {
       if(buttonPlus == null)
       {
@@ -742,11 +800,11 @@ class PopupChooseCible extends PopupChoose
       bool isAvailable = true;
       if(c is isEnnemy)
       {
-        isAvailable = !Storage.addCondition || Storage.entity.nbCombat > 1;
+        isAvailable = !Storage.entity.addCondition || Storage.entity.nbCombat > 1;
       } 
       if(c is isMe)
       {
-        isAvailable = Storage.entity.nbCombat > 1 || (!Storage.buildButton && Storage.addCondition && Storage.entity.nbCombat >= 1);
+        isAvailable = Storage.entity.nbCombat > 1 || (!Storage.entity.buildButton && Storage.entity.addCondition && Storage.entity.nbCombat >= 1);
       }
       b.alpha = isAvailable ? 255 : 40;
       if(isAvailable)
@@ -758,14 +816,16 @@ class PopupChooseCible extends PopupChoose
       }
     }
 
-    ButtonBuild buttonBuild = ButtonBuild(screen.gameRef, Vector2(.9 * size.x, b.size.y));
+    ButtonBuild buttonBuild = ButtonBuild(screen.gameRef, Vector2(.9 * size.x, b.size.y), Language.nouveau.str, "icon_build.png");
     buttonBuild.position = Vector2(.05 * size.x, startY + 2 + (5 + b.size.y) * i);
-    bool isAvailable = Storage.entity.nbCombat > 2 || Storage.buildButton;
+    bool isAvailable = Storage.entity.nbCombat > 2 || Storage.entity.buildButton;
     buttonBuild.alpha = isAvailable ? 255 : 40;
     if(isAvailable)
     {
       Function call = ()async{
-        popupBuild = PopupBuildCondition(entity, null, screen.gameRef);
+        popupBuild = PopupBuildCondition(entity, null, screen.gameRef, Vector2(300, 400), (BuilderCondition builderCondition){
+          onChooseCible(builderCondition);
+        });
         await screen.addToHud(popupBuild!, gameRef: screen.gameRef);
       };
       ObjectClicked objectClicked = ObjectClicked("PopupChooseCible.Cible.Build", TutorielManyEnnemies.EVENT_CLICK_CONDITIONS_NOUVEAU, call, "build");
@@ -793,21 +853,22 @@ class ButtonBuild extends SpriteAlphaComponent
 {
   late final HorizontalContainer container;
   late final TextSizedComponent text;
-  late final SpriteAlphaComponent icon;
+  SpriteAlphaComponent? icon = null;
   
-  ButtonBuild(GameLayout gameRef, Vector2 size):super(size: size)
+  ButtonBuild(GameLayout gameRef, Vector2 size, String str, String? strIcon):super(size: size)
   {
     sprite = Sprite(ImagesUtils.getImage("button_large.png"));
 
     container = HorizontalContainer(gameRef, divider: 5);
-    text = TextSizedComponent(Language.nouveau.str, textRenderer: textPaintWhite);
-    //text.anchor = Anchor.centerLeft;
-    //text.position = Vector2(0, size.y / 2);
+    text = TextSizedComponent(str, textRenderer: textPaintWhite);
     container.add(text);
-    icon = SpriteAlphaComponent();
-    icon.sprite = Sprite(ImagesUtils.getImage("icon_build.png"));
-    icon.size = Vector2.all(size.y - 12);
-    container.add(icon);
+    if(strIcon != null)
+    {
+      icon = SpriteAlphaComponent();
+      icon!.sprite = Sprite(ImagesUtils.getImage(strIcon));
+      icon!.size = Vector2.all(size.y - 12);
+      container.add(icon!);  
+    }
     container.anchor = Anchor.center;
     container.position = size / 2;
   }
@@ -823,7 +884,7 @@ class ButtonBuild extends SpriteAlphaComponent
   {
     super.alpha = alpha;
     text.textRenderer = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white.withAlpha(alpha)));
-    icon.alpha = alpha;
+    icon?.alpha = alpha;
   }
 }
 
@@ -849,7 +910,11 @@ class PopupChooseWork extends PopupChoose
       await addChild(b);
       b.position = Vector2(.05 * size.x, startY + 2 + (5 + b.size.y) * i);
       b.size = Vector2(.9 * size.x, b.size.y);
-      bool isAvailable = Storage.entity.nbCombat > 1 || w == Work.attaquer; 
+      bool isAvailable = Storage.entity.nbCombat > 1;
+      if(Storage.entity.nbCombat == 0 && w == Work.attaquer)
+        isAvailable = true;
+      if(Storage.entity.nbCombat == 1 && w == Work.bandage)
+        isAvailable = true; 
       b.alpha = isAvailable ? 255 : 40;
       if(isAvailable)
       {
@@ -1194,13 +1259,13 @@ class Popup extends SpriteComponent
   }
 }
 
-class VerticalContainer extends PositionComponent
+abstract class LinedContainer extends PositionComponent
 {
   final GameLayout gameRef;
   final List<PositionComponent> items = [];
-  int marginBottom = 0;
+  final int divider;
 
-  VerticalContainer(this.gameRef, {this.marginBottom = 0});
+  LinedContainer(this.gameRef, this.divider);
 
   void add(PositionComponent component)
   {
@@ -1208,20 +1273,45 @@ class VerticalContainer extends PositionComponent
     invalidate();
   }
 
+  void removeAllChidren()
+  {
+    items.clear();
+    children.forEach((element) {element.remove();});
+  }
+
+  void onAddedElement(PositionComponent element) async
+  {
+    await addChild(element, gameRef: gameRef);
+  }
+
   @override
   Future<void> onLoad() async 
   {
     await super.onLoad();
-    items.forEach((element) async{await addChild(element, gameRef: gameRef);});
+    await loadChildren();
   }
 
+  Future<void> loadChildren() async
+  {
+    for(PositionComponent item in items)
+      await addChild(item, gameRef: gameRef);
+  }
+
+  void invalidate();
+}
+
+class VerticalContainer extends LinedContainer
+{
+  VerticalContainer(GameLayout gameRef, {int divider = 0}):super(gameRef, divider);
+
+  @override
   void invalidate()
   {
     for(int i = 1; i < items.length; i++)
     {
       PositionComponent last = items[i - 1];
       PositionComponent current = items[i];
-      current.position = Vector2(0, last.position.y + last.size.y + marginBottom);
+      current.position = Vector2(0, last.position.y + last.size.y + divider);
     }
   }
 
@@ -1236,36 +1326,15 @@ class VerticalContainer extends PositionComponent
       if(element.size.x > maxW)
         maxW = element.size.x;
     });
-    return Vector2(maxW, items.last.position.y +  items.last.size.y + marginBottom);
+    return Vector2(maxW, items.last.position.y +  items.last.size.y + divider);
   }
 }
 
-class HorizontalContainer extends PositionComponent
+class HorizontalContainer extends LinedContainer
 {
-  final GameLayout gameRef;
-  final List<PositionComponent> items = [];
-  int divider = 0;
-
-  HorizontalContainer(this.gameRef, {this.divider = 0});
-
-  void add(PositionComponent component)
-  {
-    items.add(component);
-    invalidate();
-  }
+  HorizontalContainer(GameLayout gameRef, {int divider = 0}):super(gameRef, divider);
 
   @override
-  Future<void> onLoad() async 
-  {
-    await super.onLoad();
-    items.forEach((element) async{await addChild(element, gameRef: gameRef);});
-  }
-
-  void onAddedElement(PositionComponent element) async
-  {
-    await addChild(element, gameRef: gameRef);
-  }
-
   void invalidate()
   {
     for(int i = 1; i < items.length; i++)
@@ -1308,26 +1377,133 @@ class SpriteAlphaComponent extends SpriteComponent
   {
     overridePaint = BasicPalette.white.withAlpha(alpha).paint();
   }
+
+  int get alpha{
+    return overridePaint!.color.alpha;
+  }
 }
+
+class PopupBuildItemComponent extends SpriteAlphaComponent
+{
+  late final TextComponent text;
+  final GameLayout gameRef;
+  
+  PopupBuildItemComponent(this.gameRef, double size, dynamic pItem):super(size: Vector2.all(size))
+  {
+    text = TextSizedComponent("", textRenderer: textPaintWhite);
+    text.anchor = Anchor.center;
+    text.position = this.size / 2;
+    item = pItem;
+    addChild(text, gameRef: gameRef);
+  }
+
+  set item(dynamic item)
+  {
+    print("Update Item $item");
+    sprite = null;
+    text.text = "";
+    if(item is VALUE)
+      sprite = Sprite(ImagesUtils.getImage(item.image));
+
+    else if(item is Conditions)
+      sprite = Sprite(ImagesUtils.getImage(item.image));
+
+    else if(item is ValueAtom)
+      text.text = item.value.toString();
+  }
+
+  set alpha(int alpha)
+  {
+    super.alpha = alpha;
+    text.textRenderer = TextPaint(config:TextPaintConfig(fontFamily: "Disco", color: Colors.white.withAlpha(alpha)));
+  }
+} 
 
 class PopupBuildCondition extends PopupBuild
 {
   final Entity entity;
   late final BuilderCondition builderCondition;
 
-  final List<SpriteComponent> containers = [];
-  final List<SpriteComponent> sprites = [];
+  final List<SpriteAlphaComponent> containers = [];
+  final List<PopupBuildItemComponent> items = [];
+  final List<ClickableObject> objects = [];
 
-  PopupBuildCondition(this.entity, BuilderCondition? builderCondition, GameLayout gameRef):super(gameRef)
+  late final GridContainer grid;
+  late final ButtonBuild btnValider;
+
+  final Function onEnd;
+
+  int selectedIndex = 0;
+
+  PopupBuildCondition(this.entity, BuilderCondition? builderCondition, GameLayout gameRef, Vector2 popupSize, this.onEnd):super(gameRef, popupSize)
   {
     if(builderCondition == null)
       builderCondition = BuilderCondition();
     this.builderCondition = builderCondition;
 
+    grid = GridContainer(gameRef, 4, divider: 5);
+    grid.anchor = Anchor.topCenter;
+    grid.position = Vector2(size.x / 2, 170);
+    _updateGrid(isReload: false);
+
     //builderCondition.setCondition(Conditions.LOWER);
     //builderCondition.setParam(1, ValueAtom(25));
     //builderCondition.setParam(2, VALUE.HP_PERCENT);
     //builderCondition.setParam(0, entity.builder);
+  }
+
+  void _updateGrid({bool isReload = true})
+  {
+    objects.clear();
+    grid.removeAllChidren();
+
+    Function addItem = (dynamic item, int alpha, Function setParam){
+      PopupBuildItemComponent s = PopupBuildItemComponent(gameRef, 60, item);
+      s.alpha = alpha;
+      if(alpha == 255){
+        Function call = (){
+          setParam.call();
+          int prevIndex = selectedIndex;
+          selectedIndex = min(selectedIndex + 1, 2);
+          _update();
+          if(prevIndex < 2)
+            _updateGrid();
+        };
+        ObjectClicked object = ObjectClicked(item.runtimeType.toString(), "", call, null);
+        ClickableObject clickable = ClickableObject(object, s);
+        objects.add(clickable);
+      }
+      grid.add(s);
+    };
+
+    if(selectedIndex == 0)
+    {
+      addItem(VALUE.HP, 150, (){builderCondition.setParam(2, VALUE.HP);});
+      addItem(VALUE.HP_PERCENT, 255, (){builderCondition.setParam(2, VALUE.HP_PERCENT);});
+    }
+    
+    if(selectedIndex == 1)
+    {
+      addItem(Conditions.LOWER, 255, (){builderCondition.setCondition(Conditions.LOWER);});
+      addItem(Conditions.HIGHER, 150, (){builderCondition.setCondition(Conditions.HIGHER);});
+    }
+
+    if(selectedIndex == 2)
+    {
+      addItem(ValueAtom(10), 150, (){builderCondition.setParam(1, ValueAtom(10));});
+      addItem(ValueAtom(20), 255, (){builderCondition.setParam(1, ValueAtom(20));});
+      addItem(ValueAtom(30), 150, (){builderCondition.setParam(1, ValueAtom(30));});
+      addItem(ValueAtom(40), 150, (){builderCondition.setParam(1, ValueAtom(40));});
+      addItem(ValueAtom(50), 150, (){builderCondition.setParam(1, ValueAtom(50));});
+      addItem(ValueAtom(60), 150, (){builderCondition.setParam(1, ValueAtom(60));});
+      addItem(ValueAtom(70), 150, (){builderCondition.setParam(1, ValueAtom(70));});
+      addItem(ValueAtom(80), 150, (){builderCondition.setParam(1, ValueAtom(80));});
+      addItem(ValueAtom(90), 150, (){builderCondition.setParam(1, ValueAtom(90));});
+      addItem(ValueAtom(100), 150, (){builderCondition.setParam(1, ValueAtom(100));});
+    }
+
+    if(isReload)
+      grid.loadChildren();
   }
 
   @override
@@ -1338,65 +1514,143 @@ class PopupBuildCondition extends PopupBuild
     await createContainer()..position = Vector2(size.x / 2 - 64 - 5, 90);
     await createContainer()..position = Vector2(size.x / 2, 90);
     await createContainer()..position = Vector2(size.x / 2 + 64 + 5, 90);
+    await addChild(grid);
+
+    btnValider = ButtonBuild(gameRef, Vector2(150, 40), Language.valider.str, null);
+    btnValider.position = Vector2(size.x / 2, 440);
+    btnValider.anchor = Anchor.center;
+    btnValider.alpha = 150;
+    await addChild(btnValider);
   }
 
-  void _update(int index)
+  void _update()
   {
-    late dynamic param;
-    if(index == 0 && builderCondition.params.length == 3)
-      param = builderCondition.params[2];
-    else if(index == 2 && builderCondition.params.length >= 2)
-      param = builderCondition.params[1];
-    else 
-      param = builderCondition.cond;
-    sprites[index].sprite = null;
-    sprites[index].children.forEach((child) => child.remove());
-    sprites[index].renderFlipX = false;
-    if(param == VALUE.HP_PERCENT)
+    _updateIndex(0);
+    _updateIndex(1);
+    _updateIndex(2);
+    btnValider.alpha = _getParam(0) != null && _getParam(1) != null && _getParam(2) != null ? 255 : 150;
+  }
+
+  void _updateIndex(int index)
+  {
+    late dynamic param = _getParam(index);
+    items[index].item = param;
+    if(index == selectedIndex)
     {
-      sprites[index].sprite = Sprite(ImagesUtils.getImage("icon_health_percent.png"));
+      containers[index].alpha = 255;
     }
-    if(param == Conditions.LOWER)
+    else if(param == null)
     {
-      sprites[index].sprite = Sprite(ImagesUtils.getImage("icon_builder_greater.png"));
-      sprites[index].renderFlipX = true;
-    }
-    if(param is ValueAtom)
-    {
-      TextSizedComponent text = TextSizedComponent(param.value.toString(), textRenderer: textPaintWhite);
-      text.anchor = Anchor.center;
-      text.position = sprites[index].size / 2;
-      print("${text.size} ${text.position}");
-      sprites[index].addChild(text, gameRef: gameRef);
+      containers[index].alpha = 150;
     }
     print(param.runtimeType);
   }
 
+  dynamic _getParam(int index)
+  {
+    print("_getParam $index : ${builderCondition.params.length}");
+    if(index == 0 && builderCondition.params.length == 3)
+      return builderCondition.params[2];
+    if(index == 2 && builderCondition.params.length >= 2)
+      return builderCondition.params[1];
+    return builderCondition.cond;
+  }
+
   Future<SpriteComponent> createContainer() async
   {
-    SpriteComponent container = SpriteComponent(sprite: Sprite(ImagesUtils.getImage("icon_builder_container.png")));
+    SpriteAlphaComponent container = SpriteAlphaComponent();
+    container.sprite = Sprite(ImagesUtils.getImage("icon_builder_container.png"));
     container.size = Vector2.all(64);
     container.anchor = Anchor.topCenter;
     await addChild(container);
     containers.add(container);
-    SpriteComponent sprite = SpriteComponent();
-    sprite.size = container.size - Vector2.all(16);
-    sprite.anchor = Anchor.center;
-    sprite.position = container.size / 2;
-    await container.addChild(sprite);
-    sprites.add(sprite);
-    _update(containers.length - 1);
+    PopupBuildItemComponent item = PopupBuildItemComponent(gameRef, container.size.x - 16, null);
+    item.anchor = Anchor.center;
+    item.position = container.size / 2;
+    await container.addChild(item);
+    items.add(item);
+    _updateIndex(containers.length - 1);
     return container;
+  }
+
+  List<ObjectClicked> onClick(Vector2 p)
+  {
+    List<ObjectClicked> result = [];
+
+    if(selectedIndex != 0)
+    {
+      if(containers[0].containsPoint(p))
+      {
+        Function callParam0 = (){
+          print("callParam0");
+          selectedIndex = 0;
+          _update();
+          _updateGrid();
+        };
+        ObjectClicked param0 = ObjectClicked("PopupBuildCondition.Param0", "", callParam0, null);
+        result.add(param0);
+      }
+    }
+    
+    if(selectedIndex != 1 && _getParam(0) != null)
+    {
+      if(containers[1].containsPoint(p))
+      {
+        Function callParam1 = (){
+          print("callParam1");
+          selectedIndex = 1;
+          _update();
+          _updateGrid();
+        };
+        ObjectClicked param1 = ObjectClicked("PopupBuildCondition.Param1", "", callParam1, null);
+        result.add(param1);
+      }
+    }
+
+    if(selectedIndex != 2 && _getParam(1) != null)
+    {
+      if(containers[2].containsPoint(p))
+      {
+        Function callParam2 = (){
+          print("callParam2");
+          selectedIndex = 2;
+          _update();
+          _updateGrid();
+        };
+        ObjectClicked param2 = ObjectClicked("PopupBuildCondition.Param2", "", callParam2, null);
+        result.add(param2);
+      }
+    }
+
+    objects.forEach((element) {
+      if(element.component.containsPoint(p))
+        result.add(element.object);
+    });
+
+    if(btnValider.alpha == 255)
+    {
+      Function call = (){
+        remove();
+        Storage.entity.addTri = true;
+        onEnd(builderCondition);
+      };
+      ObjectClicked object = ObjectClicked("ButtonValider", "", call, null);
+      result.add(object);
+    }
+
+    result.addAll(super.onClick(p));
+    return result;
   }
 }
 
-class PopupBuild extends SpriteComponent
+class PopupBuild extends PositionComponent
 {
   final GameLayout gameRef;
   late final Rect bgRect;
   late final Paint bgPaint;
+  final Vector2 popupSize;
 
-  PopupBuild(this.gameRef):super(size: gameRef.size, priority: 901)
+  PopupBuild(this.gameRef, this.popupSize):super(size: gameRef.size, priority: 901)
   {
     bgRect = Rect.fromLTWH(0, 0, size.x, size.y);
     bgPaint = BasicPalette.black.withAlpha(150).paint();
@@ -1406,7 +1660,11 @@ class PopupBuild extends SpriteComponent
   Future<void> onLoad() async 
   {
     await super.onLoad();
-    sprite = Sprite(ImagesUtils.getImage("popup_build.png"));
+    SpriteComponent popup = SpriteComponent.fromImage(ImagesUtils.getImage("popup_build_vertical.png"));
+    popup.size = popupSize;
+    popup.anchor = Anchor.center;
+    popup.position = size / 2;
+    await addChild(popup);
   }
 
   @override
@@ -1422,5 +1680,24 @@ class PopupBuild extends SpriteComponent
 
     objects.add(ObjectClicked("PopupBuild", "", null, null));
     return objects;
+  }
+}
+
+class GridContainer extends VerticalContainer
+{
+  final int columns;
+  
+  GridContainer(GameLayout gameRef, this.columns, {int divider = 0}):super(gameRef, divider:divider);
+
+  @override
+  void add(PositionComponent component)
+  {
+    if(items.length == 0 || (items[items.length -1] as LinedContainer).items.length >= columns)
+    {
+      HorizontalContainer container = HorizontalContainer(gameRef, divider: divider);
+      super.add(container);
+    }
+    LinedContainer lastContainer = (items[items.length - 1] as LinedContainer);
+    lastContainer.add(component);
   }
 }
