@@ -58,6 +58,16 @@ extension ConditionsExtension on Conditions
 {
   String get name => describeEnum(this);
 
+  String get image {
+    switch(this)
+    {
+      case Conditions.LOWER : return "icon_builder_lesser.png";
+      case Conditions.HIGHER : return "icon_builder_greater.png";
+      default:
+        return "";
+    }
+  }
+
   List<ParamTypes> getParams() {
     switch (this) {
       //case Conditions.EXIST:

@@ -198,7 +198,7 @@ class TutorielManyEnnemies extends TutorielScreen
     {
       if(param == 1)
       {
-        Storage.addCondition = true;
+        Storage.entity.addCondition = true;
         removePointers();
         startPhrase(Language.tutoriel2_phrase3);
         step = 3;
@@ -213,7 +213,7 @@ class TutorielManyEnnemies extends TutorielScreen
     else if(step == 4 && param is isMe)
     {
       step = 5;
-      Storage.buildButton = true;
+      Storage.entity.buildButton = true;
       return true;
     }
     else if(step == 5 && event == EVENT_CLICK_CONDITIONS_PLUS)
@@ -228,7 +228,7 @@ class TutorielManyEnnemies extends TutorielScreen
       portrait.remove();
       return true;
     }
-    return false;
+    return true;
   }
 }
 

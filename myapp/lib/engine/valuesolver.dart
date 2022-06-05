@@ -86,6 +86,43 @@ extension ValueExtension on VALUE
     }
   }
 
+  String get image
+  {
+    switch (this) 
+    {
+      case VALUE.NAME:
+        return "";
+      case VALUE.HP:
+        return "icon_health.png";
+      case VALUE.HP_MAX:
+        return "";
+      case VALUE.MP:
+        return "";
+      case VALUE.MP_MAX:
+        return "";
+      case VALUE.ATK:
+        return "";
+      case VALUE.DEF:
+        return "";
+      case VALUE.MR:
+        return "";
+      case VALUE.POW:
+        return "";
+      case VALUE.HP_PERCENT:
+        return "icon_health_percent.png";
+      case VALUE.MP_PERCENT:
+        return "";
+      case VALUE.CLAN:
+        return "";
+      case VALUE.DOT:
+        return "";
+      case VALUE.POISON:
+        return "";
+      case VALUE.BLEED:
+        return "";
+    }
+  }
+
   static VALUE? get(String name)
   {
     for(VALUE v in VALUE.values)

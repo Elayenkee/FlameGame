@@ -24,7 +24,8 @@ class ImagesUtils
     "torch_activated.png", "torch_desactivated.png", "icon_edit.png", "cadre_behaviour.png", "button_ennemy.png", "button_me.png", "button_none.png", 
     "button_work.png", "button_magic.png", "portrait.png", "cadre_player.png", "button_plus.png", "button_build.png", 
     "icon_build.png", "button_large.png", "popup_build.png", "icon_builder_container.png", 
-    "icon_health_percent.png","icon_builder_greater.png"];
+    "icon_health_percent.png", "icon_health.png","icon_builder_greater.png", "popup_build_vertical.png", 
+    "icon_builder_lesser.png", "sort_up.png", "sort_down.png"];
     liste.forEach((element) async{
       await images.load(element);
       print("Loaded $element");

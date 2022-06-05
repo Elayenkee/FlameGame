@@ -13,6 +13,8 @@ class Language
   static Text actions = Text("Action", "Actions");
   static Text target = Text("Cible", "Target");
   static Text targets = Text("Cibles", "Targets");
+  static Text valider = Text("Valider", "Submit");
+  static Text tri = Text("Tri", "Sort");
 
   // Works
   static Text work_aucun = Text("Aucun", "None");

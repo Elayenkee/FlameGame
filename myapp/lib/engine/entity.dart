@@ -10,6 +10,9 @@ import 'package:myapp/works/work.dart';
 class Entity extends UUIDHolder implements ValueReader//, Param
 {
   late String uuid;
+  bool addCondition = false;
+  bool buildButton = false;
+  bool addTri = false;
 
   Map<VALUE, dynamic> values = Map();
 
@@ -229,6 +232,10 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     final uuids = Map<String, dynamic>();
     uuids[uuid] = this;
     nbCombat = map["nbCombat"]??0;
+    addCondition = map["addCondition"];
+    addTri = map["addTri"];
+    buildButton = map["buildButton"];
+
 
     print("NB COMBAT $nbCombat");
 
@@ -273,6 +280,9 @@ class Entity extends UUIDHolder implements ValueReader//, Param
     });
     map["builder"] = builder.toMap();
     map["nbCombat"] = nbCombat;
+    map["buildButton"] = buildButton;
+    map["addCondition"] = addCondition;
+    map["addTri"] = addTri;
     print(">> NB COMBAT $nbCombat");
   }
 

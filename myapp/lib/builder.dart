@@ -497,7 +497,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
   BuilderTargetSelector? builderTargetSelector;
 
   Conditions? cond;
-  List params = [];
+  List params = [null, null, null];
 
   BuilderCondition(){}
 
@@ -511,9 +511,9 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
 
     //Utils.log("$this::setCondition : $cond");
     this.cond = cond;
-    this.params = [];
-    for (int i = 0; i < cond.getParams().length; i++) 
-      params.add(null);
+    //this.params = [];
+    //for (int i = 0; i < cond.getParams().length; i++) 
+    //  params.add(null);
     if (builderTargetSelector != null && cond.isBinary())
       setParam(0, builderTargetSelector!);
   }
@@ -528,7 +528,7 @@ class BuilderCondition extends Builder<Condition> implements TargetSelectorChild
 
   void setParam(int index, Object? param) 
   {
-    //Utils.log("setParam $index - $param");
+    print("setParam $index - $param");
     params[index] = param;
     if(index == 2 && param is BuilderCount)
     {
